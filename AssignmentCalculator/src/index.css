@@ -1,0 +1,33 @@
+@import "tailwindcss";
+/* Google font */
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap");
+
+/* Tailwind v4.1 base */
+@layer base {
+  html, body {
+    height: auto;
+  }
+  body {
+    @apply m-0 min-h-screen bg-gray-50 text-gray-900 font-sans;
+  }
+  /* Make the root take full width; no max-width or padding here */
+  #root {
+    width: 100%;
+    min-height: 100%;
+  }
+}
+
+/* Tailwind v4.1 tokens */
+/* WebStorm has a hissy fit over this at-rule so the next like ignores it --Maxwell */
+/*noinspection CssInvalidAtRule*/
+@theme {
+  --color-uwaBlue: #27348B;
+  --color-uwaGold: #E2B600;
+  --color-uwaGrey: #ececec;
+
+  --font-sans: "Source Sans Pro", Arial, sans-serif;
+  --font-uwa: "UWA Regular", UWA, Georgia, serif;
+
+  --radius-xl: 0.75rem;
+  --shadow-soft: 0 8px 30px rgba(0,0,0,0.08);
+}
