@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import "./index.css";
+import AssignmentCalendar from "./components/AssignmentCalendar.tsx";
+import {testRows} from "./components/testdata.ts";
 
 type ScheduleItem = { task: string; date: string };
 type TaskMap = Record<string, string[]>;
@@ -43,16 +45,16 @@ function App() {
     // Modal
     const [isOpen, setIsOpen] = useState(false);
 
-    // Controls (replacing Alpine x-model)
+    // Controls
     const [selectedType, setSelectedType] = useState<keyof typeof TASKS>("Essay");
-    const [startDate, setStartDate] = useState<string>("");
-    const [dueDate, setDueDate] = useState<string>("");
+    const [startDate, setStartDate] = useState<string>("01 / 08 / 2025");
+    const [dueDate, setDueDate] = useState<string>("31 / 08 / 2025");
     const [hoursPerDay, setHoursPerDay] = useState<number>(2);
 
     // Output
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
-    // Matches your `formatDate` helper (en-GB short month)
+    // Format date and memoise result for future renders
     const formatDate = useMemo(
         () =>
             new Intl.DateTimeFormat("en-GB", {
@@ -181,7 +183,7 @@ function App() {
                             <div className="mt-6 text-right">
                                 <button
                                     onClick={() => setIsOpen(false)}
-                                    className="bg-uwaGold text-black px-4 py-2 rounded-xl font-semibold"
+                                    className="bg-uwaGrey text-black px-4 py-2 rounded-xl font-semibold"
                                 >
                                     Close
                                 </button>
@@ -195,7 +197,7 @@ function App() {
             <section className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6">
                 <div className="grid lg:grid-cols-3 gap-4">
                 {/* Assessment Type */}
-                    <div className="bg-uwaGold text-gray-900 rounded-xl shadow-soft p-4">
+                    <div className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4">
                         <h2 className="text-lg font-semibold mb-3">Assessment Type</h2>
                         <select
                             value={selectedType}
@@ -211,7 +213,7 @@ function App() {
                     </div>
 
                     {/* Dates */}
-                    <div className="bg-uwaGold text-gray-900 rounded-xl shadow-soft p-4">
+                    <div className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4">
                         <h2 className="text-lg font-semibold mb-3">Dates</h2>
                         <div className="grid sm:grid-cols-2 gap-3">
                             <label className="block">
@@ -236,7 +238,7 @@ function App() {
                     </div>
 
                     {/* Plan Settings */}
-                    <div className="bg-uwaGold text-gray-900 rounded-xl shadow-soft p-4">
+                    <div className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4">
                         <h2 className="text-lg font-semibold mb-3">Plan Settings</h2>
                         <label className="block">
                             <span className="text-sm font-medium">Effort per day (hrs)</span>
@@ -261,24 +263,9 @@ function App() {
 
             {/* Study Plan */}
             <section className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6">
-                <div className="bg-uwaGold rounded-xl shadow-soft p-4">
+                <div className="bg-slate-200 rounded-xl shadow-soft p-4">
                 <h2 className="text-xl font-bold">Study Plan</h2>
-                    <ol className="mt-4 space-y-2">
-                        {schedule.map((s, i) => (
-                            <li
-                                key={`${s.task}-${s.date}-${i}`}
-                                className="bg-white/40 rounded-xl px-4 py-3 flex justify-between"
-                            >
-                                <span>{s.task}</span>
-                                <span>{s.date}</span>
-                            </li>
-                        ))}
-                        {schedule.length === 0 && (
-                            <li className="bg-white/40 rounded-xl px-4 py-3 text-gray-700">
-                                No plan yet. Choose dates and click <em>Generate Plan</em>.
-                            </li>
-                        )}
-                    </ol>
+                    <AssignmentCalendar rows={testRows}/>
                 </div>
             </section>
         </>
