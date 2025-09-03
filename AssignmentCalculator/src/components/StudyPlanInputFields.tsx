@@ -3,7 +3,7 @@ import generate from "../App.tsx";
 // States for each input field
 import type {States,StateFunctions} from "../App.tsx";
 
-// Declare types for the arguents provided to component
+// Declare types for the arguments provided to component
 interface props{
     states:States,
     stateFunctions:StateFunctions

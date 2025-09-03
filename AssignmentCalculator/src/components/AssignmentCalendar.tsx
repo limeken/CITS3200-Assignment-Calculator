@@ -7,7 +7,7 @@ type BoxProps = React.HTMLAttributes<HTMLDivElement> & {
     colorClass?: string;
 };
 
-/* TODO: Arbitrary Row type */
+/* TODO: Arbitrary Row typ  e */
 type Row = {
     /** Unique id for the row */
     id: string;
@@ -23,9 +23,11 @@ type AssignmentCalendarProps = {
     boxSizeClass?: string;
     /** Gap between boxes (Tailwind gap-*). Default gap-2 */
     gapClass?: string;
-    /** Render “Week N” heading every 7 columns */
+    /** Render “Week N” heading     every 7 columns */
     weekLabelPrefix?: string;
 };
+
+
 
 const DayBox: React.FC<
     BoxProps & { boxSizeClass: string }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, {useMemo, useRef, useState} from "react";
 import "./index.css";
 import {testRows} from "./components/testdata.ts";
 
@@ -8,6 +8,9 @@ import UniversityBanner from "./components/UniversityBanner.tsx"
 import InstructionsPage from "./components/InstructionsPage.tsx"
 import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
+import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
+import {parseIcsCalendar} from "./components/CalendarTypes.ts";
+import {PlusIcon} from "@heroicons/react/24/solid";
 
 // Each assignment to be added to the assignment planner
 type ScheduleItem = { task: string; date: string };
@@ -38,6 +41,14 @@ export default function App() {
     const [startDate, setStartDate] = useState<string>("01 / 08 / 2025");
     const [dueDate, setDueDate] = useState<string>("31 / 08 / 2025");
     const [hoursPerDay, setHoursPerDay] = useState<number>(2);
+
+    const calRef = useRef<CalendarRef>(null);
+
+    async function handleLoad(path: string) {
+        await parseIcsCalendar(path, (a) => {
+            calRef.current?.addAssignment(a)
+        })
+    }
     
     // Object that stores all field states
     const states:States = {
@@ -112,8 +123,13 @@ export default function App() {
     function StudyPlanSection(){
         return (<section className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6">
                     <div className="bg-slate-200 rounded-xl shadow-soft p-4">
+                        <button type="button"
+                            className="flex items-center rounded border px-3 py-2 border-gray-300 bg-white transition hover:bg-gray-50"
+                            onClick={() => handleLoad("/fake_calendar.ics")}>
+                            <PlusIcon className="h-5 w-5 text-gray-600"/>
+                        </button>
                         <h2 className="text-xl font-bold">Study Plan</h2>
-                            <AssignmentCalendar rows={testRows}/>
+                        <Calendar ref={calRef}/>
                     </div>
                 </section>
             )
@@ -129,8 +145,11 @@ export default function App() {
             {/* User Instructions Button & Page*/}
             <InstructionsPage/>
             {/* Section for Input Fields */}
+
+            {/* TODO: We can define a parent component that dictates styling of children */}
             {/*Note: Difficult to modularise further! (can't move components to separate files)*/}
             <StudyPlanInputFields states = {states} stateFunctions = {stateFunctions}/>
+
             <StudyPlanSection/>
         </>
     );
