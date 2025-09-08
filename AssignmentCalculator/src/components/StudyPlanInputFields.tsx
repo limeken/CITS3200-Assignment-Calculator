@@ -2,6 +2,9 @@ import { TASKS } from "../App.tsx";
 import generate from "../App.tsx";
 // States for each input field
 import type {States,StateFunctions} from "../App.tsx";
+import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
+import React from "react";
+import clsx from "clsx";
 
 // Declare types for the arguments provided to component
 interface props{
@@ -84,6 +87,28 @@ export default function StudyPlanInputFields({states,stateFunctions}:props){
                 )
             ;}
 
+    function SubmitButtons() {
+        const buttonStyle = "text-white bg-uwaBlue border-uwaBlue border-2 w-full h-full mt-3 rounded-xl font-semibold px-4 py-3 flex flex-row gap-2 items-center justify-start transition-all duration-170 ease-out hover:bg-white hover:text-uwaBlue";
+        return (
+            <>
+                <button
+                    onClick={generate} /* TODO: generator callback */
+                    className={clsx(buttonStyle, "xl:col-span-2")}
+                >
+                    <PlusIcon className="h-5 w-5"/>
+                    Generate Plan
+                </button>
+                <button
+                    onClick={() => console.log('clicked import')} /* TODO: import callback */
+                    className={clsx(buttonStyle)}
+                >
+                    <ArrowDownTrayIcon className="h-5 w-5"/>
+                    Import
+                </button>
+            </>
+        );
+    }
+
     return (
                 <section className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6">
                     <div className="grid lg:grid-cols-3 gap-4">
@@ -93,13 +118,9 @@ export default function StudyPlanInputFields({states,stateFunctions}:props){
                         <AssessmentDateInput/>
                         {/* Plan Settings */}
                         <AssessmentHoursInput/>
-                        <button
-                            onClick={generate}
-                            className="mt-3 w-full rounded-xl bg-uwaBlue text-white font-semibold px-4 py-3"
-                            >
-                                Generate Plan
-                        </button>
-                    </div> 
+                        {/* Buttons */}
+                        <SubmitButtons />
+                    </div>
                 </section>
             );
 }

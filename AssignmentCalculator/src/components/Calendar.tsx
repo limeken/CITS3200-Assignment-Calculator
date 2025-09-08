@@ -2,6 +2,7 @@
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from "react";
 import ICAL from "ical.js";
 import { type Assignment, sem2, parseIcsCalendar } from "./CalendarTypes.ts";
+import {PlusIcon} from "@heroicons/react/24/solid";
 
 /* CalendarWeeks prop */
 const CalendarWeeks = () => {
@@ -59,10 +60,7 @@ export type CalendarRef = {
 *   we want to access our calendar element from the top-level App component (meaning we need a ref)
 *   normally React ref's only work on DOM elements (div's, class components, etc...)
 *   so we wrap our component in a forwardRef */
-const Calendar =
-    forwardRef<CalendarRef, {}> // this tells the compiler of the ref type, and the props type (no props)
-    (function Calendar(_props, ref)//underscore hints that the variable is unused (_props says "no props")
-    {
+const Calendar = () => {
 
     const [assignments, setAssignments] = useState<Assignment[]>([]);
 
@@ -71,9 +69,11 @@ const Calendar =
         setAssignments((prev) => [...prev, a]);
     }, []) // <- this empty array is the dependency list, a change to any objects in here triggers a re-render
 
-    /*  this hook decides what the ref exposes to the parent component
-    *   we pass the ref, a function returning the object the parent sees on ref.current, and the dependencies */
-    useImperativeHandle(ref, () => ({ addAssignment }), [addAssignment]);
+    async function handleLoad(path: string) {
+        await parseIcsCalendar(path, (a) => {
+            addAssignment(a)
+        })
+    }
 
     parseIcsCalendar("/fake_calendar.ics").then(
         calendar => {
@@ -81,18 +81,25 @@ const Calendar =
         }
     )
 
-    return(
+    return (
+        <>
+            <button type="button"
+                    className="flex items-center rounded border px-3 py-2 border-gray-300 bg-white transition hover:bg-gray-50 mb-2"
+                    onClick={() => handleLoad("/fake_calendar.ics")}>
+                <PlusIcon className="h-5 w-5 text-gray-600"/>
+            </button>
         <div className={"overflow-x-auto"}>
             <div className="min-w-max space-y-3">
                 <div className={"flex flex-col gap-2"}>
-                    <CalendarWeeks />
+                    {assignments.length > 0 ? <CalendarWeeks/> : null}
                     {assignments.map((a, i) => (
-                        <AssignmentRow key={a.name ?? i} assignment={a} />
+                        <AssignmentRow key={a.name ?? i} assignment={a}/>
                     ))}
                 </div>
             </div>
         </div>
+        </>
     )
-});
+};
 
 export default Calendar;
