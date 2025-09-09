@@ -18,8 +18,6 @@ export class SemesterDates {
 
     // get the start date of an assignment as the box # it appears in
     getAssignmentDates(ass: Assignment) {
-        console.log(differenceInDays(ass.start, this.start));
-        console.log(differenceInDays(ass.end, this.start));
         return [
             (ass.start ? differenceInDays(ass.start, this.start) : null),
             (ass.end && ass.start ? differenceInDays(ass.end, this.start) : null)
@@ -126,9 +124,16 @@ export async function parseIcsCalendar(
     // Optionally push into your calendar immediately
     if (addAssignment) addAssignment(assignment);
 
-    console.log(assignment);
-
     return assignment;
+}
+
+// lol i just realised the name for "assignment" and "calendar" have been used interchangeably. oops. will clean up in a later commit i promise xx
+export function validateCalendar(cal: Assignment): Array<boolean> {
+    return [
+        !!cal.name,
+        !!cal.start,
+        !!cal.end,
+    ];
 }
 
 

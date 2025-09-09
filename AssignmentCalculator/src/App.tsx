@@ -1,4 +1,4 @@
-import React, {useMemo, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import "./index.css";
 import {testRows} from "./components/testdata.ts";
 
@@ -9,7 +9,7 @@ import InstructionsPage from "./components/InstructionsPage.tsx"
 import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
-import {type Assignment, parseIcsCalendar} from "./components/CalendarTypes.ts";
+import {type Assignment, parseIcsCalendar, validateCalendar} from "./components/CalendarTypes.ts";
 import {PlusIcon} from "@heroicons/react/24/solid";
 
 // Each assignment to be added to the assignment planner
@@ -18,9 +18,11 @@ type ScheduleItem = { task: string; date: string };
 // Object type that stores compatible assignment types
 type TaskMap = Record<string, string[]>;
 
-// Object types for stor references to input field states & their associated functions
-export type States = Record<string,any>;
-export type StateFunctions = Record<string, (val:any) => void>;
+export type StateFunctions = {
+    setSelectedType: (name: string) => void,
+    setStartDate: (start: Date) => void,
+    setEndDate: (end: Date) => void,
+}
 
 // Store assignment breakdowns here
 export const TASKS: TaskMap = {
@@ -34,92 +36,70 @@ export const TASKS: TaskMap = {
     ]
 };
 
+/* a default (empty) assignment to fill the state with. Useful for instancing additional objects */
+const DEFAULT: Assignment = () => ({
+    name: "Essay", color: "#000", start: null, end: null, events: new Array<[]>
+})
+
+
 // Main application component
 export default function App() {
-    // Controls
-    const [selectedType, setSelectedType] = useState<keyof TaskMap>("Essay");
-    const [startDate, setStartDate] = useState<string>("01 / 08 / 2025");
-    const [dueDate, setDueDate] = useState<string>("31 / 08 / 2025");
-    const [hoursPerDay, setHoursPerDay] = useState<number>(2);
-    const [validAssignment, setValidAssignment] = useState<Assignment | null>(null);
 
+    const [validAssignment, setValidAssignment] = useState<Assignment>(DEFAULT);
+    const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
-    
-    // Object that stores all field states
-    const states:States = {
-        selectedType:selectedType,
-        startDate:startDate,
-        dueDate:dueDate,
-        hoursPerDay:hoursPerDay
-    };
-    
+
     // Object that stores all state functions
-    const stateFunctions:StateFunctions = {
-        setSelectedType:setSelectedType,
-        setStartDate:setStartDate,
-        setDueDate:setDueDate,
-        setHoursPerDay:setHoursPerDay
+    const stateFunctions: StateFunctions = {
+        setSelectedType: (name: string) => {
+            setValidAssignment(prev => ({...prev, name: name }));
+            console.log(`set calendar name to: ${name}`);
+        },
+        setStartDate: (start: Date) => {
+            setValidAssignment(prev => ({...prev, start: start }))
+            console.log(`set calendar start to: ${start}`);
+        },
+        setEndDate: (end: Date) => {
+            setValidAssignment(prev => ({...prev, end: end }))
+            console.log(`set calendar end to: ${end}`);
+        },
+        //setHoursPerDay:setHoursPerDay,
     };
 
-    // Output
-    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
+    const generateCalendar = useCallback(async () => {
 
-    // Format date and memoise result for future renders
-    const formatDate = useMemo(
-        () =>
-            new Intl.DateTimeFormat("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-            }),
-        []
-    );
+        /* TODO: better validation (i.e. check for more than "not null") for each of these */
+        /* simple validation check, realistically it should happen in the CalendarTypes.ts file */
 
-    const parseISO = (s: string): Date | null => {
-        if (!s) return null;
-        const d = new Date(s);
-        return Number.isNaN(d.getTime()) ? null : d;
-    };
-
-    const daysBetween = (a: Date, b: Date) => {
-        const MS = 24 * 60 * 60 * 1000;
-        const a0 = new Date(a.getFullYear(), a.getMonth(), a.getDate());
-        const b0 = new Date(b.getFullYear(), b.getMonth(), b.getDate());
-        return Math.max(0, Math.round((b0.getTime() - a0.getTime()) / MS));
-    };
-    const addDays = (d: Date, n: number) => {
-        const c = new Date(d.getTime());
-        c.setDate(c.getDate() + n);
-        return c;
-    };
-
-    const generate = () => {
-
-        /* TODO: rejig this whole thang */
-        console.log("Generated... something...");
-        return null;
-
-        /*
-        const s = parseISO(startDate);
-        const e = parseISO(dueDate);
-        if (!s || !e || e < s) {
-            setSchedule([]);
+        // validation function exists in CalendarTypes.ts
+        const new_errors = validateCalendar(validAssignment);
+        if( new_errors.some(f => !f)) {
+            setErrors(new_errors);
             return;
         }
-        const tasks = TASKS[selectedType];
-        const totalDays = Math.max(1, daysBetween(s, e));
-        const steps = Math.max(1, tasks.length - 1);
-        const gap = totalDays / steps;
 
-        const plan: ScheduleItem[] = tasks.map((task, i) => {
-            const offset = Math.round(i * gap);
-            const when = addDays(s, Math.min(totalDays, offset));
-            return { task: `${task} (${hoursPerDay}h)`, date: formatDate.format(when) };
-        });
+        /* check if the current assignment is valid */
+        await setValidAssignment(prev => ({
+            name: prev.name,
+            color: "#aaa",
+            start: prev.start,
+            end: prev.end,
+            events: [{
+                uid: null,
+                summary: "placeholder",
+                description: "this is a placeholder event",
+                status: null,
+                start: prev.start,
+                end: prev.end,
+                tzid: "AWST",
+            }],
+        }));
 
-        setSchedule(plan);
-        */
-    };
+        if( validAssignment ) {
+            await calRef.current?.addAssignment(validAssignment);
+        }
+
+    }, [validAssignment]);
 
     // This returns the finalised webpage, including all key components
     return (
@@ -133,11 +113,12 @@ export default function App() {
             {/* Section for Input Fields */}
 
             {/* TODO: We can define a parent component that dictates styling of children */}
-            {/*Note: Difficult to modularise further! (can't move components to separate files)*/}
-            <StudyPlanInputFields states = {states} stateFunctions = {stateFunctions}/>
+            {/* Difficult to modularise, but all the elements in this component share a parent. */}
+            <StudyPlanInputFields stateFunctions={stateFunctions} errors={errors} onImport={generateCalendar} onGenerate={generateCalendar}/>
+
             <section className={"mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6"}>
                 <div className="bg-slate-200 rounded-xl shadow-soft p-4">
-                    <Calendar/>
+                    <Calendar ref={calRef}/>
                 </div>
             </section>
         </>

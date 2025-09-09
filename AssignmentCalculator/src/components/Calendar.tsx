@@ -1,7 +1,7 @@
 // calendar element, all by me
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from "react";
 import ICAL from "ical.js";
-import { type Assignment, sem2, parseIcsCalendar } from "./CalendarTypes.ts";
+import { type Assignment, sem2, parseIcsCalendar, validateCalendar } from "./CalendarTypes.ts";
 import {PlusIcon} from "@heroicons/react/24/solid";
 
 /* CalendarWeeks prop */
@@ -60,7 +60,7 @@ export type CalendarRef = {
 *   we want to access our calendar element from the top-level App component (meaning we need a ref)
 *   normally React ref's only work on DOM elements (div's, class components, etc...)
 *   so we wrap our component in a forwardRef */
-const Calendar = () => {
+const Calendar = forwardRef<CalendarRef>((_, ref) => {
 
     const [assignments, setAssignments] = useState<Assignment[]>([]);
 
@@ -69,17 +69,14 @@ const Calendar = () => {
         setAssignments((prev) => [...prev, a]);
     }, []) // <- this empty array is the dependency list, a change to any objects in here triggers a re-render
 
+    /* since we need an object API node, we expose this handle to addAssignment and it's API */
+    useImperativeHandle(ref, () => ({ addAssignment }), [addAssignment]);
+
     async function handleLoad(path: string) {
         await parseIcsCalendar(path, (a) => {
             addAssignment(a)
         })
     }
-
-    parseIcsCalendar("/fake_calendar.ics").then(
-        calendar => {
-            console.log(calendar)
-        }
-    )
 
     return (
         <>
@@ -91,7 +88,9 @@ const Calendar = () => {
         <div className={"overflow-x-auto"}>
             <div className="min-w-max space-y-3">
                 <div className={"flex flex-col gap-2"}>
-                    {assignments.length > 0 ? <CalendarWeeks/> : null}
+                    {/* Weekly headings, unfilled flavor text, and assignment rows. */}
+                    <CalendarWeeks/>
+                    {assignments.length == 0 ? <p className="text-gray-400 px-2">nothing to show...</p> : null}
                     {assignments.map((a, i) => (
                         <AssignmentRow key={a.name ?? i} assignment={a}/>
                     ))}
@@ -100,6 +99,6 @@ const Calendar = () => {
         </div>
         </>
     )
-};
+});
 
 export default Calendar;
