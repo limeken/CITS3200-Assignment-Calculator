@@ -8,6 +8,7 @@ import UniversityBanner from "./components/UniversityBanner.tsx"
 import InstructionsPage from "./components/InstructionsPage.tsx"
 import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
+import AssignmentPopUp from "./components/AssignmentPopUp.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
 import {type Assignment, parseIcsCalendar, validateCalendar} from "./components/CalendarTypes.ts";
 import {PlusIcon} from "@heroicons/react/24/solid";
@@ -121,6 +122,7 @@ export default function App() {
                     <Calendar ref={calRef}/>
                 </div>
             </section>
+            <AssignmentPopUp/>
         </>
     );
 }
