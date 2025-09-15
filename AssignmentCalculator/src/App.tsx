@@ -9,8 +9,9 @@ import InstructionsPage from "./components/InstructionsPage.tsx"
 import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
-import {type Assignment, parseIcsCalendar, validateCalendar} from "./components/CalendarTypes.ts";
+import {type Assignment, calendarColors, parseIcsCalendar, validateCalendar} from "./components/CalendarTypes.ts";
 import {PlusIcon} from "@heroicons/react/24/solid";
+import SubmissionModal from "./components/SubmissionModal.tsx";
 
 // Each assignment to be added to the assignment planner
 type ScheduleItem = { task: string; date: string };
@@ -37,9 +38,9 @@ export const TASKS: TaskMap = {
 };
 
 /* a default (empty) assignment to fill the state with. Useful for instancing additional objects */
-const DEFAULT: Assignment = () => ({
-    name: "Essay", color: "#000", start: null, end: null, events: new Array<[]>
-})
+const DEFAULT: Assignment = {
+    name: "Essay", start: null, end: null, events: new Array<[]>
+}
 
 
 // Main application component
@@ -48,6 +49,11 @@ export default function App() {
     const [validAssignment, setValidAssignment] = useState<Assignment>(DEFAULT);
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
+
+    // modal object details
+    const [showModal, setShowModal] = useState(false)
+    const [assignmentName, setAssignmentName] = useState("");
+    const [unitCode, setUnitCode] = useState("");
 
     // Object that stores all state functions
     const stateFunctions: StateFunctions = {
@@ -66,40 +72,44 @@ export default function App() {
         //setHoursPerDay:setHoursPerDay,
     };
 
-    const generateCalendar = useCallback(async () => {
+
+    const generateCalendar = useCallback(() => {
 
         /* TODO: better validation (i.e. check for more than "not null") for each of these */
         /* simple validation check, realistically it should happen in the CalendarTypes.ts file */
 
         // validation function exists in CalendarTypes.ts
         const new_errors = validateCalendar(validAssignment);
-        if( new_errors.some(f => !f)) {
+        if( new_errors.some(ok => !ok)) {
             setErrors(new_errors);
             return;
         }
-
-        /* check if the current assignment is valid */
-        await setValidAssignment(prev => ({
-            name: prev.name,
-            color: "#aaa",
-            start: prev.start,
-            end: prev.end,
-            events: [{
-                uid: null,
-                summary: "placeholder",
-                description: "this is a placeholder event",
-                status: null,
-                start: prev.start,
-                end: prev.end,
-                tzid: "AWST",
-            }],
-        }));
-
-        if( validAssignment ) {
-            await calRef.current?.addAssignment(validAssignment);
-        }
-
+        setShowModal(true);
     }, [validAssignment]);
+
+    const pickRandomColor = (): typeof calendarColors[number] =>
+        calendarColors[Math.floor(Math.random() * calendarColors.length)];
+
+    const handleModalSubmit = async () => {
+        const name = assignmentName.trim()
+        const unit = unitCode.trim()
+        if (!name || !unit) return; //extra guarding
+
+        const next: Assignment = {
+            ...validAssignment,
+            name,
+            unitCode: unit,
+            color: validAssignment.color ?? pickRandomColor(),
+        };
+
+        setValidAssignment(next);
+        await calRef.current?.addAssignment(next);
+        console.log(next)
+
+        setShowModal(false);
+        setAssignmentName("");
+        setUnitCode("");
+    }
 
     // This returns the finalised webpage, including all key components
     return (
@@ -121,6 +131,12 @@ export default function App() {
                     <Calendar ref={calRef}/>
                 </div>
             </section>
+            {/* Modal */}
+            <SubmissionModal isOpen={showModal}
+                    assignmentName={assignmentName} setAssignmentName={setAssignmentName}
+                    unitCode={unitCode} setUnitCode={setUnitCode}
+                    onSubmit={handleModalSubmit} onClose={() => setShowModal(false)}
+            />
         </>
     );
 }
