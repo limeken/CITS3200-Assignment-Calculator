@@ -9,7 +9,13 @@ import InstructionsPage from "./components/InstructionsPage.tsx"
 import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
-import {type Assignment, calendarColors, parseIcsCalendar, validateCalendar} from "./components/CalendarTypes.ts";
+import {
+    type Assignment,
+    calendarColors,
+    parseIcsCalendar,
+    pickRandomColor,
+    validateCalendar
+} from "./components/CalendarTypes.ts";
 import {PlusIcon} from "@heroicons/react/24/solid";
 import SubmissionModal from "./components/SubmissionModal.tsx";
 
@@ -87,9 +93,6 @@ export default function App() {
         setShowModal(true);
     }, [validAssignment]);
 
-    const pickRandomColor = (): typeof calendarColors[number] =>
-        calendarColors[Math.floor(Math.random() * calendarColors.length)];
-
     const handleModalSubmit = async () => {
         const name = assignmentName.trim()
         const unit = unitCode.trim()
@@ -99,7 +102,7 @@ export default function App() {
             ...validAssignment,
             name,
             unitCode: unit,
-            color: validAssignment.color ?? pickRandomColor(),
+            color: pickRandomColor(),
         };
 
         setValidAssignment(next);

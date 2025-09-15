@@ -142,5 +142,8 @@ export function validateCalendar(cal: Assignment): Array<boolean> {
 export const sem1 = new SemesterDates(new Date("2025-02-24"), new Date("2025-05-23"));
 export const sem2 = new SemesterDates(new Date("2025-07-21"), new Date("2025-10-17"));
 
+export const pickRandomColor = (): typeof calendarColors[number] =>
+    calendarColors[Math.floor(Math.random() * calendarColors.length)];
+
 export const calendarColors = ["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose"]
 export type CalendarColor = typeof calendarColors[number];
