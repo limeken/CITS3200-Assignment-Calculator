@@ -11,14 +11,14 @@ import AssignmentPopUp from "./components/AssignmentPopUp.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
 import {type Assignment, parseIcsCalendar, validateCalendar} from "./components/CalendarTypes.ts";
 
-interface AssignmentSteps{
+export interface AssignmentSteps{
     step:number,
     name:string,
     value:number,
     instructions:string[]
     resources:string[]
 }
-interface AssignmentType{
+export interface AssignmentType{
     type:string,
     steps:AssignmentSteps[]
 }
