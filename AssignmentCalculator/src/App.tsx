@@ -26,7 +26,7 @@ export interface AssignmentType{
 // Placeholder representing a written assessment
 const writtenSteps:AssignmentSteps[] = [
     {step:1, name:"Read instructions",value:5,instructions:[
-        "Read the full assignment instructions and any associated materials Read the rubric!", 
+        "Read the full assignment instructions and any associated materials. Read the rubric!", 
         "Pay attention to specific details such as number/type of sources needed, suggested structure, and referencing style", 
         "Ask clarifying questions if you are unsure about the instructions"
     ], 
@@ -64,7 +64,7 @@ const writtenSteps:AssignmentSteps[] = [
         "Ensure you are integrating evidence into each paragraph using quotes and paraphrasing"
     ], 
     resources:[
-        "check out the Academic Skills Guides for advice on writing [ASC-GUID]",
+        "Check out the Academic Skills Guides for advice on writing [ASC-GUID]",
         "Reference as you go, to ensure you dont miss anything [LIB-BOOK]"
     ]},
     {step:6, name:"Edit and redraft",value:20,instructions:[
