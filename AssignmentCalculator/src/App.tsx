@@ -9,6 +9,7 @@ import UniversityBanner from "./components/UniversityBanner.tsx"
 import InstructionsPage from "./components/InstructionsPage.tsx"
 import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
+import AssignmentPopUp from "./components/AssignmentPopUp.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
 import {
     type Assignment,
@@ -156,6 +157,7 @@ export default function App() {
                     unitCode={unitCode} setUnitCode={setUnitCode}
                     onSubmit={handleModalSubmit} onClose={() => setShowModal(false)}
             />
+            <AssignmentPopUp />
         </>
     );
 }
