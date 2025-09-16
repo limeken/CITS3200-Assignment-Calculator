@@ -6,7 +6,7 @@ export default function UniversityBanner(){
                 <div className="flex items-center">
                     <a href="/" className="focus:outline-none" aria-label="UWA Home">
                         <img
-                            src="//static.weboffice.uwa.edu.au/visualid/core-rebrand/img/uwacrest/uwacrest-white.svg"
+                            src="http://static.weboffice.uwa.edu.au/visualid/core-rebrand/img/uwacrest/uwacrest-white.svg"
                             alt="UWA Crest"
                             className="h-20 w-auto"
                         />

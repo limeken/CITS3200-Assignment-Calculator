@@ -10,7 +10,7 @@ import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
 import AssignmentModal from "./components/AssignmentModal.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
 import {
-    type Assignment,
+    type Assignment, type AssignmentEvent, parseIcsCalendar,
     pickRandomColor,
     validateCalendar
 } from "./components/CalendarTypes.ts";
@@ -54,7 +54,7 @@ export const TASKS: Array<AssignmentType> = [
 
 /* a default (empty) assignment to fill the state with. Useful for instancing additional objects */
 const DEFAULT: Assignment = {
-    name: "Essay", start: null, end: null, events: new Array<[]>
+    name: "Essay", color: "red", start: null, end: null, events: new Array<AssignmentEvent>
 }
 
 
@@ -132,11 +132,25 @@ export default function App() {
         setUnitCode("");
     }
 
+    const handleImportCalendar = async () => {
+        const parsedCal: Assignment = await parseIcsCalendar('/fake_calendar.ics');
+        const next: Assignment = {
+            ...parsedCal,
+            name: "import",
+            unitCode: "import",
+            color: "orange",
+        }
+        setValidAssignment(next)
+        console.log(next)
+        await calRef.current?.addAssignment(next);
+    }
+
     // This returns the finalised webpage, including all key components
     return (
         <>
             {/* University Banner */}
             <UniversityBanner/>
+
             {/* Application Title Bar */}
             <ApplicationHeading/>
 
@@ -154,7 +168,7 @@ export default function App() {
             {/* TODO: We can define a parent component that dictates styling of children */}
             {/* Difficult to modularise, but all the elements in this component share a parent. */}
             <StudyPlanInputFields stateFunctions={stateFunctions} errors={errors}
-                                  onImport={generateCalendar} onGenerate={generateCalendar}
+                                  onImport={handleImportCalendar} onGenerate={generateCalendar}
                                   onShowAssignmentHelp={() => openModal('assignment')}
             />
 

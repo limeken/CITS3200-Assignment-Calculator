@@ -21,12 +21,17 @@ interface InputFieldProps {
     onShowAssignmentHelp: () => void,
 }
 
+// TODO: Keep the state of the current selected calendar in component memory
 // Component Wrapping all input fields
 const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, errors, onGenerate, onImport, onShowAssignmentHelp})=> {
 
     /* Per-value assignment state is in this component now - Max */
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
+
+    // Build the items from TASKS
+    const items = useMemo<AssignmentType[]>(() => TASKS, []);
+    const [selected, setSelected] = useState<AssignmentType>(items.find(i => i.name === "Essay") ?? items[0]);
 
     /* TODO: date validation for start and end */
     /* validate using string from ISO conversion */
@@ -59,15 +64,11 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
     }
 
     // Component that displays input for assessment type
-    const AssessmentTypeInput: React.FC<{ error: boolean; stateFunctions: StateFunctions }> = ({ error, stateFunctions }) => {
-        // Build the items from TASKS
-        const items = useMemo<AssignmentType[]>(() => TASKS, []);
-
-        const [selected, setSelected] = useState<AssignmentType>(items.find(i => i.name === "Essay") ?? items[0]);
+    const AssessmentTypeInput: React.FC<{ error: boolean}> = ({ error }) => {
 
         const onChange = (it: AssignmentType) => {
             setSelected(it);
-            stateFunctions.setSelectedType(it.name);
+            stateFunctions.setSelectedType(it.name)
         };
 
         return (
@@ -120,6 +121,7 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
                             </ListboxOptions>
                         </div>
                     </Listbox>
+                    {error && null}
                 </div>
             </Field>
         );
@@ -178,6 +180,7 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
                                 className="mt-1 w-full rounded-xl bg-white/20 px-3 py-2"
                             />
                         </label>
+                        {error && null}
                     </div>
                 )
             ;}

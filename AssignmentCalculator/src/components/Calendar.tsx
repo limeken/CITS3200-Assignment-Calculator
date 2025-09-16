@@ -1,7 +1,6 @@
 // calendar element, all by me
-import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from "react";
-import ICAL from "ical.js";
-import {type Assignment, sem2, parseIcsCalendar, validateCalendar, type CalendarColor} from "./CalendarTypes.ts";
+import React, {forwardRef, useCallback, useImperativeHandle, useState} from "react";
+import {type Assignment, sem2, parseIcsCalendar, type CalendarColor} from "./CalendarTypes.ts";
 import {PlusIcon} from "@heroicons/react/24/solid";
 import clsx from "clsx";
 
@@ -46,7 +45,7 @@ const CalendarWeeks: React.FC<{ withSpacer?: boolean }> = ({ withSpacer = false 
 );
 
 
-const RowLabel: React.FC<{ code?: string, color?: CalendarColor }> = ({ code, color }) => (
+const RowLabel: React.FC<{ code?: string, color: CalendarColor }> = ({ code, color }) => (
     <div className="w-36 h-16 shrink-0 mr-2">
         <div className={clsx("w-full h-full flex items-center justify-center",
                             "rounded-md border-2 font-semibold text-white",

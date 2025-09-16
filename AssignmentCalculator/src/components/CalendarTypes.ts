@@ -1,7 +1,7 @@
 // Maxwell Slater 2025 CalendarTypes.ts
 // This script defines all the types, interfaces, and constants used by the Calendar component
 // Included are helper functions for unpacking data passed from other sources
-import ICAL from "ical.js";
+import ICAL from "ical.js"
 import { differenceInDays } from "date-fns";
 
 /* TYPES INTERFACES AND CLASSES */
@@ -26,20 +26,22 @@ export class SemesterDates {
 
 }
 
+export interface AssignmentEvent {
+    uid: string | null;
+    summary: string | null;
+    description: string | null;
+    status: string | null;
+    start: Date | null;
+    end: Date | null;
+    tzid: string | null;
+}
+
 export interface Assignment {
     name: string;
     color: CalendarColor;
     start: Date | null;
     end: Date | null;
-    events: Array<{
-        uid: string | null;
-        summary: string | null;
-        description: string | null;
-        status: string | null;
-        start: Date | null;
-        end: Date | null;
-        tzid: string | null;
-    }>
+    events: Array<AssignmentEvent>
     unitCode?: string;
 }
 
@@ -80,7 +82,7 @@ export async function parseIcsCalendar(
 
     // ---- Events ----
     const vevents = vcal.getAllSubcomponents("vevent");
-    const events = vevents.map((ve: any) => {
+    const events: AssignmentEvent[] = vevents.map((ve: ICAL.Event) => {
         const e = new ICAL.Event(ve);
         const startTime = e.startDate ?? null; // ICAL.Time
         const endTime = e.endDate ?? null;     // ICAL.Time
@@ -95,7 +97,6 @@ export async function parseIcsCalendar(
             uid: e.uid ?? null,
             summary: e.summary ?? null,
             description: e.description ?? null,
-            status: ve.getFirstPropertyValue("status") ?? null,
             start: startTime ? startTime.toJSDate() : null,
             end: endTime ? endTime.toJSDate() : null,
             tzid: eventTzid,
@@ -103,7 +104,7 @@ export async function parseIcsCalendar(
     });
 
     // Sort by start date (nulls last)
-    events.sort((a, b) => {
+    events.sort((a: AssignmentEvent, b: AssignmentEvent) => {
         if (!a.start && !b.start) return 0;
         if (!a.start) return 1;
         if (!b.start) return -1;
