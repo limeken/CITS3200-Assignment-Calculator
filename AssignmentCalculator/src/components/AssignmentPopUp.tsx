@@ -41,15 +41,15 @@ export default function AssignmentPopUp({type,steps}:AssignmentType){
         return (
                 <div className="flex flex-row justify-center w-full h-4/5">
                     {/* Left Navigation Button*/}
-                    <button className = {pagenumber === 0? "invisible basis-1/10":"basis-1/10 self-center"} onClick = {() => setPageNumber((prev)=>{return prev===0?prev:prev-1;})}>
-                        <ChevronLeftIcon className="w-10 h-10 hover:w-12 h-12"/>
+                    <button className = {pagenumber === 0? "invisible basis-1/10":"basis-1/10 self-center transition duration-200 ease-in-out hover:scale-120"} onClick = {() => setPageNumber((prev)=>{return prev===0?prev:prev-1;})}>
+                        <ChevronLeftIcon className="w-10 h-10"/>
                     </button>
 
                     <CurrentPage/>
                     
                     {/*Right Navigation Button*/}
-                    <button className = {pagenumber === steps.length-1? "invisible basis-1/10":"basis-1/10 self-center"} onClick = {() => setPageNumber((prev)=>{return prev===steps.length-1?prev:prev+1;})}>
-                        <ChevronRightIcon className="w-10 h-10 hover:w-12 h-12"/>
+                    <button className = {pagenumber === steps.length-1? "invisible basis-1/10":"basis-1/10 self-center transition duration-200 ease-in-out hover:scale-120"} onClick = {() => setPageNumber((prev)=>{return prev===steps.length-1?prev:prev+1;})}>
+                        <ChevronRightIcon className="w-10 h-10"/>
                     </button>
                 </div>
             )
@@ -58,15 +58,26 @@ export default function AssignmentPopUp({type,steps}:AssignmentType){
     // Button to close the assignment pop-up
     function PopClose(){
         return (
-                <button className="bg-red-600 absolute right-2 w-10 h-10 rounded-lg flex items-center justify-center flex-none hover:bg-red-900" onClick={()=>setPopUp(false)}>
-                    <XMarkIcon className = "h-8 w-8 text-white hover:h-9 w-9" />
+                <button className="bg-red-600 absolute right-2 w-10 h-10 rounded-lg flex items-center justify-center shadow-sm shadow-black/50 hover:bg-red-900 transition duration-300 ease-in-out hover:scale-110" onClick={()=>setPopUp(false)}>
+                    <XMarkIcon className = "h-8 w-8 text-white" />
                 </button>
         )
     }
 
+    // Displayed when there are additional resources available
+    function NotificationDot(){
+        if(currentStep.resources.length !== 0){
+            return (
+                <>
+                <div className="bg-red-400 rounded-full size-3 absolute top-[-3px] right-[-3px] animate-ping"></div>
+                <div className="bg-red-500 rounded-full size-3 absolute top-[-3px] right-[-3px]"></div>
+                </>
+            )
+        }
+    }
     // Used to display the side menu, which contains external resources
     function AdditionalResources(){
-        const [infoVisible, setInfoVisible] = useState<boolean>(currentStep.resources.length===0?false:true);
+        const [infoVisible, setInfoVisible] = useState<boolean>(false);
         return (
             <div className = "flex flex-row w-1/5 h-1/2">
                 {/* Clever implementation where the main content becomes hidden, pushing the button against the main page*/}
@@ -78,8 +89,9 @@ export default function AssignmentPopUp({type,steps}:AssignmentType){
                     </ul>
                 </div>
                 {/* Toggles between true and false when clicked, dependent on previous state */}
-                <button className="basis-1/10 bg-uwaBlue h-1/8 rounded-r-md relative top-2 text-white font-bold" onClick={()=>{setInfoVisible(!infoVisible)}}>
-                ?
+                <button className="basis-1/10 bg-uwaBlue h-1/8 rounded-r-md top-2 text-white font-bold relative" onClick={()=>{setInfoVisible(!infoVisible)}}>
+                    <NotificationDot/>
+                    ?
                 </button>
             </div>
         )
@@ -89,7 +101,7 @@ export default function AssignmentPopUp({type,steps}:AssignmentType){
         // Toggles between shown and not shown, depending on the variable "showpopup"
         <div className={showpopup===true?"bg-stone-800/50 text-gray-900 size-full z-50 fixed top-0 left-0 flex flex-row items-center justify-center":"hidden"}>
             <div className="bg-slate-200 text-gray-900 rounded-xl shadow-2xl p-0 relative w-1/3 h-3/4 z-51">
-                <div className="flex flex-row items-center justify-center relative h-1/10 w-full bg-uwaBlue py-2 rounded-t-xl shadow-xl">
+                <div className="flex flex-row items-center justify-center relative h-1/10 w-full bg-uwaBlue py-2 rounded-t-xl shadow-sm shadow-black">
                     <h2 className = "text-white font-bold">CITS3200 - Assignment 1</h2>
                     {/* Close Button*/}
                     <PopClose/>
