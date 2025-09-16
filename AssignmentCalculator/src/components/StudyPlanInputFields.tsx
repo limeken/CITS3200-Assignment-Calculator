@@ -8,6 +8,7 @@ import type { StateFunctions } from "../App.tsx";
 import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
 import React, {useEffect, useMemo, useState} from "react";
 import clsx from "clsx";
+import {QuestionMarkCircleIcon} from "@heroicons/react/24/outline";
 
 // Declare types for the arguments provided to component
 interface InputFieldProps {
@@ -15,10 +16,13 @@ interface InputFieldProps {
     errors: Array<boolean>,
     onGenerate: () => Promise<void> | void,
     onImport: () => Promise<void> | void,
+
+    // temp function for assignment help layout
+    onShowAssignmentHelp: () => void,
 }
 
 // Component Wrapping all input fields
-const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, errors, onGenerate, onImport})=> {
+const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, errors, onGenerate, onImport, onShowAssignmentHelp})=> {
 
     /* Per-value assignment state is in this component now - Max */
     const [startDate, setStartDate] = useState<Date | null>(null);
@@ -70,36 +74,53 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
             <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4">
                 <Label className="block text-sm font-semibold text-gray-900 mb-2">Assessment type</Label>
 
-                <Listbox value={selected} onChange={onChange}>
-                    <div className="relative mt-1">
-                        <ListboxButton id="assessment-type" className="grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500">
-                            <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
-                                <selected.Icon className="size-5 shrink-0 text-blue-600"/>
-                                <span className="block truncate">{selected.name}</span>
-                            </span>
-                            <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400"/>
-                        </ListboxButton>
+                <div className={"flex w-full flex-row items-center align-center"}>
+                    <button
+                        type="button"
+                        onClick={onShowAssignmentHelp}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onShowAssignmentHelp(); }
+                        }}
+                        aria-label="Show assignment help"
+                        title="Show assignment help"
+                        className="inline-flex items-center justify-center"
+                    >
+                        <QuestionMarkCircleIcon className="h-6 w-6 cursor-pointer text-slate-500 hover:text-slate-800" />
+                    </button>
+                    <Listbox value={selected} onChange={onChange}>
+                        <div className="relative mt-1 ml-2 w-full">
+                            <ListboxButton id="assessment-type"
+                                           className="grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500">
+                                <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
+                                    <selected.Icon className="size-5 shrink-0 text-blue-600"/>
+                                    <span className="block truncate">{selected.name}</span>
+                                </span>
+                                <ChevronUpDownIcon aria-hidden="true"
+                                                   className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400"/>
+                            </ListboxButton>
 
-                        <ListboxOptions
-                            className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
-                            {items.map((it) => (
-                                <ListboxOption key={it.id} value={it}
-                                    className="group relative cursor-default py-2 pr-9 pl-3 text-gray-900 select-none data-focus:bg-blue-100 data-focus:outline-hidden">
-                                    <div className="flex items-center">
-                                        <it.Icon className="size-5 shrink-0 text-blue-600"/>
-                                        <span className="ml-3 block truncate font-normal group-data-selected:font-semibold">
-                                            {it.name}
+                            <ListboxOptions
+                                className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
+                                {items.map((it) => (
+                                    <ListboxOption key={it.id} value={it}
+                                                   className="group relative cursor-default py-2 pr-9 pl-3 text-gray-900 select-none data-focus:bg-blue-100 data-focus:outline-hidden">
+                                        <div className="flex items-center">
+                                            <it.Icon className="size-5 shrink-0 text-blue-600"/>
+                                            <span
+                                                className="ml-3 block truncate font-normal group-data-selected:font-semibold">
+                                                {it.name}
+                                            </span>
+                                        </div>
+                                        <span
+                                            className="absolute inset-y-0 right-0 hidden items-center pr-4 text-blue-600 group-data-selected:flex group-data-focus:text-blue-700">
+                                            <CheckIcon aria-hidden="true" className="size-5"/>
                                         </span>
-                                    </div>
-                                    <span className="absolute inset-y-0 right-0 hidden items-center pr-4 text-blue-600 group-data-selected:flex group-data-focus:text-blue-700">
-                                        <CheckIcon aria-hidden="true" className="size-5"/>
-                                    </span>
-                                </ListboxOption>
-                            ))}
-                        </ListboxOptions>
-                    </div>
-                </Listbox>
-                {error ? <p className="mt-2 text-sm text-red-600">Please choose an assessment type.</p> : null}
+                                    </ListboxOption>
+                                ))}
+                            </ListboxOptions>
+                        </div>
+                    </Listbox>
+                </div>
             </Field>
         );
     };

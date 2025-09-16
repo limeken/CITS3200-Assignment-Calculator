@@ -1,28 +1,20 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import React, {useCallback, useRef, useState} from "react";
 import "./index.css";
-import {testRows} from "./components/testdata.ts";
-import {DocumentTextIcon, ClipboardDocumentListIcon, PresentationChartBarIcon, AcademicCapIcon, BeakerIcon, CubeIcon, QuestionMarkCircleIcon, RectangleStackIcon,} from "@heroicons/react/24/solid";
+import {DocumentTextIcon, BeakerIcon, CubeIcon } from "@heroicons/react/24/solid";
 
 // Import webiste components from components subfolder
-import AssignmentCalendar from "./components/AssignmentCalendar.tsx";
 import UniversityBanner from "./components/UniversityBanner.tsx"
-import InstructionsPage from "./components/InstructionsPage.tsx"
+import InstructionsModal from "./components/InstructionsModal.tsx"
 import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
-import AssignmentPopUp from "./components/AssignmentPopUp.tsx";
+import AssignmentModal from "./components/AssignmentModal.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
 import {
     type Assignment,
-    calendarColors,
-    parseIcsCalendar,
     pickRandomColor,
     validateCalendar
 } from "./components/CalendarTypes.ts";
-import {PlusIcon} from "@heroicons/react/24/solid";
 import SubmissionModal from "./components/SubmissionModal.tsx";
-
-// Each assignment to be added to the assignment planner
-type ScheduleItem = { task: string; date: string };
 
 // Object type that stores compatible assignment types
 export interface AssignmentType {
@@ -73,10 +65,19 @@ export default function App() {
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
 
-    // modal object details
-    const [showModal, setShowModal] = useState(false)
+    // submission modal details (TODO: move this into the submission modal element)
     const [assignmentName, setAssignmentName] = useState("");
     const [unitCode, setUnitCode] = useState("");
+
+    // block-scoped type ModalKey determines which modal is available. Modal open/close behaviour is handled by close/openmodal.
+    type ModalKey = 'instructions' | 'assignment' | 'submission';
+    const [modals, setModals] = useState<Record<ModalKey, boolean>>({
+        instructions: false,
+        assignment: false,
+        submission: false,
+    });
+    const openModal = (key: ModalKey) => setModals({ instructions: false, assignment: false, submission: false, [key]: true });
+    const closeModal = (key: ModalKey) => setModals((prev) => ({...prev, [key]: false}))
 
     // Object that stores all state functions
     const stateFunctions: StateFunctions = {
@@ -107,7 +108,7 @@ export default function App() {
             setErrors(new_errors);
             return;
         }
-        setShowModal(true);
+        openModal('submission');
     }, [validAssignment]);
 
     const handleModalSubmit = async () => {
@@ -126,7 +127,7 @@ export default function App() {
         await calRef.current?.addAssignment(next);
         console.log(next)
 
-        setShowModal(false);
+        closeModal('submission');
         setAssignmentName("");
         setUnitCode("");
     }
@@ -138,26 +139,40 @@ export default function App() {
             <UniversityBanner/>
             {/* Application Title Bar */}
             <ApplicationHeading/>
-            {/* User Instructions Button & Page*/}
-            <InstructionsPage/>
-            {/* Section for Input Fields */}
 
+            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-4">
+                <button
+                    type="button"
+                    onClick={() => openModal('instructions')}
+                    className="inline-flex items-center rounded-md bg-uwaBlue px-3 py-2 text-white hover:bg-slate-700"
+                >
+                    View instructions
+                </button>
+            </div>
+
+            {/* Section for Input Fields */}
             {/* TODO: We can define a parent component that dictates styling of children */}
             {/* Difficult to modularise, but all the elements in this component share a parent. */}
-            <StudyPlanInputFields stateFunctions={stateFunctions} errors={errors} onImport={generateCalendar} onGenerate={generateCalendar}/>
+            <StudyPlanInputFields stateFunctions={stateFunctions} errors={errors}
+                                  onImport={generateCalendar} onGenerate={generateCalendar}
+                                  onShowAssignmentHelp={() => openModal('assignment')}
+            />
 
             <section className={"mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6"}>
                 <div className="bg-slate-200 rounded-xl shadow-soft p-4">
                     <Calendar ref={calRef}/>
                 </div>
             </section>
-            {/* Modal */}
-            <SubmissionModal isOpen={showModal}
+
+            {/* Modal Stuff */}
+            <SubmissionModal isOpen={modals.submission} onClose={() => closeModal('submission')}
                     assignmentName={assignmentName} setAssignmentName={setAssignmentName}
                     unitCode={unitCode} setUnitCode={setUnitCode}
-                    onSubmit={handleModalSubmit} onClose={() => setShowModal(false)}
+                    onSubmit={handleModalSubmit}
             />
-            <AssignmentPopUp />
+            {/* User Instructions Button & Page*/}
+            <InstructionsModal isOpen={modals.instructions} onClose={() => closeModal('instructions')} />
+            <AssignmentModal isOpen={modals.assignment} onClose={() => closeModal('assignment')}/>
         </>
     );
 }

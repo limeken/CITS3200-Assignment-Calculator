@@ -77,7 +77,7 @@ const AssignmentRow: React.FC<{ assignment: Assignment }> = ({ assignment }) => 
                         )}
                     />
                 );
-            })}xw
+            })}
         </div>
     );
 };
