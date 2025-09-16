@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import "./index.css";
 import {testRows} from "./components/testdata.ts";
+import {DocumentTextIcon, ClipboardDocumentListIcon, PresentationChartBarIcon, AcademicCapIcon, BeakerIcon, CubeIcon, QuestionMarkCircleIcon, RectangleStackIcon,} from "@heroicons/react/24/solid";
 
 // Import webiste components from components subfolder
 import AssignmentCalendar from "./components/AssignmentCalendar.tsx";
@@ -23,7 +24,12 @@ import SubmissionModal from "./components/SubmissionModal.tsx";
 type ScheduleItem = { task: string; date: string };
 
 // Object type that stores compatible assignment types
-type TaskMap = Record<string, string[]>;
+export interface AssignmentType {
+    id: number;
+    name: string;
+    Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    tasks: Array<string>;
+}
 
 export type StateFunctions = {
     setSelectedType: (name: string) => void,
@@ -32,16 +38,26 @@ export type StateFunctions = {
 }
 
 // Store assignment breakdowns here
-export const TASKS: TaskMap = {
-    Essay: [
-        "Understand the question",
-        "Initial research & sources",
-        "Draft outline",
-        "Write body paragraphs",
-        "Write intro & conclusion",
-        "Edit & proofread",
-    ]
-};
+export const TASKS: Array<AssignmentType> = [
+    {
+        id: 1,
+        name: "Essay",
+        Icon: DocumentTextIcon,
+        tasks: ["Understand the question", "Initial research & sources", "Draft outline", "Write body paragraphs", "Write intro & conclusion", "Edit & proofread"]
+    },
+    {
+        id: 2,
+        name: "Labsheet",
+        Icon: BeakerIcon,
+        tasks: ["I dont know", "what this really entails", "Im sure it's something useful."]
+    },
+    {
+        id: 3,
+        name: "Project",
+        Icon: CubeIcon,
+        tasks: ["Sprint 1", "Sprint 2", "Sprint 3", "Secret final sprint"]
+    }
+];
 
 /* a default (empty) assignment to fill the state with. Useful for instancing additional objects */
 const DEFAULT: Assignment = {
