@@ -1,10 +1,12 @@
-import { TASKS } from "../App.tsx";
+import { TASKS, type AssignmentType } from "../App.tsx";
 import { parseISO, format } from "date-fns";
+import {Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions,} from "@headlessui/react";
+import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
 // States for each input field
 import type { StateFunctions } from "../App.tsx";
-import { ArrowDownTrayIcon, PlusIcon } from "@heroicons/react/24/solid";
-import React, {useEffect, useRef, useState} from "react";
+import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
+import React, {useEffect, useMemo, useState} from "react";
 import clsx from "clsx";
 
 // Declare types for the arguments provided to component
@@ -52,27 +54,55 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
         return flashing;
     }
 
-    // Component that displays input for assignment type
-    const AssessmentTypeInput: React.FC<{error: boolean}> = ( {error}) =>{
-        return  (
-            <div className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4">
-                <h2 className="text-lg font-semibold mb-3">Assessment Type</h2>
-                {/*Input for assessment type is linked to its state, its handler linked to the state function*/}
-                <select
-                    value={"Essay"}
-                    onChange={(e) => stateFunctions.setSelectedType(e.target.value)}
-                    className="w-full rounded-xl px-4 py-3 bg-white/20"
-                >
-                    {/*Creates the input field that lists available assignments*/}
-                    {Object.keys(TASKS).map((k) => (
-                        <option key={k} value={k}>
-                            {k}
-                        </option>
-                    ))}
-                </select>
-            </div>
+    // Component that displays input for assessment type
+    const AssessmentTypeInput: React.FC<{ error: boolean; stateFunctions: StateFunctions }> = ({ error, stateFunctions }) => {
+        // Build the items from TASKS
+        const items = useMemo<AssignmentType[]>(() => TASKS, []);
+
+        const [selected, setSelected] = useState<AssignmentType>(items.find(i => i.name === "Essay") ?? items[0]);
+
+        const onChange = (it: AssignmentType) => {
+            setSelected(it);
+            stateFunctions.setSelectedType(it.name);
+        };
+
+        return (
+            <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4">
+                <Label className="block text-sm font-semibold text-gray-900 mb-2">Assessment type</Label>
+
+                <Listbox value={selected} onChange={onChange}>
+                    <div className="relative mt-1">
+                        <ListboxButton id="assessment-type" className="grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500">
+                            <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
+                                <selected.Icon className="size-5 shrink-0 text-blue-600"/>
+                                <span className="block truncate">{selected.name}</span>
+                            </span>
+                            <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400"/>
+                        </ListboxButton>
+
+                        <ListboxOptions
+                            className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
+                            {items.map((it) => (
+                                <ListboxOption key={it.id} value={it}
+                                    className="group relative cursor-default py-2 pr-9 pl-3 text-gray-900 select-none data-focus:bg-blue-100 data-focus:outline-hidden">
+                                    <div className="flex items-center">
+                                        <it.Icon className="size-5 shrink-0 text-blue-600"/>
+                                        <span className="ml-3 block truncate font-normal group-data-selected:font-semibold">
+                                            {it.name}
+                                        </span>
+                                    </div>
+                                    <span className="absolute inset-y-0 right-0 hidden items-center pr-4 text-blue-600 group-data-selected:flex group-data-focus:text-blue-700">
+                                        <CheckIcon aria-hidden="true" className="size-5"/>
+                                    </span>
+                                </ListboxOption>
+                            ))}
+                        </ListboxOptions>
+                    </div>
+                </Listbox>
+                {error ? <p className="mt-2 text-sm text-red-600">Please choose an assessment type.</p> : null}
+            </Field>
         );
-    }
+    };
 
     // Component that displays the inputs for start & end dates, for a given assignment
     const AssessmentDateInput: React.FC<{error: Array<boolean>}> = ( {error}) =>{
@@ -107,7 +137,7 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
                             </label>
                         </div>
                     </div>
-                )  
+                )
             ;}
 
     // Component for entering number of hours dedicated to assignment (currently considered redundant)
