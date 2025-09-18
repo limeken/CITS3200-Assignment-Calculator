@@ -4,6 +4,7 @@ import {DocumentTextIcon, BeakerIcon, CubeIcon } from "@heroicons/react/24/solid
 
 // Import webiste components from components subfolder
 import UniversityBanner from "./components/UniversityBanner.tsx"
+import SubmissionBanner from "./components/SubmissionBanner.tsx"
 import InstructionsModal from "./components/InstructionsModal.tsx"
 import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
@@ -60,7 +61,7 @@ const DEFAULT: Assignment = {
 
 // Main application component
 export default function App() {
-
+    const [showNotification, setNotification] = useState<boolean>(true);
     const [validAssignment, setValidAssignment] = useState<Assignment>(DEFAULT);
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
@@ -76,8 +77,8 @@ export default function App() {
         assignment: false,
         submission: false,
     });
-    const openModal = (key: ModalKey) => setModals({ instructions: false, assignment: false, submission: false, [key]: true });
-    const closeModal = (key: ModalKey) => setModals((prev) => ({...prev, [key]: false}))
+    const openModal = (key: ModalKey) => setModals(prev => {return {...prev, [key]:true}});
+    const closeModal = (key: ModalKey) => setModals(prev => {return {...prev, [key]: false}});
 
     // Object that stores all state functions
     const stateFunctions: StateFunctions = {
@@ -153,6 +154,7 @@ export default function App() {
 
             {/* Application Title Bar */}
             <ApplicationHeading/>
+            <SubmissionBanner showNotification={showNotification} setNotification={setNotification}/>
 
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-4">
                 <button
