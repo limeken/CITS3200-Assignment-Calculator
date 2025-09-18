@@ -4,9 +4,7 @@ import {DocumentTextIcon, BeakerIcon, CubeIcon } from "@heroicons/react/24/solid
 
 // Import webiste components from components subfolder
 import UniversityBanner from "./components/UniversityBanner.tsx"
-import SubmissionBanner from "./components/SubmissionBanner.tsx"
 import InstructionsModal from "./components/InstructionsModal.tsx"
-import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
 import AssignmentModal from "./components/AssignmentModal.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
@@ -150,11 +148,7 @@ export default function App() {
     return (
         <>
             {/* University Banner */}
-            <UniversityBanner/>
-
-            {/* Application Title Bar */}
-            <ApplicationHeading/>
-            <SubmissionBanner showNotification={showNotification} setNotification={setNotification}/>
+            <UniversityBanner showNotification={showNotification} setNotification = {setNotification} successful={true}/>
 
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-4">
                 <button
