@@ -7,6 +7,7 @@ import UniversityBanner from "./components/UniversityBanner.tsx"
 import InstructionsModal from "./components/InstructionsModal.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
 import AssignmentModal from "./components/AssignmentModal.tsx";
+import FormatSwitch from "./components/FormatSwitch.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
 import {
     type Assignment, type AssignmentEvent, parseIcsCalendar,
@@ -59,8 +60,11 @@ const DEFAULT: Assignment = {
 
 // Main application component
 export default function App() {
+    const [calendarFormat, changeFormat] = useState<boolean>(true);
     const [showNotification, setNotification] = useState<boolean>(true);
+
     const [validAssignment, setValidAssignment] = useState<Assignment>(DEFAULT);
+
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
 
@@ -167,7 +171,7 @@ export default function App() {
                                   onImport={handleImportCalendar} onGenerate={generateCalendar}
                                   onShowAssignmentHelp={() => openModal('assignment')}
             />
-
+            <FormatSwitch calendarFormat={calendarFormat} changeFormat={changeFormat}/>
             <section className={"mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6"}>
                 <div className="bg-slate-200 rounded-xl shadow-soft p-4">
                     <Calendar ref={calRef}/>
