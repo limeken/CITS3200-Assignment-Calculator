@@ -9,6 +9,11 @@ import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
 import AssignmentModal from "./components/AssignmentModal.tsx";
 import FormatSwitch from "./components/FormatSwitch.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
+
+// The two different display formats you can toggle between
+import CalendarFormat from "./components/CalendarFormat.tsx";
+import TextualFormat from "./components/TextualFormat.tsx";
+
 import {
     type Assignment, type AssignmentEvent, parseIcsCalendar,
     pickRandomColor,
@@ -60,7 +65,10 @@ const DEFAULT: Assignment = {
 
 // Main application component
 export default function App() {
-    const [calendarFormat, changeFormat] = useState<boolean>(true);
+    // Used to toggle between formats
+    const [isCalendarFormat, changeFormat] = useState<boolean>(true);
+
+    // Used to show the outcome of adding an assessment via a banner
     const [showNotification, setNotification] = useState<boolean>(true);
 
     const [validAssignment, setValidAssignment] = useState<Assignment>(DEFAULT);
@@ -171,12 +179,13 @@ export default function App() {
                                   onImport={handleImportCalendar} onGenerate={generateCalendar}
                                   onShowAssignmentHelp={() => openModal('assignment')}
             />
-            <FormatSwitch calendarFormat={calendarFormat} changeFormat={changeFormat}/>
-            <section className={"mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6"}>
-                <div className="bg-slate-200 rounded-xl shadow-soft p-4">
-                    <Calendar ref={calRef}/>
-                </div>
-            </section>
+
+            {/* Toggle to switch between calendar and textual formats */}
+            <FormatSwitch isCalendarFormat={isCalendarFormat} changeFormat={changeFormat}/>
+
+            {/* The two different assignment visualisation types*/}
+            <CalendarFormat calRef = {calRef} isCalendarFormat = {isCalendarFormat}/>
+            <TextualFormat isCalendarFormat={isCalendarFormat}/>
 
             {/* Modal Stuff */}
             <SubmissionModal isOpen={modals.submission} onClose={() => closeModal('submission')}
