@@ -1,7 +1,8 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
+// Interfaces defining how assignments should be represented as JSON objects
 export interface AssignmentSteps {
     step: number;
     name: string;
@@ -72,15 +73,19 @@ export interface AssignmentModalProps extends Partial<AssignmentType> {
 * any parent-state changes (e.g. changing step) recreates them, so it wont stay open
 * now they have a stable function identity and can preserve a state
 * */
+
+// Dot displayed to show that there are additional resources avaialble
 const NotificationDot: React.FC<{show: boolean}> = ({ show }) => !show ? null : (
         <>
-            <span className="pointer-events-none absolute -right-2 -top-2 h-5 w-5 rounded-full bg-red-500 ring-2 ring-white z-10" />
-            <span className="pointer-events-none absolute -right-2 -top-2 h-5 w-5 rounded-full bg-red-400 animate-ping z-0" />
+            <span className="pointer-events-none absolute -right-1 -top-1 size-4 rounded-full bg-red-500 ring-1 ring-red-200 z-10" />
+            <span className="pointer-events-none absolute -right-1 -top-1 size-4 rounded-full bg-red-400 animate-ping z-0" />
         </>
 )
+
+// Component representing the additional resource panel that comes out of the main modal
 const AdditionalResources: React.FC<{open: boolean, onToggle: () => void, resources: string[]}> = ({ open, onToggle, resources }) => (
     <div className="absolute right-0 top-16 h-72 z-[1] pointer-events-auto">
-        <div className="relative h-full">
+        <div className="relative size-full">
             {/* Slide-out panel sits UNDER the main panel */}
             <div
                 className={`absolute right-0 top-0 z-[1] h-full w-72 translate-x-full rounded-br-md bg-slate-300 p-3 text-gray-900 shadow-xl transition-transform duration-300 ease-out pointer-events-auto ${open ? '' : '!translate-x-0'}`}
@@ -97,19 +102,19 @@ const AdditionalResources: React.FC<{open: boolean, onToggle: () => void, resour
 
             {/* Tab rides with panel and carries the dot; pinned to the modal's right edge */}
             <button
-                className={`absolute z-20 left-0 top-0 z-[3] flex h-10 w-10 items-center justify-center rounded-r-md bg-uwaBlue hover:bg-slate-400 font-bold text-white shadow-sm shadow-black/30 transition-transform duration-300 ease-out pointer-events-auto ${open ? 'translate-x-[18rem]' : 'translate-x-0'}`}
+                className={`absolute z-20 left-0 top-0 z-[3] flex h-20 w-10 items-center justify-center rounded-r-md bg-uwaBlue hover:bg-slate-400 font-bold text-white shadow-sm shadow-black/30 transition-transform duration-300 ease-out pointer-events-auto ${open ? 'translate-x-[18rem]' : 'translate-x-0'}`}
                 onClick={onToggle}
                 type="button"
                 aria-label="Toggle additional resources"
             >
-                        <span className="relative inline-flex">
-                            <NotificationDot show={resources.length > 0} />?
-                        </span>
+                <NotificationDot show={resources.length > 0} />
+                <span>?</span>
             </button>
         </div>
     </div>
 );
 
+// Final exported modal component, fully put together from smaller components
 export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                                                                     type = 'Written Assessment',
                                                                     steps = writtenSteps,
@@ -117,8 +122,12 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                                                                     onClose,
                                                                     title,
                                                                 }) => {
+
+    // Represents the current step page for the given assignment
     const [pagenumber, setPageNumber] = useState<number>(0);
     const currentStep = steps[pagenumber];
+
+    // State representing if resources menu should be shown or not
     const [resourcesOpen, setResourcesOpen] = useState<boolean>(false);
 
     // Reset to first page every resourcesOpen
@@ -126,6 +135,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
         if (isOpen) setPageNumber(0);
     }, [isOpen]);
 
+    // Renders the dots representing pages, makes the dot for the current page indetifiable
     function CreatePageDots({ dots }: { dots: number }) {
         return (
             <div className="pointer-events-none absolute bottom-3 left-1/2 flex h-5 w-1/2 -translate-x-1/2 transform justify-center gap-2">
@@ -139,6 +149,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
         );
     }
 
+    // Component that renders the details assocaited with a particular assignment step
     function CurrentPage() {
         return (
             <div className="basis-4/5">
@@ -157,6 +168,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
         );
     }
 
+    // Combines the current step's information with navigation buttons to switch between pages
     function DisplayBody() {
         return (
             <div className="flex h-4/5 w-full flex-row justify-center">
@@ -204,6 +216,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
     return (
         <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={onClose}>
+                {/* Specifies the animation for the modal background */}
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-200"
@@ -218,6 +231,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
 
                 <div className="fixed inset-0 overflow-y-auto z-10">
                     <div className="flex min-h-full items-center justify-center p-4 z-10">
+                        {/* Specifies the animation for the modal itself */}
                         <Transition.Child
                             as={Fragment}
                             enter="ease-out duration-200"
@@ -227,6 +241,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
+                            {/* Specifies the modal as the clickable area, allowing for the modal to close when clicked off */}
                             <Dialog.Panel className="relative z-40 h-[75vh] w-[33vw] transform rounded-xl bg-slate-200/20 p-0 text-left align-middle shadow-2xl">
                                 <div className="relative z-40 bg-slate-200 rounded-xl h-full">
                                     {/* Header */}
@@ -234,14 +249,6 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                                         <Dialog.Title className="text-white">
                                             {title ?? `CITS3200 - ${type}`}
                                         </Dialog.Title>
-                                        <button
-                                            className="absolute right-2 flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 shadow-sm shadow-black/50 transition duration-300 ease-in-out hover:scale-110 hover:bg-red-900"
-                                            onClick={onClose}
-                                            type="button"
-                                            aria-label="Close"
-                                        >
-                                            <XMarkIcon className="h-8 w-8 text-white" />
-                                        </button>
                                     </div>
 
                                     {/* Body */}
