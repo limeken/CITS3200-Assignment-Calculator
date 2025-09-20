@@ -155,6 +155,255 @@ TEMPLATE = """
 def index():
     return render_template_string(TEMPLATE)
 
+# --- API ADD-ON: paste this below your existing index() and above the __main__ block ---
+from flask import request, jsonify, abort
+import uuid
+from datetime import datetime, date, timedelta
+from pydantic import BaseModel, Field, ValidationError, field_validator
+import re
+
+APP_VERSION = "v1"
+
+# In-memory store (ephemeral)
+_PLANS: dict[str, dict] = {}
+
+ALLOWED_TYPES = {"essay", "report", "lab", "presentation", "exam_prep", "other"}
+UNIT_RE = re.compile(r"^[A-Z]{4}\d{4}$")
+
+class MilestoneModel(BaseModel):
+    name: str
+    date: str  # ISO date (YYYY-MM-DD)
+
+    @field_validator("date")
+    @classmethod
+    def valid_iso_date(cls, v):
+        date.fromisoformat(v)  # raises if bad
+        return v
+
+class AssignmentModel(BaseModel):
+    id: str | None = None
+    unit_code: str = Field(...)
+    title: str = Field(..., min_length=1)
+    type: str = Field(...)
+    start_date: str
+    due_date: str
+    milestones: list[MilestoneModel] | None = None
+
+    @field_validator("unit_code")
+    @classmethod
+    def unit_fmt(cls, v):
+        if not UNIT_RE.match(v):
+            raise ValueError("unit_code must match ^[A-Z]{4}\\d{4}$ (e.g., CITS3200)")
+        return v
+
+    @field_validator("type")
+    @classmethod
+    def type_allowed(cls, v):
+        if v not in ALLOWED_TYPES:
+            raise ValueError(f"type must be one of {sorted(ALLOWED_TYPES)}")
+        return v
+
+    @field_validator("start_date", "due_date")
+    @classmethod
+    def iso_date(cls, v):
+        date.fromisoformat(v)
+        return v
+
+    @field_validator("due_date")
+    @classmethod
+    def start_before_due(cls, v, info):
+        try:
+            sd = date.fromisoformat(info.data["start_date"])
+            dd = date.fromisoformat(v)
+            if not (sd < dd):
+                raise ValueError("start_date must be before due_date")
+        except KeyError:
+            pass
+        return v
+
+class PlanModel(BaseModel):
+    plan_id: str
+    created_utc: str
+    assignments: list[AssignmentModel] = []
+    version: str = APP_VERSION
+
+def _new_id() -> str:
+    return str(uuid.uuid4())
+
+@app.get("/healthz")
+def healthz():
+    return jsonify({"status": "ok", "version": APP_VERSION})
+
+@app.post("/plan")
+def create_plan():
+    body = request.get_json(silent=True) or {}
+    raw_assignments = body.get("assignments", [])
+    # validate assignments
+    try:
+        assignments = [AssignmentModel(**a).model_dump() for a in raw_assignments]
+    except ValidationError as e:
+        return jsonify({"detail": e.errors()}), 422
+    pid = _new_id()
+    plan = PlanModel(
+        plan_id=pid,
+        created_utc=datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        assignments=assignments,
+    ).model_dump()
+    _PLANS[pid] = plan
+    return jsonify({"plan_id": pid}), 201
+
+@app.get("/plan/<plan_id>")
+def get_plan(plan_id: str):
+    plan = _PLANS.get(plan_id)
+    if not plan:
+        abort(404, description="plan not found")
+    return jsonify(plan)
+
+@app.post("/plan/<plan_id>/assignments")
+def add_assignment(plan_id: str):
+    plan = _PLANS.get(plan_id)
+    if not plan:
+        abort(404, description="plan not found")
+    payload = request.get_json(silent=True) or {}
+    if "id" not in payload or not payload["id"]:
+        payload["id"] = _new_id()
+    try:
+        a = AssignmentModel(**payload).model_dump()
+    except ValidationError as e:
+        return jsonify({"detail": e.errors()}), 422
+    plan["assignments"].append(a)
+    return jsonify(a), 201
+
+# --- very simple milestone generator (first pass) ---
+TYPE_TEMPLATES = {
+    "essay":        ["Research", "Outline", "Draft", "Revise", "Finalise"],
+    "report":       ["Gather", "Analyse", "Draft", "Edit", "Finalise"],
+    "lab":          ["Prep", "Experiment", "Analyse", "Writeup"],
+    "presentation": ["Plan", "Draft", "Slides", "Rehearse", "Finalise"],
+    "exam_prep":    ["Plan", "Study", "Practice", "Review"],
+    "other":        ["Start", "Midpoint", "Finalise"],
+}
+
+def distribute_dates(start: date, due: date, n: int) -> list[date]:
+    # even spread across [start, due-1], keep finalise <= 1 day before due
+    span = max((due - start).days - 1, n)  # avoid zero/negative spans
+    return [start + timedelta(days=round(i * span / (n))) for i in range(1, n + 1)]
+
+def generate_for_assignment(a: dict) -> dict:
+    start = date.fromisoformat(a["start_date"])
+    due = date.fromisoformat(a["due_date"])
+    names = TYPE_TEMPLATES.get(a["type"], TYPE_TEMPLATES["other"])
+    dates = distribute_dates(start, due, len(names))
+    # ensure last milestone not after due-1
+    if dates:
+        dates[-1] = min(dates[-1], due - timedelta(days=1))
+    milestones = [{"name": n, "date": d.isoformat()} for n, d in zip(names, dates)]
+    out = dict(a)
+    out["milestones"] = milestones
+    return out
+
+@app.get("/plan/<plan_id>/generate")
+def generate(plan_id: str):
+    plan = _PLANS.get(plan_id)
+    if not plan:
+        abort(404, description="plan not found")
+    assignments = plan.get("assignments", [])
+    # naive stagger: shift milestones for later items by +1 day if collision
+    occupied = set()
+    generated = []
+    for idx, a in enumerate(assignments):
+        g = generate_for_assignment(a)
+        for m in g["milestones"]:
+            d = date.fromisoformat(m["date"])
+            while d.isoformat() in occupied:
+                d += timedelta(days=1)
+            m["date"] = d.isoformat()
+            occupied.add(m["date"])
+        generated.append(g)
+    plan["assignments"] = generated
+    return jsonify({"plan_id": plan_id, "assignments": generated, "version": APP_VERSION})
+# --- end API ADD-ON ---
+
+# ====== PLAN: UPDATE (PUT) & DELETE (DELETE) ======
+
+@app.put("/plan/<plan_id>")
+def update_plan(plan_id: str):
+    """Replace the entire plan payload (assignments validated)."""
+    if plan_id not in _PLANS:
+        abort(404, description="plan not found")
+
+    payload = request.get_json(silent=True) or {}
+    raw_assignments = payload.get("assignments", [])
+
+    # Validate assignments
+    try:
+        assignments = [AssignmentModel(**a).model_dump() for a in raw_assignments]
+    except ValidationError as e:
+        return jsonify({"detail": e.errors()}), 422
+
+    # Keep metadata but replace assignments
+    plan = _PLANS[plan_id]
+    plan["assignments"] = assignments
+    # keep plan_id/created_utc/version unchanged
+    _PLANS[plan_id] = plan
+    return jsonify(plan), 200
+
+
+@app.delete("/plan/<plan_id>")
+def delete_plan(plan_id: str):
+    if _PLANS.pop(plan_id, None) is None:
+        abort(404, description="plan not found")
+    return "", 204
+
+
+# ====== ASSIGNMENT: UPDATE (PUT) & DELETE (DELETE) ======
+
+def _get_plan_or_404(plan_id: str) -> dict:
+    plan = _PLANS.get(plan_id)
+    if not plan:
+        abort(404, description="plan not found")
+    return plan
+
+def _find_assignment_index(plan: dict, assignment_id: str) -> int:
+    for i, a in enumerate(plan.get("assignments", [])):
+        if a.get("id") == assignment_id:
+            return i
+    return -1
+
+@app.put("/plan/<plan_id>/assignments/<assignment_id>")
+def update_assignment(plan_id: str, assignment_id: str):
+    plan = _get_plan_or_404(plan_id)
+    idx = _find_assignment_index(plan, assignment_id)
+    if idx == -1:
+        abort(404, description="assignment not found")
+
+    incoming = request.get_json(silent=True) or {}
+    incoming["id"] = assignment_id  # id is path-trusted
+
+    # Validate merged assignment (allow partial fields)
+    # Start with existing, overlay incoming
+    merged = dict(plan["assignments"][idx])
+    merged.update(incoming)
+    try:
+        validated = AssignmentModel(**merged).model_dump()
+    except ValidationError as e:
+        return jsonify({"detail": e.errors()}), 422
+
+    plan["assignments"][idx] = validated
+    return jsonify(validated), 200
+
+
+@app.delete("/plan/<plan_id>/assignments/<assignment_id>")
+def delete_assignment(plan_id: str, assignment_id: str):
+    plan = _get_plan_or_404(plan_id)
+    idx = _find_assignment_index(plan, assignment_id)
+    if idx == -1:
+        abort(404, description="assignment not found")
+
+    del plan["assignments"][idx]
+    return "", 204
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 
