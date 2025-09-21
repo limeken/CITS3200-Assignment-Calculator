@@ -37,8 +37,8 @@ export interface Assignment {
         name: string;
         percentage: number;
         instructions?: string[] | null;
+        resources?: string[];
     }>
-    resources?: string[];
 }
 
 // shitty adaption of https://icalendar.org/iCalendar-RFC-5545/3-6-1-event-component.html
