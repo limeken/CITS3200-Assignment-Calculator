@@ -4,7 +4,7 @@ import "./index.css";
 // Import webiste components from components subfolder
 import UniversityBanner from "./components/UniversityBanner.tsx"
 import InstructionsModal from "./components/InstructionsModal.tsx"
-import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
+import NewAssignmentButton from "./components/NewAssignmentButton.tsx"
 import AssignmentModal from "./components/AssignmentModal.tsx";
 import FormatSwitch from "./components/FormatSwitch.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
@@ -20,37 +20,33 @@ import {
     validateCalendar
 } from "./components/CalendarTypes.ts";
 import SubmissionModal from "./components/SubmissionModal.tsx";
-import { assignments } from "./components/testdata.ts";
 
 export type StateFunctions = {
-    setSelectedType: (name: string) => void,
+    setSelectedType: (type: string) => void,
+    setName: (name: string) => void,
+    setCode: (code: string) => void,
     setStartDate: (start: Date) => void,
     setEndDate: (end: Date) => void,
 }
 
-/* a default (empty) assignment to fill the state with. Useful for instancing additional objects */
-const DEFAULT: AssignmentCalendar = {
-    name: "Essay", color: "red", start: null, end: null, events: new Array<AssignmentEvent>, assignmentType: "Essay"
+const createAssignmentCalendar = () => {
+    const newCalendar:AssignmentCalendar = {name: "", color: pickRandomColor(), start: null, end: null, events: new Array<AssignmentEvent>, assignmentType: "Essay"};
+    return newCalendar;
 }
 
 
 // Main application component
 export default function App() {
-
+    
     // Used to toggle between formats
     const [isCalendarFormat, changeFormat] = useState<boolean>(true);
 
     // Used to show the outcome of adding an assessment via a banner
     const [showNotification, setNotification] = useState<boolean>(true);
 
-    const [validAssignment, setValidAssignment] = useState<AssignmentCalendar>(DEFAULT);
-
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
 
-    // submission modal state details (TODO: move this into the submission modal element)
-    const [assignmentName, setAssignmentName] = useState("");
-    const [unitCode, setUnitCode] = useState("");
 
     // block-scoped type ModalKey determines which modal is available. Modal open/close behaviour is handled by close/openmodal.
     type ModalKey = 'instructions' | 'assignment' | 'submission';
@@ -62,59 +58,15 @@ export default function App() {
     const openModal = (key: ModalKey) => setModals(prev => {return {...prev, [key]:true}});
     const closeModal = (key: ModalKey) => setModals(prev => {return {...prev, [key]: false}});
 
-    // Object that stores all state functions
-    const stateFunctions: StateFunctions = {
-        setSelectedType: (assignmentType: string) => {
-            setValidAssignment(prev => ({...prev, assignmentType }));
-            console.log(`set calendar name to: ${assignmentType}`);
-        },
-        setStartDate: (start: Date) => {
-            setValidAssignment(prev => ({...prev, start: start }))
-            console.log(`set calendar start to: ${start}`);
-        },
-        setEndDate: (end: Date) => {
-            setValidAssignment(prev => ({...prev, end: end }))
-            console.log(`set calendar end to: ${end}`);
-        },
-        //setHoursPerDay:setHoursPerDay,
-    };
-
-
-    const generateCalendar = useCallback(() => {
-
-        /* TODO: better validation (i.e. check for more than "not null") for each of these */
-        /* simple validation check, realistically it should happen in the CalendarTypes.ts file */
-
-        // validation function exists in CalendarTypes.ts
-        const new_errors = validateCalendar(validAssignment);
-        if( new_errors.some(ok => !ok)) {
-            setErrors(new_errors);
-            return;
-        }
-        openModal('submission');
-    }, [validAssignment]);
-
-    const handleModalSubmit = async () => {
-        const name = assignmentName.trim()
-        const unit = unitCode.trim()
-        if (!name || !unit) return; //extra guarding
-
-        const next: AssignmentCalendar = {
-            ...validAssignment,
-            name,
-            unitCode: unit,
-            color: pickRandomColor(),
-        };
-
-        setValidAssignment(next);
-        await calRef.current?.addAssignment(next);
-        console.log(next)
-
+    // Called whenever a valid assignment is submitted
+    const handleModalSubmit = async (submission:AssignmentCalendar) => {
+        // Add final validation here...
+        await calRef.current?.addAssignment(submission);
         closeModal('submission');
-        setAssignmentName("");
-        setUnitCode("");
     }
 
+    // Needs reworking
+    /*
     const handleImportCalendar = async () => {
         const parsedCal: AssignmentCalendar = await parseIcsCalendar('/fake_calendar.ics');
         const next: AssignmentCalendar = {
@@ -126,7 +78,9 @@ export default function App() {
         setValidAssignment(next)
         console.log(next)
         await calRef.current?.addAssignment(next);
-    }
+    } 
+    */
+
 
     // This returns the finalised webpage, including all key components
     return (
@@ -143,15 +97,8 @@ export default function App() {
                     View instructions
                 </button>
             </div>
-
-            {/* Section for Input Fields */}
-            {/* TODO: We can define a parent component that dictates styling of children */}
-            {/* Difficult to modularise, but all the elements in this component share a parent. */}
-            <StudyPlanInputFields stateFunctions={stateFunctions} errors={errors}
-                                  onImport={handleImportCalendar} onGenerate={generateCalendar}
-                                  onShowAssignmentHelp={() => openModal('assignment')}
-            />
-
+            {/* Needs working import!!*/}
+            <NewAssignmentButton onImport={/*handleImportCalendar*/ ()=>{}} modalOpenKey={() => openModal('submission')}/>
             {/* Toggle to switch between calendar and textual formats */}
             <FormatSwitch isCalendarFormat={isCalendarFormat} changeFormat={changeFormat}/>
 
@@ -160,14 +107,17 @@ export default function App() {
             <TextualFormat isCalendarFormat={isCalendarFormat}/>
 
             {/* Modal Stuff */}
-            <SubmissionModal isOpen={modals.submission} onClose={() => closeModal('submission')}
-                    assignmentName={assignmentName} setAssignmentName={setAssignmentName}
-                    unitCode={unitCode} setUnitCode={setUnitCode}
-                    onSubmit={handleModalSubmit}
+            <SubmissionModal isOpen={modals.submission} 
+                            onClose={() => closeModal('submission')}
+                            onSubmit={handleModalSubmit}
+                            submission={createAssignmentCalendar()}
+                            errors={errors}
             />
+            
             {/* User Instructions Button & Page*/}
             <InstructionsModal isOpen={modals.instructions} onClose={() => closeModal('instructions')} />
-            <AssignmentModal assignment={assignments[validAssignment.assignmentType]} isOpen={modals.assignment} onClose={() => closeModal('assignment')}/>
+            {/* 0 is a placeholder! */}
+            {/*<AssignmentModal assignment={assignments[0]} isOpen={modals.assignment} onClose={() => closeModal('assignment')}/>*/}
         </>
     );
 }
