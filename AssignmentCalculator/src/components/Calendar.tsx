@@ -1,6 +1,6 @@
 // calendar element, all by me
 import React, {forwardRef, useCallback, useImperativeHandle, useState} from "react";
-import {type Assignment, sem2, parseIcsCalendar, type CalendarColor} from "./CalendarTypes.ts";
+import {type AssignmentCalendar, sem2, parseIcsCalendar, type CalendarColor} from "./CalendarTypes.ts";
 import {PlusIcon} from "@heroicons/react/24/solid";
 import clsx from "clsx";
 
@@ -59,7 +59,7 @@ const RowLabel: React.FC<{ code?: string, color: CalendarColor }> = ({ code, col
 /* Each assignment is declared by it's "Assignment Row" */
 /* By default, we'll render the whole semester */
 
-const AssignmentRow: React.FC<{ assignment: Assignment }> = ({ assignment }) => {
+const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignment }) => {
     const [start, end] = sem2.getAssignmentDates(assignment);
 
     return (
@@ -83,7 +83,7 @@ const AssignmentRow: React.FC<{ assignment: Assignment }> = ({ assignment }) => 
 
 export type CalendarRef = {
     // this is called when a new assignment finishes loading
-    addAssignment: (a: Assignment) => void;
+    addAssignment: (a: AssignmentCalendar) => void;
 }
 
 /*  this initialisation is a bit confusing, so let me explain
@@ -92,10 +92,10 @@ export type CalendarRef = {
 *   so we wrap our component in a forwardRef */
 const Calendar = forwardRef<CalendarRef>((_, ref) => {
 
-    const [assignments, setAssignments] = useState<Assignment[]>([]);
+    const [assignments, setAssignments] = useState<AssignmentCalendar[]>([]);
 
     // this function exposes a callback method
-    const addAssignment = useCallback((a: Assignment) => {
+    const addAssignment = useCallback((a: AssignmentCalendar) => {
         setAssignments((prev) => [...prev, a]);
     }, []) // <- this empty array is the dependency list, a change to any objects in here triggers a re-render
 

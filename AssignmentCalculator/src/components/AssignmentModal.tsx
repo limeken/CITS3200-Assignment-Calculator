@@ -1,70 +1,13 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import type { Assignment } from './CalendarTypes.ts';
 
-// Interfaces defining how assignments should be represented as JSON objects
-export interface AssignmentSteps {
-    step: number;
-    name: string;
-    value: number;
-    instructions: string[];
-    resources: string[];
-}
-
-export interface AssignmentType {
-    type: string;
-    steps: AssignmentSteps[];
-}
-
-// Default written assessment steps
-const writtenSteps: Array<AssignmentSteps> = [
-    { step: 1, name: 'Read instructions', value: 5, instructions: [
-            'Read the full assignment instructions and any associated materials. Read the rubric!',
-            'Pay attention to specific details such as number/type of sources needed, suggested structure, and referencing style',
-            'Ask clarifying questions if you are unsure about the instructions',
-        ], resources: [] },
-    { step: 2, name: 'Break down question', value: 5, instructions: [
-            'Break down the assignment question and highlight key words',
-            'Consider the task words (i.e. argue, summarise, describe) to determine exactly what you are being asked to do',
-            'Think about the topic, and about refining the scope of what you will write about',
-        ], resources: [
-            'Come along to a drop-in or writing consultation [ASC-WEB] if you want advice on this step',
-        ]},
-    { step: 3, name: 'Do some general research', value: 15, instructions: [
-            'Consider what you already know and what you need to find out',
-            'Do some general reading to get oriented',
-            'Start to form a position you might take in response to the question',
-        ], resources: [
-            'Book a librarian for search strategies [LIB-BOOK]',
-        ]},
-    { step: 4, name: 'Brainstorm and plan your answer', value: 15, instructions: [
-            'Brainstorm topics and sub-topics',
-            'Decide your thesis or position',
-            'Refine scope around time, cohort, location, or aspect',
-            'Plan one main point per paragraph and collect evidence',
-        ], resources: []},
-    { step: 5, name: 'Alternate writing and further research', value: 40, instructions: [
-            'Begin writing and alternate with targeted research',
-            'Keep paragraphs similar in length with clear topic sentences',
-            'Integrate evidence using quotes and paraphrasing',
-        ], resources: [
-            'Academic Skills Guides [ASC-GUID]',
-            'Reference as you go [LIB-BOOK]',
-        ]},
-    { step: 6, name: 'Edit and redraft', value: 20, instructions: [
-            'Edit macro features first, then micro features',
-            'Check alignment to the assignment question and rubric',
-            'Double check references per UWA Style Guide [LIB-REF]',
-        ], resources: []},
-    { step: 7, name: 'Submit', value: 0, instructions: [
-            'Submit and confirm you received a submission receipt',
-        ], resources: []},
-];
-
-export interface AssignmentModalProps extends Partial<AssignmentType> {
+export interface AssignmentModalProps {
     isOpen: boolean;
     onClose: () => void;
     title?: string;
+    assignment: Assignment;
 }
 
 /* Maxwell's Notes on Hoisting
@@ -116,12 +59,13 @@ const AdditionalResources: React.FC<{open: boolean, onToggle: () => void, resour
 
 // Final exported modal component, fully put together from smaller components
 export const AssignmentModal: React.FC<AssignmentModalProps> = ({
-                                                                    type = 'Written Assessment',
-                                                                    steps = writtenSteps,
-                                                                    isOpen,
-                                                                    onClose,
-                                                                    title,
-                                                                }) => {
+    assignment,
+    isOpen,
+    onClose,
+    title,
+}) => {
+
+    const steps = assignment.events;
 
     // Represents the current step page for the given assignment
     const [pagenumber, setPageNumber] = useState<number>(0);
@@ -149,20 +93,24 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
         );
     }
 
-    // Component that renders the details assocaited with a particular assignment step
+    // Component that renders the details associated with a particular assignment step
     function CurrentPage() {
         return (
             <div className="basis-4/5">
-                <h3 className="my-5 text-center">{type}</h3>
+                <h3 className="my-5 text-center">{assignment.name}</h3>
                 <div className="my-5 h-[70%] overflow-y-auto rounded-xl bg-white p-4 shadow-md">
                     <h3 className="mb-5 font-semibold">
-                        {currentStep.step}. {currentStep.name}:
+                        {currentStep.name}:
                     </h3>
-                    <ul className="flex list-disc flex-col gap-4 pl-4 text-sm">
+                    {Array.isArray(currentStep?.instructions) && currentStep.instructions.length > 0 ? (
+                      <ul className="flex list-disc flex-col gap-3 pl-4 text-sm">
                         {currentStep.instructions.map((instruction, i) => (
-                            <li key={`${currentStep.step}-${i}`}>{instruction}</li>
+                          <li key={i}>{instruction}</li>
                         ))}
-                    </ul>
+                      </ul>
+                    ) : (
+                      <p className="pl-4 text-sm text-gray-700">No instructions for this step.</p>
+                    )}
                 </div>
             </div>
         );
@@ -190,11 +138,11 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                 {/* Right */}
                 <button
                     className={
-                        pagenumber === steps.length - 1
+                        steps.length === 0 || pagenumber === steps.length - 1
                             ? 'invisible basis-1/10'
                             : 'basis-1/10 self-center transition duration-200 ease-in-out hover:scale-110'
                     }
-                    onClick={() => setPageNumber((prev) => (prev === steps.length - 1 ? prev : prev + 1))}
+                    onClick={() => setPageNumber((prev) => (steps.length === 0 || prev === steps.length - 1 ? prev : prev + 1))}
                     type="button"
                 >
                     <ChevronRightIcon className="h-10 w-10" />
@@ -247,7 +195,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                                     {/* Header */}
                                     <div className="relative z-40 flex h-[10%] w-full flex-row items-center justify-center rounded-t-xl bg-uwaBlue py-2 shadow-sm shadow-black">
                                         <Dialog.Title className="text-white">
-                                            {title ?? `CITS3200 - ${type}`}
+                                            {title ?? `CITS3200 - ${assignment.name}`}
                                         </Dialog.Title>
                                     </div>
 
@@ -258,7 +206,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                                     </div>
                                 </div>
                                 {/* Resources rail pinned to modal right edge (under content) */}
-                                <AdditionalResources open={resourcesOpen} onToggle={() => setResourcesOpen(v => !v)} resources={currentStep.resources}/>
+                                <AdditionalResources open={resourcesOpen} onToggle={() => setResourcesOpen(v => !v)} resources={currentStep?.resources ?? []}/>
                             </Dialog.Panel>
                         </Transition.Child>
                     </div>
