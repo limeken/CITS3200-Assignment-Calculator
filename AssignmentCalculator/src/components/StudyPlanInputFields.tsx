@@ -1,7 +1,11 @@
-import { TASKS, type AssignmentType } from "../App.tsx";
 import { parseISO, format } from "date-fns";
 import {Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions,} from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+
+// TODO: Test data
+// import some silly data
+import type { Assignment } from "./CalendarTypes.ts"
+import { assignments } from "./testdata.ts";
 
 // States for each input field
 import type { StateFunctions } from "../App.tsx";
@@ -30,8 +34,10 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
     const [endDate, setEndDate] = useState<Date | null>(null);
 
     // Build the items from TASKS
-    const items = useMemo<AssignmentType[]>(() => TASKS, []);
-    const [selected, setSelected] = useState<AssignmentType>(items.find(i => i.name === "Essay") ?? items[0]);
+    const items = useMemo<Assignment[]>(() => Object.values(assignments), []);
+    const [selected, setSelected] = useState<Assignment>(
+        items.find(i => i.name === "Essay") ?? items[0]
+    );
 
     /* TODO: date validation for start and end */
     /* validate using string from ISO conversion */
@@ -66,7 +72,7 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
     // Component that displays input for assessment type
     const AssessmentTypeInput: React.FC<{ error: boolean}> = ({ error }) => {
 
-        const onChange = (it: AssignmentType) => {
+        const onChange = (it: Assignment) => {
             setSelected(it);
             stateFunctions.setSelectedType(it.name)
         };
@@ -93,7 +99,7 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
                             <ListboxButton id="assessment-type"
                                            className="grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500">
                                 <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
-                                    <selected.Icon className="size-5 shrink-0 text-blue-600"/>
+                                    <selected.icon className="size-5 shrink-0 text-blue-600"/>
                                     <span className="block truncate">{selected.name}</span>
                                 </span>
                                 <ChevronUpDownIcon aria-hidden="true"
@@ -106,7 +112,7 @@ const StudyPlanInputFields: React.FC<InputFieldProps> = ({ stateFunctions, error
                                     <ListboxOption key={it.id} value={it}
                                                    className="group relative cursor-default py-2 pr-9 pl-3 text-gray-900 select-none data-focus:bg-blue-100 data-focus:outline-hidden">
                                         <div className="flex items-center">
-                                            <it.Icon className="size-5 shrink-0 text-blue-600"/>
+                                            <it.icon className="size-5 shrink-0 text-blue-600"/>
                                             <span
                                                 className="ml-3 block truncate font-normal group-data-selected:font-semibold">
                                                 {it.name}

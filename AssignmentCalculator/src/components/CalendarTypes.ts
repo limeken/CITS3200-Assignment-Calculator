@@ -3,6 +3,7 @@
 // Included are helper functions for unpacking data passed from other sources
 import ICAL from "ical.js"
 import { differenceInDays } from "date-fns";
+import React from "react";
 
 /* TYPES INTERFACES AND CLASSES */
 export class SemesterDates {
@@ -17,15 +18,30 @@ export class SemesterDates {
     }
 
     // get the start date of an assignment as the box # it appears in
-    getAssignmentDates(ass: Assignment) {
+    getAssignmentDates(ass: AssignmentCalendar) {
         return [
             (ass.start ? differenceInDays(ass.start, this.start) : null),
             (ass.end && ass.start ? differenceInDays(ass.end, this.start) : null)
             ];
     }
-
 }
 
+/** This is how we statefully control the addition of new Assignments
+ *  Technically they need an id, but I'll just key them based on index
+ */
+export interface Assignment {
+    id: number;
+    name: string; // The name of the assignment (e.g. essay, report, etc...)
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    events: Array<{
+        name: string;
+        percentage: number;
+        instructions?: string[] | null;
+        resources?: string[];
+    }>
+}
+
+// shitty adaption of https://icalendar.org/iCalendar-RFC-5545/3-6-1-event-component.html
 export interface AssignmentEvent {
     uid: string | null;
     summary: string | null;
@@ -36,20 +52,24 @@ export interface AssignmentEvent {
     tzid: string | null;
 }
 
-export interface Assignment {
+/** This is an instance of Assignment that wraps together the calendar data and assignment data
+ *  This *isn't* a class for the key reasons that we want to mutate, serialize, and compare it.
+ */
+export interface AssignmentCalendar {
     name: string;
     color: CalendarColor;
     start: Date | null;
     end: Date | null;
-    events: Array<AssignmentEvent>
+    events: Array<AssignmentEvent>; // this should be an ICAL.Event
+    assignmentType: string;
     unitCode?: string;
 }
 
 /* FUNCTIONS */
 export async function parseIcsCalendar(
     filePath: string,
-    addAssignment?: (a: Assignment) => void
-): Promise<Assignment> {
+    addAssignment?: (a: AssignmentCalendar) => void
+): Promise<AssignmentCalendar> {
     // Normalize ical.js export shape across bundlers
     const mod = await import("ical.js");
     const ICAL: any = (mod as any).default ?? mod;
@@ -115,7 +135,7 @@ export async function parseIcsCalendar(
     const starts = events.map(e => e.start).filter((d): d is Date => d instanceof Date);
     const ends   = events.map(e => e.end).filter((d): d is Date => d instanceof Date);
 
-    const assignment: Assignment = {
+    const assignment: AssignmentCalendar = {
         name: nameProp ?? "Untitled",
         color: String(colorProp),
         start: starts.length ? new Date(Math.min(...starts.map(d => d.getTime()))) : null,
@@ -129,8 +149,16 @@ export async function parseIcsCalendar(
     return assignment;
 }
 
-// lol i just realised the name for "assignment" and "calendar" have been used interchangeably. oops. will clean up in a later commit i promise xx
-export function validateCalendar(cal: Assignment): Array<boolean> {
+// lol i just realised the name for "assignment" and "calendar" have been used interchangeably.
+// oops. will clean up in a later commit i promise xx
+export function validateCalendar(cal: AssignmentCalendar): Array<boolean> {
+
+    // TODO 1: make sure start isn't after end
+
+    // TODO 2: make sure end isn't before start
+
+    // TODO 3: make sure name doesn't include invalid characters
+
     return [
         !!cal.name,
         !!cal.start,

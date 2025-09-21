@@ -1,6 +1,5 @@
 import React, {useCallback, useRef, useState} from "react";
 import "./index.css";
-import {DocumentTextIcon, BeakerIcon, CubeIcon } from "@heroicons/react/24/solid";
 
 // Import webiste components from components subfolder
 import UniversityBanner from "./components/UniversityBanner.tsx"
@@ -15,19 +14,13 @@ import CalendarFormat from "./components/CalendarFormat.tsx";
 import TextualFormat from "./components/TextualFormat.tsx";
 
 import {
-    type Assignment, type AssignmentEvent, parseIcsCalendar,
+    type Assignment,
+    type AssignmentCalendar, type AssignmentEvent, parseIcsCalendar,
     pickRandomColor,
     validateCalendar
 } from "./components/CalendarTypes.ts";
 import SubmissionModal from "./components/SubmissionModal.tsx";
-
-// Object type that stores compatible assignment types
-export interface AssignmentType {
-    id: number;
-    name: string;
-    Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-    tasks: Array<string>;
-}
+import { assignments } from "./components/testdata.ts";
 
 export type StateFunctions = {
     setSelectedType: (name: string) => void,
@@ -35,48 +28,27 @@ export type StateFunctions = {
     setEndDate: (end: Date) => void,
 }
 
-// Store assignment breakdowns here
-export const TASKS: Array<AssignmentType> = [
-    {
-        id: 1,
-        name: "Essay",
-        Icon: DocumentTextIcon,
-        tasks: ["Understand the question", "Initial research & sources", "Draft outline", "Write body paragraphs", "Write intro & conclusion", "Edit & proofread"]
-    },
-    {
-        id: 2,
-        name: "Labsheet",
-        Icon: BeakerIcon,
-        tasks: ["I dont know", "what this really entails", "Im sure it's something useful."]
-    },
-    {
-        id: 3,
-        name: "Project",
-        Icon: CubeIcon,
-        tasks: ["Sprint 1", "Sprint 2", "Sprint 3", "Secret final sprint"]
-    }
-];
-
 /* a default (empty) assignment to fill the state with. Useful for instancing additional objects */
-const DEFAULT: Assignment = {
-    name: "Essay", color: "red", start: null, end: null, events: new Array<AssignmentEvent>
+const DEFAULT: AssignmentCalendar = {
+    name: "Essay", color: "red", start: null, end: null, events: new Array<AssignmentEvent>, assignmentType: "Essay"
 }
 
 
 // Main application component
 export default function App() {
+
     // Used to toggle between formats
     const [isCalendarFormat, changeFormat] = useState<boolean>(true);
 
     // Used to show the outcome of adding an assessment via a banner
     const [showNotification, setNotification] = useState<boolean>(true);
 
-    const [validAssignment, setValidAssignment] = useState<Assignment>(DEFAULT);
+    const [validAssignment, setValidAssignment] = useState<AssignmentCalendar>(DEFAULT);
 
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
 
-    // submission modal details (TODO: move this into the submission modal element)
+    // submission modal state details (TODO: move this into the submission modal element)
     const [assignmentName, setAssignmentName] = useState("");
     const [unitCode, setUnitCode] = useState("");
 
@@ -92,9 +64,9 @@ export default function App() {
 
     // Object that stores all state functions
     const stateFunctions: StateFunctions = {
-        setSelectedType: (name: string) => {
-            setValidAssignment(prev => ({...prev, name: name }));
-            console.log(`set calendar name to: ${name}`);
+        setSelectedType: (assignmentType: string) => {
+            setValidAssignment(prev => ({...prev, assignmentType }));
+            console.log(`set calendar name to: ${assignmentType}`);
         },
         setStartDate: (start: Date) => {
             setValidAssignment(prev => ({...prev, start: start }))
@@ -127,7 +99,7 @@ export default function App() {
         const unit = unitCode.trim()
         if (!name || !unit) return; //extra guarding
 
-        const next: Assignment = {
+        const next: AssignmentCalendar = {
             ...validAssignment,
             name,
             unitCode: unit,
@@ -144,8 +116,8 @@ export default function App() {
     }
 
     const handleImportCalendar = async () => {
-        const parsedCal: Assignment = await parseIcsCalendar('/fake_calendar.ics');
-        const next: Assignment = {
+        const parsedCal: AssignmentCalendar = await parseIcsCalendar('/fake_calendar.ics');
+        const next: AssignmentCalendar = {
             ...parsedCal,
             name: "import",
             unitCode: "import",
@@ -195,7 +167,7 @@ export default function App() {
             />
             {/* User Instructions Button & Page*/}
             <InstructionsModal isOpen={modals.instructions} onClose={() => closeModal('instructions')} />
-            <AssignmentModal isOpen={modals.assignment} onClose={() => closeModal('assignment')}/>
+            <AssignmentModal assignment={assignments[validAssignment.assignmentType]} isOpen={modals.assignment} onClose={() => closeModal('assignment')}/>
         </>
     );
 }
