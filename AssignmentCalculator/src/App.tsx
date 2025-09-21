@@ -4,10 +4,15 @@ import "./index.css";
 // Import webiste components from components subfolder
 import UniversityBanner from "./components/UniversityBanner.tsx"
 import InstructionsModal from "./components/InstructionsModal.tsx"
-import ApplicationHeading from "./components/ApplicationHeading.tsx"
 import StudyPlanInputFields from "./components/StudyPlanInputFields.tsx"
 import AssignmentModal from "./components/AssignmentModal.tsx";
+import FormatSwitch from "./components/FormatSwitch.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
+
+// The two different display formats you can toggle between
+import CalendarFormat from "./components/CalendarFormat.tsx";
+import TextualFormat from "./components/TextualFormat.tsx";
+
 import {
     type Assignment,
     type AssignmentCalendar, type AssignmentEvent, parseIcsCalendar,
@@ -31,8 +36,15 @@ const DEFAULT: AssignmentCalendar = {
 
 // Main application component
 export default function App() {
-    ``
+
+    // Used to toggle between formats
+    const [isCalendarFormat, changeFormat] = useState<boolean>(true);
+
+    // Used to show the outcome of adding an assessment via a banner
+    const [showNotification, setNotification] = useState<boolean>(true);
+
     const [validAssignment, setValidAssignment] = useState<AssignmentCalendar>(DEFAULT);
+
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
 
@@ -47,8 +59,8 @@ export default function App() {
         assignment: false,
         submission: false,
     });
-    const openModal = (key: ModalKey) => setModals({ instructions: false, assignment: false, submission: false, [key]: true });
-    const closeModal = (key: ModalKey) => setModals((prev) => ({...prev, [key]: false}))
+    const openModal = (key: ModalKey) => setModals(prev => {return {...prev, [key]:true}});
+    const closeModal = (key: ModalKey) => setModals(prev => {return {...prev, [key]: false}});
 
     // Object that stores all state functions
     const stateFunctions: StateFunctions = {
@@ -120,10 +132,7 @@ export default function App() {
     return (
         <>
             {/* University Banner */}
-            <UniversityBanner/>
-
-            {/* Application Title Bar */}
-            <ApplicationHeading/>
+            <UniversityBanner showNotification={showNotification} setNotification = {setNotification} successful={true}/>
 
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-4">
                 <button
@@ -143,11 +152,12 @@ export default function App() {
                                   onShowAssignmentHelp={() => openModal('assignment')}
             />
 
-            <section className={"mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6"}>
-                <div className="bg-slate-200 rounded-xl shadow-soft p-4">
-                    <Calendar ref={calRef}/>
-                </div>
-            </section>
+            {/* Toggle to switch between calendar and textual formats */}
+            <FormatSwitch isCalendarFormat={isCalendarFormat} changeFormat={changeFormat}/>
+
+            {/* The two different assignment visualisation types*/}
+            <CalendarFormat calRef = {calRef} isCalendarFormat = {isCalendarFormat}/>
+            <TextualFormat isCalendarFormat={isCalendarFormat}/>
 
             {/* Modal Stuff */}
             <SubmissionModal isOpen={modals.submission} onClose={() => closeModal('submission')}
