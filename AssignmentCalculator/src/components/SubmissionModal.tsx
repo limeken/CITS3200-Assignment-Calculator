@@ -3,13 +3,13 @@ import { parseISO, format } from "date-fns";
 import type { Assignment, AssignmentCalendar } from "./CalendarTypes.ts"
 import { assignments } from "./testdata.ts";
 
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useState, Fragment} from "react";
 import clsx from "clsx";
 
 import {QuestionMarkCircleIcon} from "@heroicons/react/24/outline";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
-import {Dialog, DialogBackdrop, DialogPanel, DialogTitle} from "@headlessui/react";
+import {Dialog, DialogBackdrop, DialogPanel, DialogTitle, Transition} from "@headlessui/react";
 import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions,} from "@headlessui/react";
 
 interface SubmissionModalProps {
@@ -229,43 +229,64 @@ const SubmissionModal: React.FC<SubmissionModalProps> = ({
             </button>
         )
     }
-    return ( 
-        <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-            <DialogBackdrop
-                transition
-                className="fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in dark:bg-gray-900/50"
-            />
+    return (
+        <Transition appear show={isOpen} as={Fragment}>
+            <Dialog onClose={onClose} className="relative z-50">
+                <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-200"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-150"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <DialogBackdrop
+                        className="fixed inset-0 bg-gray-500/75"
+                    />
+                </Transition.Child>
+                <div className="fixed inset-0 z-50 w-screen overflow-y-auto">
+                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-200"
+                            enterFrom="opacity-0 scale-95"
+                            enterTo="opacity-100 scale-100"
+                            leave="ease-in duration-150"
+                            leaveFrom="opacity-100 scale-100"
+                            leaveTo="opacity-0 scale-95"
+                        >
+                            {/* Clickable Area */}
+                            <DialogPanel
+                                transition
+                                className="relative overflow-hidden rounded-lg bg-white text-left shadow-xl"
+                            >
+                                <div className="bg-white p-5 flex flex-col justify-center">
+                                    {/* Modal Head */}
+                                    <div className="h3 text-base font-semibold text-gray-900 w-full">
+                                        <DialogTitle>
+                                            Create New Assignment:
+                                        </DialogTitle>
+                                    </div>
+                                    <form className="my-5 text-left w-full flex flex-col gap-2 items-center justify-center">
+                                        {/* Modal Body */}
+                                        <section className="gap-4 flex flex-col items-center justify-center w-4/5">
+                                            <AssessmentTypeInput error={errors[0]}/>
+                                            <AssessmentDateInput error={[errors[1], errors[2]]}/>
+                                            <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName}/>
+                                            <UnitField setUnitCode={setUnitCode} unitCode={unitCode}/>
+                                        </section>
 
-            <div className="fixed inset-0 z-50 w-screen overflow-y-auto">
-                <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <DialogPanel
-                        transition
-                        className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95 dark:bg-gray-800 dark:outline dark:-outline-offset-1 dark:outline-white/10"
-                    >
-                        <div className="bg-white p-5 flex flex-col justify-center">
-                            {/* Modal Head */}
-                            <div className="h3 text-base font-semibold text-gray-900 w-full">
-                                <DialogTitle>
-                                    Create New Assignment:
-                                </DialogTitle>
-                            </div>
-                            <form className="my-5 text-left w-full flex flex-col gap-2 items-center justify-center">
-                                {/* Modal Body */}
-                                <section className="gap-4 flex flex-col items-center justify-center w-4/5">
-                                    <AssessmentTypeInput error={errors[0]}/>
-                                    <AssessmentDateInput error={[errors[1], errors[2]]}/>
-                                    <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName}/>
-                                    <UnitField setUnitCode={setUnitCode} unitCode={unitCode}/>
-                                </section>
-
-                                {/* Submission Button */}
-                                <SubmissionButton/>
-                            </form>
-                        </div>
-                    </DialogPanel>
+                                        {/* Submission Button */}
+                                        <SubmissionButton/>
+                                    </form>
+                                </div>
+                            </DialogPanel>
+                        </Transition.Child>
+                    </div>
                 </div>
-            </div>
-        </Dialog>
+            </Dialog>
+        </Transition>
     );
 };
 
