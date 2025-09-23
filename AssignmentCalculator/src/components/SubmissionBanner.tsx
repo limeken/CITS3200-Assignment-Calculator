@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { Transition } from '@headlessui/react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/24/solid';
 
@@ -11,7 +11,13 @@ export interface SubmissionResult{
 
 // Takes a boolean representing the result of submission and generates a banner based on the outcome
 const SubmissionBanner: React.FC<SubmissionResult> = ({showNotification, setNotification, successful=true}) => {
-    setTimeout(()=>{setNotification(false)},3000)
+
+    useEffect(() => {
+        if(!showNotification) return;
+        const id = setTimeout(() => setNotification(false), 3000);
+        return () => clearTimeout(id);
+    }, [showNotification, setNotification])
+
     return (
         <Transition appear show={showNotification}
             enter="transition origin-top ease-out duration-300"

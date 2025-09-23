@@ -42,7 +42,7 @@ export default function App() {
     const [isCalendarFormat, changeFormat] = useState<boolean>(true);
 
     // Used to show the outcome of adding an assessment via a banner
-    const [showNotification, setNotification] = useState<boolean>(true);
+    const [showNotification, setNotification] = useState<boolean>(false);
 
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
@@ -61,6 +61,7 @@ export default function App() {
     // Called whenever a valid assignment is submitted
     const handleModalSubmit = async (submission:AssignmentCalendar) => {
         // Add final validation here...
+        setNotification(true)
         await calRef.current?.addAssignment(submission);
         closeModal('submission');
     }
