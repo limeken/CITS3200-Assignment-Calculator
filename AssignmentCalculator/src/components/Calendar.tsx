@@ -4,25 +4,32 @@ import {type AssignmentCalendar, sem2, parseIcsCalendar, type CalendarColor} fro
 import {PlusIcon} from "@heroicons/react/24/solid";
 import clsx from "clsx";
 
-const BG50: Record<CalendarColor, string> = {
-    red: "bg-red-50", orange: "bg-orange-50", amber: "bg-amber-50",
-    yellow: "bg-yellow-50", lime: "bg-lime-50", green: "bg-green-50",
-    emerald: "bg-emerald-50", teal: "bg-teal-50", cyan: "bg-cyan-50",
-    sky: "bg-sky-50", blue: "bg-blue-50", indigo: "bg-indigo-50",
-    violet: "bg-violet-50", purple: "bg-purple-50", fuchsia: "bg-fuchsia-50",
-    pink: "bg-pink-50", rose: "bg-rose-50",
+const BG100: Record<CalendarColor, string> = {
+    red: "bg-red-100", orange: "bg-orange-100", amber: "bg-amber-100",
+    yellow: "bg-yellow-100", lime: "bg-lime-100", green: "bg-green-100",
+    emerald: "bg-emerald-100", teal: "bg-teal-100", cyan: "bg-cyan-100",
+    sky: "bg-sky-100", blue: "bg-blue-100", indigo: "bg-indigo-100",
+    violet: "bg-violet-100", purple: "bg-purple-100", fuchsia: "bg-fuchsia-100",
+    pink: "bg-pink-100", rose: "bg-rose-100",
 };
 
-const BG300: Record<CalendarColor, string> = {
-    red: "bg-red-300", orange: "bg-orange-300", amber: "bg-amber-300",
-    yellow: "bg-yellow-300", lime: "bg-lime-300", green: "bg-green-300",
-    emerald: "bg-emerald-300", teal: "bg-teal-300", cyan: "bg-cyan-300",
-    sky: "bg-sky-300", blue: "bg-blue-300", indigo: "bg-indigo-300",
-    violet: "bg-violet-300", purple: "bg-purple-300", fuchsia: "bg-fuchsia-300",
-    pink: "bg-pink-300", rose: "bg-rose-300",
+const BG200: Record<CalendarColor, string> = {
+    red: "bg-red-200", orange: "bg-orange-200", amber: "bg-amber-200",
+    yellow: "bg-yellow-200", lime: "bg-lime-200", green: "bg-green-200",
+    emerald: "bg-emerald-200", teal: "bg-teal-200", cyan: "bg-cyan-200",
+    sky: "bg-sky-200", blue: "bg-blue-200", indigo: "bg-indigo-200",
+    violet: "bg-violet-200", purple: "bg-purple-200", fuchsia: "bg-fuchsia-200",
+    pink: "bg-pink-200", rose: "bg-rose-200",
 };
 
-
+const SHADOWS: Record<CalendarColor, string> = {
+    red: "shadow-red-50", orange: "shadow-orange-50", amber: "shadow-amber-50",
+    yellow: "shadow-yellow-50", lime: "shadow-lime-50", green: "shadow-green-50",
+    emerald: "shadow-emerald-50", teal: "shadow-teal-50", cyan: "shadow-cyan-50",
+    sky: "shadow-sky-50", blue: "shadow-blue-50", indigo: "shadow-indigo-50",
+    violet: "shadow-violet-50", purple: "shadow-purple-50", fuchsia: "shadow-fuchsia-50",
+    pink: "shadow-pink-50", rose: "shadow-rose-50",
+};
 
 /* CalendarWeeks prop */
 const CalendarWeeks: React.FC<{ withSpacer?: boolean }> = ({ withSpacer = false }) => (
@@ -34,10 +41,10 @@ const CalendarWeeks: React.FC<{ withSpacer?: boolean }> = ({ withSpacer = false 
         )}
         {Array.from({ length: sem2.length / 7 }, (_, i) => (
             <div key={i} className="
-        shrink-0 box-border rounded-md border h-16
-        bg-white border-gray-300
-        w-[calc(theme(width.16)*7+theme(spacing.2)*6)]
-      ">
+                shrink-0 box-border rounded-md h-16
+                bg-white shadow-md shadow-gray-100
+                w-[calc(theme(width.16)*7+theme(spacing.2)*6)]
+              ">
                 <div className="p-3 font-medium text-center">Week {i + 1}</div>
             </div>
         ))}
@@ -46,11 +53,8 @@ const CalendarWeeks: React.FC<{ withSpacer?: boolean }> = ({ withSpacer = false 
 
 
 const RowLabel: React.FC<{ code?: string, color: CalendarColor }> = ({ code, color }) => (
-    <div className="w-36 h-16 shrink-0 mr-2">
-        <div className={clsx("w-full h-full flex items-center justify-center",
-                            "rounded-md border-2 font-semibold text-white",
-                            "bg backdrop-blur-sm shadow-sm", BG300[color])}
-        >
+    <div className={`w-36 h-16 shrink-0 mr-2 ${BG200[color]} rounded-md`}>
+        <div className={"w-full h-full flex items-center justify-center rounded-md border-2 font-semibold text-white"}>
             {code ?? ""}
         </div>
     </div>
@@ -61,6 +65,8 @@ const RowLabel: React.FC<{ code?: string, color: CalendarColor }> = ({ code, col
 
 const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignment }) => {
     const [start, end] = sem2.getAssignmentDates(assignment);
+    const styleDefault = `aspect-square w-16 rounded-md ${BG100[assignment.color]} shadow-md ${SHADOWS[assignment.color]} transition-transform duration-150 ease-out hover:scale-95`
+    const styleInRange = clsx(styleDefault, `${BG200[assignment.color]}`)
 
     return (
         <div className="flex flex-row gap-2 min-w-max">
@@ -69,11 +75,7 @@ const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignmen
                 return (
                     <div
                         key={i}
-                        className={clsx(
-                            "aspect-square w-16 rounded-md border border-gray-300 transition-transform duration-150 ease-out hover:scale-95",
-                            BG50[assignment.color],
-                            inRange && BG300[assignment.color],
-                        )}
+                        className={inRange ? styleInRange : styleDefault }
                     />
                 );
             })}
@@ -109,7 +111,7 @@ const Calendar = forwardRef<CalendarRef>((_, ref) => {
     }
 
     return (
-        <>
+        <div className="bg-slate-100 px-4 py-6 rounded-lg inset-shadow-sm inset-shadow-indigo-100">
             <button
                 type="button"
                 className="flex items-center rounded border px-3 py-2 border-gray-300 bg-white transition hover:bg-gray-50 mb-2"
@@ -129,7 +131,7 @@ const Calendar = forwardRef<CalendarRef>((_, ref) => {
 
                 {/* Right pane: horizontally scrollable calendar */}
                 <div className="overflow-x-auto ml-2">
-                    <div className="min-w-max space-y-3">
+                    <div className="min-w-max space-y-3 pb-4">
                         <CalendarWeeks withSpacer={false} />
                         {assignments.length === 0 ? (
                             <p className="text-gray-400 px-2">nothing to show...</p>
@@ -139,7 +141,7 @@ const Calendar = forwardRef<CalendarRef>((_, ref) => {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 });
 

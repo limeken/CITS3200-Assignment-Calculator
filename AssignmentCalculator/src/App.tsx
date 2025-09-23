@@ -20,6 +20,7 @@ import {
     validateCalendar
 } from "./components/CalendarTypes.ts";
 import SubmissionModal from "./components/SubmissionModal.tsx";
+import FormatTransition from "./components/FormatTransition.tsx";
 
 export type StateFunctions = {
     setSelectedType: (type: string) => void,
@@ -104,8 +105,14 @@ export default function App() {
             <FormatSwitch isCalendarFormat={isCalendarFormat} changeFormat={changeFormat}/>
 
             {/* The two different assignment visualisation types*/}
-            <CalendarFormat calRef = {calRef} isCalendarFormat = {isCalendarFormat}/>
-            <TextualFormat isCalendarFormat={isCalendarFormat}/>
+            <div className={"mx-auto w-4/5"}>
+                <FormatTransition show={isCalendarFormat}>
+                    <Calendar ref={calRef} />
+                </FormatTransition>
+                <FormatTransition show={!isCalendarFormat}>
+                    <TextualFormat />
+                </FormatTransition>
+            </div>
 
             {/* Modal Stuff */}
             <SubmissionModal isOpen={modals.submission} 
