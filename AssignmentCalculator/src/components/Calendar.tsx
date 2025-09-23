@@ -3,6 +3,7 @@ import React, {forwardRef, useCallback, useImperativeHandle, useState} from "rea
 import {type AssignmentCalendar, sem2, parseIcsCalendar, type CalendarColor} from "./CalendarTypes.ts";
 import {PlusIcon} from "@heroicons/react/24/solid";
 import clsx from "clsx";
+import TextualFormat from "./TextualFormat.tsx";
 
 const BG100: Record<CalendarColor, string> = {
     red: "bg-red-100", orange: "bg-orange-100", amber: "bg-amber-100",
@@ -92,8 +93,11 @@ export type CalendarRef = {
 *   we want to access our calendar element from the top-level App component (meaning we need a ref)
 *   normally React ref's only work on DOM elements (div's, class components, etc...)
 *   so we wrap our component in a forwardRef */
-const Calendar = forwardRef<CalendarRef>((_, ref) => {
+interface CalendarProps {
+    show: boolean;
+}
 
+const Calendar = forwardRef<CalendarRef, CalendarProps>(({show},ref) => {
     const [assignments, setAssignments] = useState<AssignmentCalendar[]>([]);
 
     // this function exposes a callback method
@@ -111,7 +115,8 @@ const Calendar = forwardRef<CalendarRef>((_, ref) => {
     }
 
     return (
-        <div className="bg-slate-100 px-4 py-6 rounded-lg inset-shadow-sm inset-shadow-indigo-100">
+        <>
+        <section className={`bg-slate-100 px-4 py-6 rounded-lg inset-shadow-sm inset-shadow-indigo-100 ${show ? "" : "hidden"}`}>
             <button
                 type="button"
                 className="flex items-center rounded border px-3 py-2 border-gray-300 bg-white transition hover:bg-gray-50 mb-2"
@@ -141,8 +146,10 @@ const Calendar = forwardRef<CalendarRef>((_, ref) => {
                     </div>
                 </div>
             </div>
-        </div>
-    );
-});
+        </section>
+        <TextualFormat show={show}/>
+        </>
+        );
+    });
 
 export default Calendar;

@@ -9,10 +9,6 @@ import AssignmentModal from "./components/AssignmentModal.tsx";
 import FormatSwitch from "./components/FormatSwitch.tsx";
 import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
 
-// The two different display formats you can toggle between
-import CalendarFormat from "./components/CalendarFormat.tsx";
-import TextualFormat from "./components/TextualFormat.tsx";
-
 import {
     type Assignment,
     type AssignmentCalendar, type AssignmentEvent, parseIcsCalendar,
@@ -20,7 +16,6 @@ import {
     validateCalendar
 } from "./components/CalendarTypes.ts";
 import SubmissionModal from "./components/SubmissionModal.tsx";
-import FormatTransition from "./components/FormatTransition.tsx";
 
 export type StateFunctions = {
     setSelectedType: (type: string) => void,
@@ -104,15 +99,9 @@ export default function App() {
             {/* Toggle to switch between calendar and textual formats */}
             <FormatSwitch isCalendarFormat={isCalendarFormat} changeFormat={changeFormat}/>
 
-            {/* The two different assignment visualisation types*/}
-            <div className={"mx-auto w-4/5"}>
-                <FormatTransition show={isCalendarFormat}>
-                    <Calendar ref={calRef} />
-                </FormatTransition>
-                <FormatTransition show={!isCalendarFormat}>
-                    <TextualFormat />
-                </FormatTransition>
-            </div>
+            {/* Displays either the calendar or textual visualisation*/}
+            <Calendar ref={calRef} show={isCalendarFormat}/>
+
 
             {/* Modal Stuff */}
             <SubmissionModal isOpen={modals.submission} 
