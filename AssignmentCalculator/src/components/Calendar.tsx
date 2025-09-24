@@ -1,6 +1,6 @@
 // calendar element, all by me
 import React, {forwardRef, useCallback, useImperativeHandle, useState} from "react";
-import {type AssignmentCalendar, sem2, parseIcsCalendar, type CalendarColor} from "./CalendarTypes.ts";
+import {type AssignmentCalendar, sem2, parseIcsCalendar, type CalendarColor, pickRandomColor } from "./CalendarTypes.ts";
 import {PlusIcon} from "@heroicons/react/24/solid";
 import clsx from "clsx";
 import TextualFormat from "./TextualFormat.tsx";
@@ -43,23 +43,29 @@ const CalendarWeeks: React.FC<{ withSpacer?: boolean }> = ({ withSpacer = false 
         {Array.from({ length: sem2.length / 7 }, (_, i) => (
             <div key={i} className="
                 shrink-0 box-border rounded-md h-16
-                bg-white shadow-md shadow-gray-100
+                bg-uwaBlue shadow-md shadow-gray-100
                 w-[calc(theme(width.16)*7+theme(spacing.2)*6)]
+                flex justify-center items-center
               ">
-                <div className="p-3 font-medium text-center">Week {i + 1}</div>
+                <span className="p-3 text-lg font-semibold text-white">Week {i + 1}</span>
             </div>
         ))}
     </div>
 );
 
 
-const RowLabel: React.FC<{ code?: string, color: CalendarColor }> = ({ code, color }) => (
-    <div className={`w-36 h-16 shrink-0 mr-2 ${BG200[color]} rounded-md`}>
-        <div className={"w-full h-full flex items-center justify-center rounded-md border-2 font-semibold text-white"}>
-            {code ?? ""}
-        </div>
-    </div>
-);
+const RowLabel: React.FC<{ code?: string, color: CalendarColor, height:number}> = ({ code, color, height }) => {
+    // Equivalent rem sizes for tailwind sizing, used to make sure heading boxes grow correctly
+    const gap = (height-1) * 0.75;
+    const boxsize = height * 4;
+    return (
+            <div className={`w-36 shrink-0 mr-2 ${BG200[color]} rounded-md`} style={{ height: `${boxsize + gap}rem` }} >
+                <div className={"w-full h-full flex items-center justify-center rounded-md border-2 font-semibold text-white"}>
+                    {code ?? ""}
+                </div>
+            </div>
+    );
+}
 
 /* Each assignment is declared by it's "Assignment Row" */
 /* By default, we'll render the whole semester */
@@ -98,12 +104,22 @@ interface CalendarProps {
 }
 
 const Calendar = forwardRef<CalendarRef, CalendarProps>(({show},ref) => {
-    const [assignments, setAssignments] = useState<AssignmentCalendar[]>([]);
+    const [assignments, setAssignments] = useState<Record<string, AssignmentCalendar[]>>({});
 
     // this function exposes a callback method
     const addAssignment = useCallback((a: AssignmentCalendar) => {
-        setAssignments((prev) => [...prev, a]);
-    }, []) // <- this empty array is the dependency list, a change to any objects in here triggers a re-render
+        // Check if the unit code is already in use. If so, reuse the existing associated color and append to the unit list
+        if (a.unitCode! in assignments) {
+            a.color = assignments[a.unitCode!][0].color
+            setAssignments(prev => ({...prev, [a.unitCode!]: [...prev[a.unitCode!], a]}));
+        }
+
+        // If no such unit code exists yet, create a new color and associated unit list
+        else{
+            a.color = pickRandomColor();
+            setAssignments(prev => ({...prev,[a.unitCode!]:[a]}))
+        }
+    }, [assignments]) // <- this empty array is the dependency list, a change to any objects in here triggers a re-render
 
     /* since we need an object API node, we expose this handle to addAssignment and it's API */
     useImperativeHandle(ref, () => ({ addAssignment }), [addAssignment]);
@@ -116,7 +132,7 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>(({show},ref) => {
 
     return (
         <>
-        <section className={`bg-slate-100 px-4 py-6 rounded-lg inset-shadow-sm inset-shadow-indigo-100 ${show ? "" : "hidden"}`}>
+        <section className={`w-4/5 mx-auto bg-slate-100 px-4 py-6 rounded-lg inset-shadow-sm inset-shadow-indigo-100 ${show ? "" : "hidden"}`}>
             <button
                 type="button"
                 className="flex items-center rounded border px-3 py-2 border-gray-300 bg-white transition hover:bg-gray-50 mb-2"
@@ -129,8 +145,8 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>(({show},ref) => {
                 <div className="space-y-3">
                     {/* header spacer to align with weeks row height */}
                     <div className="w-36 h-16 mr-2" />
-                    {assignments.length === 0 ? null : assignments.map((a, i) => (
-                        <RowLabel key={a.name ?? i} code={a.unitCode} color={a.color}/>
+                    {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
+                        <RowLabel key={code ?? i} code={code} color={assignments[code][0].color} height={assignments[code].length}/>
                     ))}
                 </div>
 
@@ -138,16 +154,20 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>(({show},ref) => {
                 <div className="overflow-x-auto ml-2">
                     <div className="min-w-max space-y-3 pb-4">
                         <CalendarWeeks withSpacer={false} />
-                        {assignments.length === 0 ? (
+                        {Object.keys(assignments).length === 0 ? (
                             <p className="text-gray-400 px-2">nothing to show...</p>
                         ) : (
-                            assignments.map((a, i) => <AssignmentRow key={a.name ?? i} assignment={a} />)
+                            Object.keys(assignments).flatMap((code) => (
+                                assignments[code].map((assignment, i) => (
+                                    <AssignmentRow key={assignment.name ?? i} assignment={assignment} />
+                                ))
+                            ))
                         )}
                     </div>
                 </div>
             </div>
         </section>
-        <TextualFormat show={show}/>
+        <TextualFormat show={!show} assignments={assignments}/>
         </>
         );
     });

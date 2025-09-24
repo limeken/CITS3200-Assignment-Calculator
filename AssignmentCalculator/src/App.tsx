@@ -26,7 +26,7 @@ export type StateFunctions = {
 }
 
 const createAssignmentCalendar = () => {
-    const newCalendar:AssignmentCalendar = {name: "", color: pickRandomColor(), start: null, end: null, events: new Array<AssignmentEvent>, assignmentType: "Essay"};
+    const newCalendar:AssignmentCalendar = {name: "", color: "", start: null, end: null, events: new Array<AssignmentEvent>, assignmentType: "Essay"};
     return newCalendar;
 }
 
