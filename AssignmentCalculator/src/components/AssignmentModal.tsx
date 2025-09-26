@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
-import type { Assignment } from './CalendarTypes.ts';
+import type { Assignment } from './calendar/CalendarTypes.ts';
 
 export interface AssignmentModalProps {
     isOpen: boolean;

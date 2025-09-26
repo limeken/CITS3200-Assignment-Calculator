@@ -47,8 +47,8 @@ export interface AssignmentEvent {
     summary: string | null;
     description: string | null;
     status: string | null;
-    start: Date | null;
-    end: Date | null;
+    start: Date;
+    end: Date;
     tzid: string | null;
 }
 
@@ -58,11 +58,36 @@ export interface AssignmentEvent {
 export interface AssignmentCalendar {
     name: string;
     color: CalendarColor;
-    start: Date | null;
-    end: Date | null;
-    events: Array<AssignmentEvent>; // this should be an ICAL.Event
+    start: Date;
+    end: Date;
+    events: AssignmentEvent[]; // this should be an ICAL.Event
     assignmentType: string;
     unitCode?: string;
+}
+
+export function mapEvents(a: Assignment, start: Date, end: Date): AssignmentEvent[] {
+
+    const startTime = start.getTime();
+    const endTime = end.getTime();
+    const total = a.events.length;
+
+    return a.events.map((e, i): AssignmentEvent => {
+        const fractionStart = i / total;
+        const fractionEnd = (i + 1 ) / total;
+
+        const eStart = new Date(startTime + fractionStart * (endTime - startTime));
+        const eEnd = new Date(startTime + fractionEnd * (endTime - startTime));
+
+        return {
+            uid: e.name,
+            summary: e.name,
+            description: e.instructions? e.instructions.join(";") : "None",
+            status: null,
+            start: eStart,
+            end: eEnd,
+            tzid: "+08:00",
+        }
+    });
 }
 
 /* FUNCTIONS */
@@ -147,6 +172,11 @@ export async function parseIcsCalendar(
     if (addAssignment) addAssignment(assignment);
 
     return assignment;
+}
+
+export const createAssignmentCalendar = () => {
+    const newCalendar:AssignmentCalendar = {name: "", color: "", start: null, end: null, events: new Array<AssignmentEvent>, assignmentType: "Essay"};
+    return newCalendar;
 }
 
 // lol i just realised the name for "assignment" and "calendar" have been used interchangeably.

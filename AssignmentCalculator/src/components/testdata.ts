@@ -1,4 +1,4 @@
-import type {Assignment} from "./CalendarTypes.ts";
+import type {Assignment} from "./calendar/CalendarTypes.ts";
 import {
     BeakerIcon,
     BookOpenIcon,

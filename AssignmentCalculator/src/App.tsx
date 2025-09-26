@@ -1,22 +1,16 @@
-import React, {useCallback, useRef, useState} from "react";
+import { useRef, useState} from "react";
 import "./index.css";
 
-// Import webiste components from components subfolder
+// Import website components from components subfolder
 import UniversityBanner from "./components/UniversityBanner.tsx"
-import InstructionsModal from "./components/InstructionsModal.tsx"
-import NewAssignmentButton from "./components/NewAssignmentButton.tsx"
-import AssignmentModal from "./components/AssignmentModal.tsx";
-import FormatSwitch from "./components/FormatSwitch.tsx";
-import Calendar, {type CalendarRef} from "./components/Calendar.tsx";
+import { InstructionsButton } from "./components/Instructions.tsx"
+import { SubmissionButton } from "./components/Submission.tsx";
 
-import {
-    type Assignment,
-    type AssignmentCalendar, type AssignmentEvent, parseIcsCalendar,
-    pickRandomColor,
-    validateCalendar
-} from "./components/CalendarTypes.ts";
-import SubmissionModal from "./components/SubmissionModal.tsx";
+import Calendar, {type CalendarRef} from "./components/calendar/Calendar.tsx";
+import { type AssignmentCalendar} from "./components/calendar/CalendarTypes.ts";
 
+
+// TODO: Not a necessary component of App.tsx and should be moved to submission typeas
 export type StateFunctions = {
     setSelectedType: (type: string) => void,
     setName: (name: string) => void,
@@ -25,94 +19,40 @@ export type StateFunctions = {
     setEndDate: (end: Date) => void,
 }
 
-const createAssignmentCalendar = () => {
-    const newCalendar:AssignmentCalendar = {name: "", color: "", start: null, end: null, events: new Array<AssignmentEvent>, assignmentType: "Essay"};
-    return newCalendar;
-}
-
-
 // Main application component
 export default function App() {
     
-    // Used to toggle between formats
-    const [isCalendarFormat, changeFormat] = useState<boolean>(true);
-
-    // Used to show the outcome of adding an assessment via a banner
+    // TODO: This also needs to be a modal, kind of.
     const [showNotification, setNotification] = useState<boolean>(false);
 
+    // TODO: Errors should be validated differently
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
 
-
-    // block-scoped type ModalKey determines which modal is available. Modal open/close behaviour is handled by close/openmodal.
-    type ModalKey = 'instructions' | 'assignment' | 'submission';
-    const [modals, setModals] = useState<Record<ModalKey, boolean>>({
-        instructions: false,
-        assignment: false,
-        submission: false,
-    });
-    const openModal = (key: ModalKey) => setModals(prev => {return {...prev, [key]:true}});
-    const closeModal = (key: ModalKey) => setModals(prev => {return {...prev, [key]: false}});
-
-    // Called whenever a valid assignment is submitted
-    const handleModalSubmit = async (submission:AssignmentCalendar) => {
-        // Add final validation here...
+    /* when we add the assignment, trigger a few things */
+    const onSubmitAssignment = async (submission: AssignmentCalendar) => {
         setNotification(true)
         await calRef.current?.addAssignment(submission);
-        closeModal('submission');
     }
-
-    // Needs reworking
-    /*
-    const handleImportCalendar = async () => {
-        const parsedCal: AssignmentCalendar = await parseIcsCalendar('/fake_calendar.ics');
-        const next: AssignmentCalendar = {
-            ...parsedCal,
-            name: "import",
-            unitCode: "import",
-            color: "orange",
-        }
-        setValidAssignment(next)
-        console.log(next)
-        await calRef.current?.addAssignment(next);
-    } 
-    */
-
 
     // This returns the finalised webpage, including all key components
     return (
         <>
             {/* University Banner */}
+            {/* Todo: rework notifications system so it uses a modal */}
             <UniversityBanner showNotification={showNotification} setNotification = {setNotification} successful={true}/>
 
-            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-4">
-                <button
-                    type="button"
-                    onClick={() => openModal('instructions')}
-                    className="inline-flex items-center rounded-md bg-uwaBlue px-3 py-2 text-white hover:bg-slate-700"
-                >
-                    View instructions
-                </button>
-            </div>
-            {/* Needs working import!!*/}
-            <NewAssignmentButton onImport={/*handleImportCalendar*/ ()=>{}} modalOpenKey={() => openModal('submission')}/>
-            {/* Toggle to switch between calendar and textual formats */}
-            <FormatSwitch isCalendarFormat={isCalendarFormat} changeFormat={changeFormat}/>
+            {/* Button which triggers the instructions modal*/}
+            <InstructionsButton />
+
+            {/* Button which triggers the assignment submission modal */}
+            <SubmissionButton onSubmit={(submission) => onSubmitAssignment(submission)} />
 
             {/* Displays either the calendar or textual visualisation*/}
-            <Calendar ref={calRef} show={isCalendarFormat}/>
+            <Calendar ref={calRef} />
 
-
-            {/* Modal Stuff */}
-            <SubmissionModal isOpen={modals.submission} 
-                            onClose={() => closeModal('submission')}
-                            onSubmit={handleModalSubmit}
-                            submission={createAssignmentCalendar()}
-                            errors={errors}
-            />
-            
-            {/* User Instructions Button & Page*/}
-            <InstructionsModal isOpen={modals.instructions} onClose={() => closeModal('instructions')} />
+            {/* TODO: All these modals need to be managed by one global modal manager. */}
+            {/* <InstructionsModal isOpen={modals.instructions} onClose={() => closeModal('instructions')} /> */}
             {/* 0 is a placeholder! */}
             {/*<AssignmentModal assignment={assignments[0]} isOpen={modals.assignment} onClose={() => closeModal('assignment')}/>*/}
         </>

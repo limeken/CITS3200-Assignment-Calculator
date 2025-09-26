@@ -1,7 +1,7 @@
 import React from "react";
-import type { AssignmentCalendar } from "./CalendarTypes";
+import type { AssignmentCalendar } from "./CalendarTypes.ts";
 
-const TextualFormat: React.FC<{show:boolean; assignments:Record<string, AssignmentCalendar[]>}> = ({show, assignments}) => {
+const TextCalendar: React.FC<{show:boolean; assignments:Record<string, AssignmentCalendar[]>}> = ({show, assignments}) => {
     return(
         <section className={`flex flex-col gap-5 justify-center mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6 ${show?"":"hidden"}`}>
             <div className="bg-slate-200 rounded-xl shadow-soft p-4 h-15">
@@ -12,4 +12,4 @@ const TextualFormat: React.FC<{show:boolean; assignments:Record<string, Assignme
         </section>
     )
 }
-export default TextualFormat;
+export default TextCalendar;
