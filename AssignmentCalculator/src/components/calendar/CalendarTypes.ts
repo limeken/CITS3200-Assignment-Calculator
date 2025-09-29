@@ -56,7 +56,7 @@ export interface AssignmentEvent {
  *  This *isn't* a class for the key reasons that we want to mutate, serialize, and compare it.
  */
 export interface AssignmentCalendar {
-    name: string;
+    name: string | null;
     color: CalendarColor;
     start: Date;
     end: Date;
@@ -91,92 +91,135 @@ export function mapEvents(a: Assignment, start: Date, end: Date): AssignmentEven
 }
 
 /* FUNCTIONS */
-export async function parseIcsCalendar(
-    filePath: string,
-    addAssignment?: (a: AssignmentCalendar) => void
-): Promise<AssignmentCalendar> {
-    // Normalize ical.js export shape across bundlers
-    const mod = await import("ical.js");
-    const ICAL: any = (mod as any).default ?? mod;
-
-    const res = await fetch(filePath);
-    if (!res.ok) throw new Error(`Failed to fetch ${filePath}: HTTP ${res.status}`);
-    const icsText = await res.text();
-
-    // Parse the VCALENDAR
-    const jcal = ICAL.parse(icsText);
-    const vcal = new ICAL.Component(jcal);
-
-    // ---- Calendar metadata (vendor-safe fallbacks) ----
-    const nameProp =
-        vcal.getFirstPropertyValue("name") ??
-        vcal.getFirstPropertyValue("x-wr-calname") ??
-        null;
-
-    const colorProp =
-        vcal.getFirstPropertyValue("color") ?? // RFC 7986
-        vcal.getFirstPropertyValue("x-apple-calendar-color") ?? // Apple
-        vcal.getFirstPropertyValue("x-wr-calcolor") ?? // Google (older)
-        "#fff";
-
-    // Calendar-level timezone
-    const calTzid =
-        vcal.getFirstPropertyValue("x-wr-timezone") ??
-        vcal.getFirstSubcomponent("vtimezone")?.getFirstPropertyValue("tzid") ??
-        null;
-
-    // ---- Events ----
-    const vevents = vcal.getAllSubcomponents("vevent");
-    const events: AssignmentEvent[] = vevents.map((ve: ICAL.Event) => {
-        const e = new ICAL.Event(ve);
-        const startTime = e.startDate ?? null; // ICAL.Time
-        const endTime = e.endDate ?? null;     // ICAL.Time
-
-        const eventTzid =
-            startTime?.zone?.tzid ??
-            endTime?.zone?.tzid ??
-            calTzid ??
-            null;
-
-        return {
-            uid: e.uid ?? null,
-            summary: e.summary ?? null,
-            description: e.description ?? null,
-            start: startTime ? startTime.toJSDate() : null,
-            end: endTime ? endTime.toJSDate() : null,
-            tzid: eventTzid,
-        };
-    });
-
-    // Sort by start date (nulls last)
-    events.sort((a: AssignmentEvent, b: AssignmentEvent) => {
-        if (!a.start && !b.start) return 0;
-        if (!a.start) return 1;
-        if (!b.start) return -1;
-        return a.start.getTime() - b.start.getTime();
-    });
-
-    // Compute calendar range from events
-    const starts = events.map(e => e.start).filter((d): d is Date => d instanceof Date);
-    const ends   = events.map(e => e.end).filter((d): d is Date => d instanceof Date);
-
-    const assignment: AssignmentCalendar = {
-        name: nameProp ?? "Untitled",
-        color: String(colorProp),
-        start: starts.length ? new Date(Math.min(...starts.map(d => d.getTime()))) : null,
-        end:   ends.length   ? new Date(Math.max(...ends.map(d => d.getTime())))   : null,
-        events,
-    };
-
-    // Optionally push into your calendar immediately
-    if (addAssignment) addAssignment(assignment);
-
-    return assignment;
-}
 
 export const createAssignmentCalendar = () => {
     const newCalendar:AssignmentCalendar = {name: "", color: "", start: null, end: null, events: new Array<AssignmentEvent>, assignmentType: "Essay"};
     return newCalendar;
+}
+
+export async function importCalendar(file: File): Promise<AssignmentCalendar> {
+    const text = await file.text();
+    const jcal = ICAL.parse(text);
+    const vcal = new ICAL.Component(jcal);
+
+    const name =
+        vcal.getFirstPropertyValue("x-wr-calname") ||
+        vcal.getFirstPropertyValue("x-wr-cal-name") ||
+        file.name;
+
+    const color =
+        vcal.getFirstPropertyValue("x-wr-color") ||
+        vcal.getFirstPropertyValue("x-apple-calendar-color") ||
+        "blue";
+
+    const assignmentType =
+        vcal.getFirstPropertyValue("x-wr-assignmenttype") || "Imported";
+
+    const unitCode =
+        vcal.getFirstPropertyValue("x-wr-unitcode") || undefined;
+
+    const vevents = vcal.getAllSubcomponents("vevent");
+    const events: AssignmentEvent[] = vevents.map((vevent) => {
+        const e = new ICAL.Event(vevent);
+        const status = vevent.getFirstPropertyValue("status") || null;
+        const tzid =
+            vevent.getFirstPropertyValue("x-orig-tzid") ||
+            (e.startDate.zone ? e.startDate.zone.tzid : null) ||
+            null;
+
+        return {
+            uid: e.uid || null,
+            summary: e.summary || null,
+            description: e.description || null,
+            status,
+            start: e.startDate.toJSDate(),
+            end: e.endDate.toJSDate(),
+            tzid,
+        };
+    });
+
+    const metaStart = vcal.getFirstPropertyValue("x-vc-start");
+    const metaEnd = vcal.getFirstPropertyValue("x-vc-end");
+
+    const start = metaStart
+        ? new Date(metaStart)
+        : events.length
+            ? new Date(Math.min(...events.map((e) => e.start.getTime())))
+            : new Date();
+
+    const end = metaEnd
+        ? new Date(metaEnd)
+        : events.length
+            ? new Date(Math.max(...events.map((e) => e.end.getTime())))
+            : new Date();
+
+    return {
+        name,
+        color,
+        start,
+        end,
+        events,
+        assignmentType,
+        unitCode,
+    };
+}
+
+export function exportAssignmentCalendar(ac: AssignmentCalendar): string {
+    const vcal = new ICAL.Component("vcalendar");
+    vcal.addPropertyWithValue("version", "2.0");
+    vcal.addPropertyWithValue("prodid", "-//VisualCalendar//EN");
+    vcal.addPropertyWithValue("calscale", "GREGORIAN");
+    vcal.addPropertyWithValue("method", "PUBLISH");
+
+    // Human name plus custom metadata
+    vcal.addPropertyWithValue("X-WR-CALNAME", ac.name);
+    vcal.addPropertyWithValue("X-WR-COLOR", ac.color);
+    vcal.addPropertyWithValue("X-WR-ASSIGNMENTTYPE", ac.assignmentType);
+    if (ac.unitCode) vcal.addPropertyWithValue("X-WR-UNITCODE", ac.unitCode);
+    vcal.addPropertyWithValue("X-VC-START", ac.start.toISOString());
+    vcal.addPropertyWithValue("X-VC-END", ac.end.toISOString());
+
+    const now = ICAL.Time.fromJSDate(new Date(), true); // UTC
+
+    for (const ev of ac.events) {
+        const vevent = new ICAL.Component("vevent");
+        const e = new ICAL.Event(vevent);
+
+        e.uid = ev.uid ?? `${Date.now()}-${Math.random().toString(36).slice(2)}@visualcalendar`;
+        e.summary = ev.summary ?? ac.name;
+        if (ev.description) e.description = ev.description;
+
+        // Time handling: write UTC for reliability, but keep original tzid as metadata
+        e.startDate = ICAL.Time.fromJSDate(ev.start, true);
+        e.endDate = ICAL.Time.fromJSDate(ev.end, true);
+
+        // Fields not typed on ICAL.Event
+        vevent.addPropertyWithValue("DTSTAMP", now);
+        if (ev.status) {
+            const s = ev.status.toUpperCase();
+            if (s === "TENTATIVE" || s === "CONFIRMED" || s === "CANCELLED") {
+                vevent.addPropertyWithValue("STATUS", s);
+            }
+        }
+        if (ev.tzid) vevent.addPropertyWithValue("X-ORIG-TZID", ev.tzid);
+
+        vcal.addSubcomponent(vevent);
+    }
+
+    return vcal.toString();
+}
+
+export function downloadIcs(filenameBase: string, icsText: string) {
+    const safe = filenameBase.replace(/[^a-z0-9._-]+/gi, "_").slice(0, 80);
+    const blob = new Blob([icsText], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = safe.endsWith(".ics") ? safe : `${safe}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
 }
 
 // lol i just realised the name for "assignment" and "calendar" have been used interchangeably.
