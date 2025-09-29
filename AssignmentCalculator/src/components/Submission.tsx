@@ -159,13 +159,12 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
                                 id="assessment-type"
                                 className="grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500"
                             >
-                <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
-                  <selected.icon className="size-5 shrink-0 text-blue-600" />
-                  <span className="block truncate">{selected.name}</span>
-                </span>
+                                <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
+                                  <selected.icon className="size-5 shrink-0 text-blue-600" />
+                                  <span className="block truncate">{selected.name}</span>
+                                </span>
                                 <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400" />
                             </ListboxButton>
-
                             <ListboxOptions className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
                                 {items.map(it => (
                                     <ListboxOption

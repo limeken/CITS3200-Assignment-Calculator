@@ -26,6 +26,34 @@ export class SemesterDates {
     }
 }
 
+// Semester interface which we use for data unpacking
+export interface Semester {
+    detail?: string;
+    start: Date;
+    end: Date;
+    length: number;
+    special_dates?: Array<{
+        start: Date;
+        end: Date;
+    }>;
+}
+
+const dateString = (date: Date) =>  date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric"
+});
+
+// Function to create a new semester
+export function createSemester(
+    start: Date,
+    end: Date,
+    special_dates: Array<{ start: Date; end: Date }> = []
+): Semester {
+    const length = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)); // days
+    const detail = `${dateString(start)} to ${dateString(end)}`
+    return { detail, start, end, length, special_dates };
+}
+
 /** This is how we statefully control the addition of new Assignments
  *  Technically they need an id, but I'll just key them based on index
  */
