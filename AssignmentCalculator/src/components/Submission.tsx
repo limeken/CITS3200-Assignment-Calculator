@@ -1,7 +1,7 @@
 import { parseISO, format } from "date-fns";
 
 import {type Assignment, type AssignmentCalendar, mapEvents, createAssignmentCalendar, importCalendar} from "./calendar/CalendarTypes.ts"
-import { assignments } from "./testdata.ts";
+import { assignmentTypes } from "./testdata.ts";
 
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import clsx from "clsx";
@@ -118,7 +118,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
     const [unitCode, setUnitCode] = useState("");
     const [pending, setPending] = useState(false);
 
-    const items = useMemo<Assignment[]>(() => Object.values(assignments), []);
+    const items = useMemo<Assignment[]>(() => Object.values(assignmentTypes), []);
     const [selected, setSelected] = useState<Assignment>(
         items.find(i => i.name === "Essay") ?? items[0]
     );
@@ -177,8 +177,8 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
                                             <span className="ml-3 block truncate font-normal group-data-selected:font-semibold">{it.name}</span>
                                         </div>
                                         <span className="absolute inset-y-0 right-0 hidden items-center pr-4 text-blue-600 group-data-selected:flex group-data-focus:text-blue-700">
-                      <CheckIcon aria-hidden="true" className="size-5" />
-                    </span>
+                                            <CheckIcon aria-hidden="true" className="size-5" />
+                                        </span>
                                     </ListboxOption>
                                 ))}
                             </ListboxOptions>
@@ -231,6 +231,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
             end: endDate,
             name: assignmentName.trim(),
             unitCode: unitCode.trim(),
+            assignmentType:selected.name,
             events: mapEvents(selected, startDate, endDate)
         };
     }

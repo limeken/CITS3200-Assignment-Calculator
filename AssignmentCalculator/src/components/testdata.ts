@@ -7,7 +7,7 @@ import {
     UserGroupIcon
 } from "@heroicons/react/24/solid";
 
-export const assignments: Record<string, Assignment> = {
+export const assignmentTypes: Record<string, Assignment> = {
     "Essay": {
         id: 1,
         name: "Essay",
