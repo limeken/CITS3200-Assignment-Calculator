@@ -87,7 +87,7 @@ export default function App() {
 
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6 relative">
                 {/* Left: instructions icon */}
-                <div className="absolute inset-y-0 left-0 flex items-center">
+                <div className="absolute inset-y-0 left-4 sm:left-0 flex items-center">
                     <button
                     type="button"
                     onClick={() => openModal('instructions')}
@@ -109,7 +109,7 @@ export default function App() {
                     modalOpenKey={() => openModal('submission')}
                     />
                 </div>
-                </div>
+            </div>
             {/* Needs working import!!*/}
 
             {/* Toggle to switch between calendar and textual formats */}
