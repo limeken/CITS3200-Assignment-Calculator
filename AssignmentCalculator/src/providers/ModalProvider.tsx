@@ -66,7 +66,7 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                                     enterTo="opacity-100 scale-100"
                                     leave="ease-in duration-150"
                                     leaveFrom="opacity-100 scale-100"
-                                        leaveTo="opacity-0 scale-95"
+                                    leaveTo="opacity-0 scale-95"
                                 >
                                     <DialogPanel className="w-full max-w-lg rounded-lg bg-white p-4 shadow-xl">
                                         {node}

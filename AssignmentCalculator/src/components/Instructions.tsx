@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog } from '@headlessui/react';
-import {useModal} from "./ModalProvider.tsx";
+import {useModal} from "../providers/ModalProvider.tsx";
 
 export interface ModalBaseProps {
     onClose: () => void;

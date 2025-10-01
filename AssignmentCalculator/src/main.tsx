@@ -2,7 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { ModalProvider } from "./components/ModalProvider.tsx";
+import { ModalProvider } from "./providers/ModalProvider.tsx";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const qc = new QueryClient();
 
 /** "Max, why does ModalProvider need to enclose the App?"
  *  I'm glad you asked, Mr. Programmer (probably jacob).
@@ -14,8 +17,12 @@ import { ModalProvider } from "./components/ModalProvider.tsx";
  */
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-      <ModalProvider>
-          <App />
-      </ModalProvider>
+      {/* the Query Client Provider is our component enabling data querying from the backend */}
+      <QueryClientProvider client={qc}>
+          {/* the Modal Provider is our component enabling modals to be rendered and sent above the DOM */}
+          <ModalProvider>
+              <App />
+          </ModalProvider>
+      </QueryClientProvider>
   </StrictMode>,
 )

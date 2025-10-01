@@ -1,5 +1,5 @@
 import React from "react";
-import {type AssignmentCalendar, type AssignmentEvent, type CalendarColor, sem2} from "./CalendarTypes.ts";
+import {type AssignmentCalendar, type AssignmentEvent, type CalendarColor, downloadIcs, exportAssignmentCalendar, sem2} from "./CalendarTypes.ts";
 import clsx from "clsx";
 import {Popover, PopoverButton, PopoverPanel} from "@headlessui/react";
 import {ArrowDownOnSquareIcon} from "@heroicons/react/24/outline";
@@ -107,12 +107,19 @@ const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignmen
     )
 };
 
-const RowLabel: React.FC<{ code?: string, color: CalendarColor, height: number}> = ({ code, color, height }) => {
+const RowLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, height: number}> = ({ code, assignment, height }) => {
     // Equivalent rem sizes for tailwind sizing, used to make sure heading boxes grow correctly
     const gap = (height-1) * 0.75;
     const boxsize = height * 4;
+
+    //handle calendar download
+    function handleClick() {
+        const ics= exportAssignmentCalendar(assignment);
+        downloadIcs(assignment.name && `${assignment.unitCode}-${assignment.name}` || "New Assignment", ics);
+    }
+
     return (
-        <div className={`w-36 shrink-0 mr-2 ${BG200[color]} rounded-md`} style={{ height: `${boxsize + gap}rem` }} >
+        <div className={`w-36 shrink-0 mr-2 ${BG200[assignment.color]} rounded-md`} style={{ height: `${boxsize + gap}rem` }} onClick={handleClick}>
             <div className={clsx(
                 "w-full h-full flex items-center rounded-md border-2 font-semibold text-white gap-2 group",
                     "transition-all duration-300 ease-out justify-center group-hover:justify-between"
@@ -133,7 +140,7 @@ const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, Assig
             {/* header spacer to align with weeks row height */}
             <div className="w-36 h-16 mr-2" />
             {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
-                <RowLabel key={code ?? i} code={code} color={assignments[code][0].color} height={assignments[code].length}/>
+                <RowLabel key={code ?? i} code={code} assignment={assignments[code][0]} height={assignments[code].length}/>
             ))}
         </div>
 

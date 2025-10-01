@@ -1,7 +1,7 @@
 import { parseISO, format } from "date-fns";
 
-import {type Assignment, type AssignmentCalendar, mapEvents, createAssignmentCalendar} from "./calendar/CalendarTypes.ts"
-import { assignments } from "./testdata.ts";
+import {type Assignment, type AssignmentCalendar, mapEvents, createAssignmentCalendar, importCalendar} from "./calendar/CalendarTypes.ts"
+import { assignmentTypes } from "./testdata.ts";
 
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import clsx from "clsx";
@@ -10,7 +10,7 @@ import { CheckIcon, ChevronUpDownIcon, DocumentArrowDownIcon } from "@heroicons/
 
 import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions, DialogTitle,} from "@headlessui/react";
 import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
-import {useModal} from "./ModalProvider.tsx";
+import {useModal} from "../providers/ModalProvider.tsx";
 
 interface SubmissionProps {
     submission: AssignmentCalendar;
@@ -56,8 +56,8 @@ const UnitField: React.FC<UnitFieldProps> = ({setUnitCode,unitCode}) => {
     )
 }
 
-interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => void }
-export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) => {
+interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => void, onImport: (s: AssignmentCalendar ) => void }
+export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit, onImport }) => {
 
     const {open, close} = useModal();
 
@@ -75,7 +75,11 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) 
 
     const openImport = () => {
         open((id: string) => (
-            <FileInput onFiles={() => {close(id)}} accept="/" multiple />
+            <FileInput onFiles={async (f: File) => {
+                const ac = await importCalendar(f);
+                onSubmit(ac);
+                close(id);
+            }} accept="/"/>
         ))
     }
 
@@ -114,7 +118,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
     const [unitCode, setUnitCode] = useState("");
     const [pending, setPending] = useState(false);
 
-    const items = useMemo<Assignment[]>(() => Object.values(assignments), []);
+    const items = useMemo<Assignment[]>(() => Object.values(assignmentTypes), []);
     const [selected, setSelected] = useState<Assignment>(
         items.find(i => i.name === "Essay") ?? items[0]
     );
@@ -155,13 +159,12 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
                                 id="assessment-type"
                                 className="grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500"
                             >
-                <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
-                  <selected.icon className="size-5 shrink-0 text-blue-600" />
-                  <span className="block truncate">{selected.name}</span>
-                </span>
+                                <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
+                                  <selected.icon className="size-5 shrink-0 text-blue-600" />
+                                  <span className="block truncate">{selected.name}</span>
+                                </span>
                                 <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400" />
                             </ListboxButton>
-
                             <ListboxOptions className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
                                 {items.map(it => (
                                     <ListboxOption
@@ -174,8 +177,8 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
                                             <span className="ml-3 block truncate font-normal group-data-selected:font-semibold">{it.name}</span>
                                         </div>
                                         <span className="absolute inset-y-0 right-0 hidden items-center pr-4 text-blue-600 group-data-selected:flex group-data-focus:text-blue-700">
-                      <CheckIcon aria-hidden="true" className="size-5" />
-                    </span>
+                                            <CheckIcon aria-hidden="true" className="size-5" />
+                                        </span>
                                     </ListboxOption>
                                 ))}
                             </ListboxOptions>
@@ -228,6 +231,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
             end: endDate,
             name: assignmentName.trim(),
             unitCode: unitCode.trim(),
+            assignmentType:selected.name,
             events: mapEvents(selected, startDate, endDate)
         };
     }
@@ -274,25 +278,27 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
     );
 };
 
-interface FileInputProps { onFiles: (files: FileList) => void; accept?: string; multiple: boolean }
-const FileInput: React.FC<FileInputProps> = ({ onFiles, accept, multiple }) => {
+interface FileInputProps { onFiles: (f: File) => void | Promise<void>; accept?: string; }
+const FileInput: React.FC<FileInputProps> = ({ onFiles, accept }) => {
 
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [isDragging, setDragging] = useState(false)
 
-    const handleDrop = ( e: React.DragEvent ) => {
+    const handleDrop = async ( e: React.DragEvent ) => {
         e.preventDefault();
+        e.stopPropagation();
         setDragging(false)
-        if ( e.dataTransfer.files && e.dataTransfer.files.length > 0 ) {
-            onFiles(e.dataTransfer.files);
-            e.dataTransfer.clearData();
-        }
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+        await onFiles(file);
+        e.dataTransfer.clearData()
     };
 
-    const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            onFiles(e.target.files);
-        }
+    const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await onFiles(file);
+        e.target.value = "";
     };
 
     return (
@@ -318,7 +324,6 @@ const FileInput: React.FC<FileInputProps> = ({ onFiles, accept, multiple }) => {
                 ref={inputRef}
                 type="file"
                 accept={accept}
-                multiple={multiple}
                 onChange={handleFiles}
                 className="hidden"
             />

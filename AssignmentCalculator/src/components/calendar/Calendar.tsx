@@ -1,9 +1,10 @@
 // calendar element, all by me
 import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
-import {type AssignmentCalendar, parseIcsCalendar, pickRandomColor } from "./CalendarTypes.ts";
+import {type AssignmentCalendar, pickRandomColor } from "./CalendarTypes.ts";
 import TextCalendar from "./TextCalendar.tsx";
 import VisualCalendar from "./VisualCalendar.tsx";
-import FormatSwitch from "./FormatSwitch.tsx";
+import CalendarOptions from "./CalendarOptions.tsx";
+import {SemesterSelector} from "./SemesterSelector.tsx";
 
 // TODO: this is fine
 export type CalendarRef = {
@@ -45,21 +46,11 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>((_props, ref) => {
     }, [assignments]) // <- this empty array is the dependency list, a change to any objects in here triggers a re-render
 
     /* since we need an object API node, we expose this handle to addAssignment and it's API */
-    // TODO: this is fine
     useImperativeHandle(ref, () => ({ addAssignment }), [addAssignment]);
 
-    // TODO: This is fine as well
-    async function handleLoad(path: string) {
-        await parseIcsCalendar(path, (a) => {
-            addAssignment(a)
-        })
-    }
-
-    // TODO: this is where it gets interesting becuase the visual and textual formats need to be swapped between in this component
-    // TOOD: so i'll seperate the vis and text first, then handle the logic
     return (
         <>
-            <FormatSwitch isCalendarFormat={isVisual} changeFormat={setIsVisual}/>
+            <CalendarOptions isCalendarFormat={isVisual} changeFormat={setIsVisual}/>
             <VisualCalendar show={isVisual} assignments={assignments} />
             <TextCalendar show={!isVisual} assignments={assignments}/>
         </>
