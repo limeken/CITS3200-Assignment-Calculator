@@ -6,7 +6,7 @@ interface CurrentFormat{
 }
 const FormatSwitch: React.FC<CurrentFormat> = ({isCalendarFormat, changeFormat}) => {
     return (
-        <div className="shadow-xl bg-slate-400 text-center rounded-xl text-white font-bold flex flex-row mx-auto w-4/5 h-10 my-10 relative overflow-hidden">
+        <div className="shadow-xl bg-uwaBlue/50 text-center rounded-xl text-white font-bold flex flex-row mx-auto w-4/5 h-10 my-10 relative overflow-hidden">
             <div className={`z-1 absolute top-0 h-full w-1/2 bg-uwaBlue transition-transform duration-300 ${isCalendarFormat?"translate-x-0":"translate-x-full"}`}></div>
             <button type="button" 
                 className={`z-5 flex justify-center items-center gap-2 w-1/2 bg-transparent`} 

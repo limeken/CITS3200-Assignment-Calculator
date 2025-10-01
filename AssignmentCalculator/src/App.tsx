@@ -85,17 +85,33 @@ export default function App() {
             {/* University Banner */}
             <UniversityBanner showNotification={showNotification} setNotification = {setNotification} successful={true}/>
 
-            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-4">
-                <button
+            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6 relative">
+                {/* Left: instructions icon */}
+                <div className="absolute inset-y-0 left-0 flex items-center">
+                    <button
                     type="button"
                     onClick={() => openModal('instructions')}
-                    className="inline-flex items-center rounded-md bg-uwaBlue px-3 py-2 text-white hover:bg-slate-700"
-                >
-                    View instructions
-                </button>
-            </div>
+                    aria-label="Instructions"
+                    title="Instructions"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full
+                                bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800
+                                focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 shadow"
+                    >
+                    <span className="text-lg font-bold leading-none">?</span>
+                    <span className="sr-only">Open instructions</span>
+                    </button>
+                </div>
+
+                {/* Middle: create/import (stay centered) */}
+                <div className="flex justify-center">
+                    <NewAssignmentButton
+                    onImport={/*handleImportCalendar*/ ()=>{}}
+                    modalOpenKey={() => openModal('submission')}
+                    />
+                </div>
+                </div>
             {/* Needs working import!!*/}
-            <NewAssignmentButton onImport={/*handleImportCalendar*/ ()=>{}} modalOpenKey={() => openModal('submission')}/>
+
             {/* Toggle to switch between calendar and textual formats */}
             <FormatSwitch isCalendarFormat={isCalendarFormat} changeFormat={changeFormat}/>
 

@@ -32,8 +32,8 @@ const SHADOWS: Record<CalendarColor, string> = {
     pink: "shadow-pink-50", rose: "shadow-rose-50",
 };
 
-/* CalendarWeeks prop */
-const CalendarWeeks: React.FC<{ withSpacer?: boolean }> = ({ withSpacer = false }) => (
+/* Horizontal CalendarWeeks for wider viewports */
+const CalendarWeeksHorizontal: React.FC<{ withSpacer?: boolean }> = ({ withSpacer = false }) => (
     <div className="flex flex-row gap-2 items-center">
         {withSpacer && (
             <div className="mr-2">
@@ -53,6 +53,21 @@ const CalendarWeeks: React.FC<{ withSpacer?: boolean }> = ({ withSpacer = false 
     </div>
 );
 
+/* Vertical CalendarWeeks for narrower viewports - single column */
+const CalendarWeeksVertical: React.FC = () => (
+    <div className="space-y-2 mr-4">
+        {Array.from({ length: sem2.length / 7 }, (_, i) => (
+            <div key={i} className="
+                w-20 box-border rounded-md 
+                bg-uwaBlue shadow-md shadow-gray-100
+                h-[calc(theme(width.16)*7+theme(spacing.2)*6)]
+                flex justify-center items-center
+              ">
+                <span className="p-1 text-sm font-semibold text-white">Week {i + 1}</span>
+            </div>
+        ))}
+    </div>
+);
 
 const RowLabel: React.FC<{ code?: string, color: CalendarColor, height:number}> = ({ code, color, height }) => {
     // Equivalent rem sizes for tailwind sizing, used to make sure heading boxes grow correctly
@@ -67,10 +82,22 @@ const RowLabel: React.FC<{ code?: string, color: CalendarColor, height:number}> 
     );
 }
 
-/* Each assignment is declared by it's "Assignment Row" */
-/* By default, we'll render the whole semester */
+/* Column labels for vertical layout */
+const ColumnLabel: React.FC<{ code?: string, color: CalendarColor, width: number}> = ({ code, color, width }) => {
+    // Calculate width for vertical layout
+    const gap = (width-1) * 0.75;
+    const boxsize = width * 4;
+    return (
+            <div className={`h-16 shrink-0 mb-2 ${BG200[color]} rounded-md`} style={{ width: `${boxsize + gap}rem` }} >
+                <div className={"w-full h-full flex items-center justify-center rounded-md border-2 font-semibold text-white"}>
+                    {code ?? ""}
+                </div>
+            </div>
+    );
+}
 
-const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignment }) => {
+/* Horizontal assignment row for wider viewports */
+const AssignmentRowHorizontal: React.FC<{ assignment: AssignmentCalendar }> = ({ assignment }) => {
     const [start, end] = sem2.getAssignmentDates(assignment);
     const styleDefault = `aspect-square w-16 rounded-md ${BG100[assignment.color]} shadow-md ${SHADOWS[assignment.color]} transition-transform duration-150 ease-out hover:scale-95`
     const styleInRange = clsx(styleDefault, `${BG200[assignment.color]}`)
@@ -86,6 +113,40 @@ const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignmen
                     />
                 );
             })}
+        </div>
+    );
+};
+
+/* Vertical assignment column for narrower viewports */
+const AssignmentColumnVertical: React.FC<{ assignment: AssignmentCalendar }> = ({ assignment }) => {
+    const [start, end] = sem2.getAssignmentDates(assignment);
+    const styleDefault = `aspect-square w-16 rounded-md ${BG100[assignment.color]} shadow-md ${SHADOWS[assignment.color]} transition-transform duration-150 ease-out hover:scale-95`
+    const styleInRange = clsx(styleDefault, `${BG200[assignment.color]}`)
+
+    // Group days into weeks for vertical layout
+    const weeks = [];
+    for (let week = 0; week < sem2.length / 7; week++) {
+        const weekDays = [];
+        for (let day = 0; day < 7; day++) {
+            const dayIndex = week * 7 + day;
+            const inRange = start !== null && end !== null && dayIndex >= start && dayIndex <= end;
+            weekDays.push(
+                <div
+                    key={dayIndex}
+                    className={inRange ? styleInRange : styleDefault}
+                />
+            );
+        }
+        weeks.push(
+            <div key={week} className="flex flex-col gap-2">
+                {weekDays}
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-2">
+            {weeks}
         </div>
     );
 };
@@ -140,31 +201,70 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>(({show},ref) => {
             >
                 <PlusIcon className="h-5 w-5 text-gray-600" />
             </button>
-            <div className="grid grid-cols-[9rem_1fr] items-start">
-                {/* Left gutter: non-scrolling labels */}
-                <div className="space-y-3">
-                    {/* header spacer to align with weeks row height */}
-                    <div className="w-36 h-16 mr-2" />
-                    {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
-                        <RowLabel key={code ?? i} code={code} color={assignments[code][0].color} height={assignments[code].length}/>
-                    ))}
-                </div>
+            
+            {/* Horizontal Layout for wider viewports */}
+            <div className="hidden lg:block">
+                <div className="grid grid-cols-[9rem_1fr] items-start">
+                    {/* Left gutter: non-scrolling labels */}
+                    <div className="space-y-3">
+                        {/* header spacer to align with weeks row height */}
+                        <div className="w-36 h-16 mr-2" />
+                        {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
+                            <RowLabel key={code ?? i} code={code} color={assignments[code][0].color} height={assignments[code].length}/>
+                        ))}
+                    </div>
 
-                {/* Right pane: horizontally scrollable calendar */}
-                <div className="overflow-x-auto ml-2">
-                    <div className="min-w-max space-y-3 pb-4">
-                        <CalendarWeeks withSpacer={false} />
-                        {Object.keys(assignments).length === 0 ? (
-                            <p className="text-gray-400 px-2">nothing to show...</p>
-                        ) : (
-                            Object.keys(assignments).flatMap((code) => (
-                                assignments[code].map((assignment, i) => (
-                                    <AssignmentRow key={assignment.name ?? i} assignment={assignment} />
+                    {/* Right pane: horizontally scrollable calendar */}
+                    <div className="overflow-x-auto ml-2">
+                        <div className="min-w-max space-y-3 pb-4">
+                            <CalendarWeeksHorizontal withSpacer={false} />
+                            {Object.keys(assignments).length === 0 ? (
+                                <p className="text-gray-400 px-2">nothing to show...</p>
+                            ) : (
+                                Object.keys(assignments).flatMap((code) => (
+                                    assignments[code].map((assignment, i) => (
+                                        <AssignmentRowHorizontal key={assignment.name ?? i} assignment={assignment} />
+                                    ))
                                 ))
-                            ))
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="block lg:hidden">
+                {Object.keys(assignments).length === 0 ? (
+                    <p className="text-gray-400 px-2">nothing to show...</p>
+                ) : (
+                    <div className="space-y-4">
+                        {/* Unit code labels - horizontal row (grouped like horizontal version) */}
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                            {Object.keys(assignments).map((code) => (
+                                <ColumnLabel 
+                                    key={code} 
+                                    code={code} 
+                                    color={assignments[code][0].color} 
+                                    width={assignments[code].length}
+                                />
+                            ))}
+                        </div>
+                        
+                        {/* Main vertical layout: week headers + assignment columns */}
+                        <div className="flex gap-2">
+                            {/* Assignment columns - scrollable horizontally if needed */}
+                            <div className="flex gap-2 overflow-x-auto min-w-0">
+                                {Object.keys(assignments).flatMap((code) =>
+                                    assignments[code].map((assignment, i) => (
+                                        <AssignmentColumnVertical key={`${code}-${i}`} assignment={assignment} />
+                                    ))
+                                )}
+                            </div>
+                            
+                            {/* Week headers - single column on the right */}
+                            <CalendarWeeksVertical />
+                        </div>
+                    </div>
+                )}
             </div>
         </section>
         <TextualFormat show={!show} assignments={assignments}/>
