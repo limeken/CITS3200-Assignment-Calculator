@@ -24,3 +24,14 @@ dist-ssr
 *.sln
 *.sw?
 
+# Python
+__pycache__/
+*.py[cod]
+
+# Env & local
+.venv/
+.env
+
+# Artifacts
+*.pdf
+*.ics
