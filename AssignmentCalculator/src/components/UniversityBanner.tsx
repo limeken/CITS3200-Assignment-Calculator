@@ -19,7 +19,7 @@ export default function UniversityBanner({showNotification,setNotification,succe
             <div className="flex items-center justify-between w-full h-2/5 bg-uwaGrey">
                 <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
                     <h1
-                        className="text-2xl font-bold text-uwaBlue text-left font-uwa">
+                        className="text-4xl font-bold text-uwaBlue text-left font-uwa">
                         Academic Skills Centre Assignment Date Calculator
                     </h1>
                 </div>
