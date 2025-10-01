@@ -8,7 +8,7 @@
     height: auto;
   }
   body {
-    @apply m-0 min-h-screen bg-gray-50 text-gray-900 font-sans;
+    @apply m-0 min-h-screen bg-gray-50 text-gray-900 font-sans pt-50 pb-20;
   }
   /* Make the root take full width; no max-width or padding here */
   #root {
