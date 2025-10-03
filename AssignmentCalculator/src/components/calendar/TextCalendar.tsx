@@ -37,7 +37,7 @@ const AssignmentStepsComponent: React.FC<{assignment:AssignmentCalendar|null}> =
                         {/* Panel that is shown for a given step when selected */}
                         <div className="overflow-hidden rounded-xl">
                             <div className={`bg-white rounded-xl w-full transition-all duration-300 ease-in-out origin-top
-                                ${index === openStep ? "max-h-50 p-5 overflow-y-scroll" : "max-h-0 p-0 overflow-hidden"}`}>
+                                ${index === openStep ? "max-h-50 p-5 overflow-y-auto" : "max-h-0 p-0 overflow-hidden"}`}>
                                 <ul className="mt-2 flex list-disc flex-col gap-3 pl-4 text-md">
                                     {/* Lists all the dot points within a given step's panel */}
                                     {step.instructions && step.instructions.map((dotpoint,id)=>

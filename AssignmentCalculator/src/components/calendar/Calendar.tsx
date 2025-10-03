@@ -5,6 +5,7 @@ import TextCalendar from "./TextCalendar.tsx";
 import VisualCalendar from "./VisualCalendar.tsx";
 import CalendarOptions from "./CalendarOptions.tsx";
 import {SemesterSelector} from "./SemesterSelector.tsx";
+import PriorityQueue from "./PriorityQueue.tsx";
 
 // TODO: this is fine
 export type CalendarRef = {
@@ -22,6 +23,7 @@ type CalendarProps = {};
 const Calendar = forwardRef<CalendarRef, CalendarProps>((_props, ref) => {
 
     const [assignments, setAssignments] = useState<Record<string, AssignmentCalendar[]>>({});
+    const [newestAssignment, setNewestAssignment] = useState<AssignmentCalendar|null>(null);
 
     //  TODO: Explain why the visual settings are in <Calendar />
     const [isVisual, setIsVisual] = useState<boolean>(true);
@@ -41,6 +43,7 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>((_props, ref) => {
             a.color = pickRandomColor();
             setAssignments(prev => ({...prev,[a.unitCode!]:[a]}))
         }
+        setNewestAssignment(a);
 
         console.log(a)
     }, [assignments]) // <- this empty array is the dependency list, a change to any objects in here triggers a re-render
@@ -49,8 +52,9 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>((_props, ref) => {
     useImperativeHandle(ref, () => ({ addAssignment }), [addAssignment]);
 
     return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col gap-4 items-center">
             <CalendarOptions isCalendarFormat={isVisual} changeFormat={setIsVisual}/>
+            <PriorityQueue newest={newestAssignment}/>
             <VisualCalendar show={isVisual} assignments={assignments} />
             <TextCalendar show={!isVisual} assignments={assignments}/>
         </div>
