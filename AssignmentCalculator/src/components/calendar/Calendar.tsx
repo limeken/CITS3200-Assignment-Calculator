@@ -49,11 +49,11 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>((_props, ref) => {
     useImperativeHandle(ref, () => ({ addAssignment }), [addAssignment]);
 
     return (
-        <>
+        <div className="flex flex-col items-center">
             <CalendarOptions isCalendarFormat={isVisual} changeFormat={setIsVisual}/>
             <VisualCalendar show={isVisual} assignments={assignments} />
             <TextCalendar show={!isVisual} assignments={assignments}/>
-        </>
+        </div>
     );
 });
 
