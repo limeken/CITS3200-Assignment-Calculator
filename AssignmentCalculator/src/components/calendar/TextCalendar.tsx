@@ -17,7 +17,8 @@ const AssignmentStepsComponent: React.FC<{assignment:AssignmentCalendar|null}> =
     if(assignment != null){
         return (
             <div className={`flex flex-col items-center bg-slate-200 rounded-xl shadow-soft p-4 w-full`}>
-                <h1 className="font-bold">{assignment.unitCode} - {assignment.name}</h1>
+                <h1 className="font-bold text-xl">{assignment.unitCode} - {assignment.name}</h1>
+                <hr className="w-4/5 my-5"/>
                 <div className = "flex flex-col gap-2 items-center w-3/4">
                 {/* This creates a descending sequence of step elements to show*/}
                 {assignmentType!.events.map((step, index)=>
@@ -32,14 +33,16 @@ const AssignmentStepsComponent: React.FC<{assignment:AssignmentCalendar|null}> =
                         </button>
 
                         {/* Panel that is shown for a given step when selected */}
-                        <div className={`bg-white rounded-xl w-full transition-all duration-300 ease-in-out origin-top
-                            ${index === openStep ? "h-50 p-5 overflow-y-scroll" : "h-0 p-0 overflow-hidden"}`}>
-                            <ul className="mt-2 flex list-disc flex-col gap-3 pl-4 text-md">
-                                {/* Lists all the dot points within a given step's panel */}
-                                {step.instructions && step.instructions.map((dotpoint,id)=>
-                                    <li key={id}>{dotpoint}</li>
-                                )}
-                            </ul>
+                        <div className="overflow-hidden rounded-xl">
+                            <div className={`bg-white rounded-xl w-full transition-all duration-300 ease-in-out origin-top
+                                ${index === openStep ? "max-h-50 p-5 overflow-y-scroll" : "max-h-0 p-0 overflow-hidden"}`}>
+                                <ul className="mt-2 flex list-disc flex-col gap-3 pl-4 text-md">
+                                    {/* Lists all the dot points within a given step's panel */}
+                                    {step.instructions && step.instructions.map((dotpoint,id)=>
+                                        <li key={id}>{dotpoint}</li>
+                                    )}
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 )}
