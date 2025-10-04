@@ -38,29 +38,35 @@ const PriorityQueue: React.FC<{newest:AssignmentCalendar|null}> = ({newest}) => 
     useEffect(() => {setSortedAssignments(insertionSort(sortedAssignments, newest))}, [newest])
 
     // Picks colour based on distance from due date
-    const pickPriorityColour = (end:Date) => {
+    const pickPriority = (end:Date, intensity:number) => {
         const current = Date.now()
         if(current > end.getTime() - MED && current < end.getTime() - HIGH){
-            return "bg-yellow-200"
+            return {base:"bg-yellow-200", days:differenceInDays(end, Date.now())};
         }
         else if(current > end.getTime() - HIGH){
-            return "bg-red-200"
+            return {base:"bg-red-200", days:differenceInDays(end, Date.now())};
         }
-        else{return "bg-green-200"}
+        else{return {base:"bg-green-200", days:differenceInDays(end, Date.now())}}
     }
 
     return(
-            <div className="w-4/5 h-50 px-5 bg-slate-300 rounded-xl flex flex-row gap-4 items-center overflow-x-auto">
-                {sortedAssignments.map((assignment)=>
-                    <div className="w-60 h-40 flex-shrink-0 rounded-xl bg-white overflow-hidden">
-                        <div className={`h-10 w-full flex items-center justify-center font-bold ${pickPriorityColour(assignment.end)}`}>
-                            {`Due in: ${differenceInDays(assignment.end, Date.now())} Days`}
+            <div className="w-4/5 h-60 p-5 bg-slate-300 rounded-xl flex flex-row gap-4 items-center overflow-x-auto">
+                {sortedAssignments.map((assignment)=>{
+                    const { base, days} = pickPriority(assignment.end, 300);
+                    return (
+                        <div className={`h-full w-70 flex flex-col flex-shrink-0 rounded-lg bg-white overflow-hidden shadow-lg transition duration-300 ease-in-out hover:scale-105`}>
+                            <h1 className={`text-lg font-bold w-full h-1/4 flex justify-center items-center ${base}`}>{`Due in: ${days} Days`}</h1>
+                            <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Unit: </span>{assignment.unitCode}</p>
+                            <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Assignment: </span>{assignment.name}</p>
+                            <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Type: </span>{assignment.assignmentType}</p>
+                            <p className="p-2 text-sm"><span className="font-semibold">Due Date: </span>{assignment.end.toISOString().substring(0, 10).replaceAll("-","/")}</p>
                         </div>
-                    </div>
+                        )
+                        }
                     )
                 }
             </div>
-    )
+        )
 }
 
 export default PriorityQueue;
