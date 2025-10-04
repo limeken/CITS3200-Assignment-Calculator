@@ -8,13 +8,14 @@ import clsx from "clsx";
 
 import { CheckIcon, ChevronUpDownIcon, DocumentArrowDownIcon } from "@heroicons/react/20/solid";
 
-import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions, DialogTitle,} from "@headlessui/react";
+import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions} from "@headlessui/react";
 import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
 import {useModal} from "../providers/ModalProvider.tsx";
 
 interface SubmissionProps {
     submission: AssignmentCalendar;
-    onSubmit:  (submission: AssignmentCalendar) => Promise<void>;
+    isNew: boolean;
+    onSubmit:  (submission: AssignmentCalendar, isNew:boolean, oldSubmission: AssignmentCalendar) => Promise<void>;
     onClose: () => void;
     errors: Array<boolean>;
 }
@@ -56,16 +57,20 @@ const UnitField: React.FC<UnitFieldProps> = ({setUnitCode,unitCode}) => {
     )
 }
 
-interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => void, onImport: (s: AssignmentCalendar ) => void }
-export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit, onImport }) => {
+// Component used to create a new assignment object
+interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar, b:boolean, old: AssignmentCalendar) => void}
+export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) => {
 
     const {open, close} = useModal();
 
     const openSubmission = () => {
         open((id) => (
-            <Submission submission={ createAssignmentCalendar()} errors={[false, false, false] }
-                onSubmit={async (s) => {
-                    onSubmit(s);
+            <Submission 
+                submission={ createAssignmentCalendar()} 
+                isNew={true}
+                errors={[false, false, false] }
+                onSubmit={async (s,b,o) => {
+                    onSubmit(s,b,o);
                     close(id);
                 }}
                 onClose={() => close(id)}
@@ -77,7 +82,7 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit, on
         open((id: string) => (
             <FileInput onFiles={async (f: File) => {
                 const ac = await importCalendar(f);
-                onSubmit(ac);
+                onSubmit(ac,true,ac);
                 close(id);
             }} accept="/"/>
         ))
@@ -111,12 +116,23 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit, on
  * The modal is provided by the global ModalProvider host.
  * Keep markup minimal.
  */
-const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, errors}) => {
+const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onClose, errors}) => {
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [assignmentName, setAssignmentName] = useState("");
     const [unitCode, setUnitCode] = useState("");
     const [pending, setPending] = useState(false);
+
+    // If the asisgnment is being edited, unpack its old variables into states
+    useEffect(()=>{    
+        if(!isNew){
+            setStartDate(submission.start);
+            setEndDate(submission.end);
+            setAssignmentName(submission.name!);
+            setUnitCode(submission.unitCode!)
+        }
+    },[submission])
+
 
     const items = useMemo<Assignment[]>(() => Object.values(assignmentTypes), []);
     const [selected, setSelected] = useState<Assignment>(
@@ -223,6 +239,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
         );
     };
 
+    // Called on submission to pack state variables into the newly created assignment before being sent off
     function buildSubmission(): AssignmentCalendar {
         if (!startDate || !endDate) throw new Error("invalid dates");
         return {
@@ -236,11 +253,12 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
         };
     }
 
+    // Attempts to add/update assignments to the website
     async function onCreate() {
         if (!canSubmit || pending) return;
         setPending(true);
         try {
-            await onSubmit(buildSubmission());
+            await onSubmit(buildSubmission(),isNew,submission);
             onClose();
         } finally {
             setPending(false);
@@ -249,7 +267,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
 
     return (
         <div className="bg-white p-5 flex flex-col justify-center">
-            <DialogTitle className="h3 text-base font-semibold text-gray-900 w-full mb-2"> Create New Assignment </DialogTitle>
+            <h1 className="text-base font-semibold text-gray-900 w-full mb-2"> {isNew?"Create New Assignment":"Edit Assignment"} </h1>
             <form className="my-3 text-left w-full flex flex-col gap-2 items-center justify-center">
                 <section className="gap-4 flex flex-col items-center justify-center w-4/5">
                     <AssessmentTypeInput />
@@ -257,22 +275,17 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
                     <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
                     <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
                 </section>
-                <div className="mt-4 flex items-center justify-end gap-2 w-full">
-                    <button type="button" className="inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100" onClick={onClose}>
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCreate}
-                        disabled={!canSubmit || pending}
-                        className={clsx(
-                            "inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
-                            !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
-                        )}
-                    >
-                        {pending ? "Creating..." : "Create"}
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    onClick={onCreate}
+                    disabled={!canSubmit || pending}
+                    className={clsx(
+                        "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
+                        !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+                    )}
+                >
+                    {pending ? "Creating..." : "Create"}
+                </button>
             </form>
         </div>
     );

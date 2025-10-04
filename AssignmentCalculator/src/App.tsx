@@ -30,9 +30,10 @@ export default function App() {
     const calRef = useRef<CalendarRef>(null);
 
     /* when we add the assignment, trigger a few things */
-    const onSubmitAssignment = async (submission: AssignmentCalendar) => {
+    const onSubmitAssignment = async (submission: AssignmentCalendar, isNew:boolean, oldSubmission:AssignmentCalendar) => {
         setNotification(true)
-        await calRef.current?.addAssignment(submission);
+        if(isNew){await calRef.current?.addAssignment(submission);}
+        else{await calRef.current?.updateAssignment(oldSubmission,submission);}
     }
 
     // This returns the finalised webpage, including all key components
@@ -46,10 +47,10 @@ export default function App() {
             <InstructionsButton />
 
             {/* Button which triggers the assignment submission modal */}
-            <SubmissionButton onSubmit={(submission) => onSubmitAssignment(submission)} />
+            <SubmissionButton onSubmit={onSubmitAssignment}/>
 
             {/* Displays either the calendar or textual visualisation*/}
-            <Calendar ref={calRef} />
+            <Calendar ref={calRef} onSubmit={onSubmitAssignment}/>
 
             {/* TODO: All these modals need to be managed by one global modal manager. */}
             {/* <InstructionsModal isOpen={modals.instructions} onClose={() => closeModal('instructions')} /> */}
