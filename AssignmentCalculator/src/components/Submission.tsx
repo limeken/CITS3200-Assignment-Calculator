@@ -15,7 +15,9 @@ import {useModal} from "../providers/ModalProvider.tsx";
 interface SubmissionProps {
     submission: AssignmentCalendar;
     isNew: boolean;
-    onSubmit:  (submission: AssignmentCalendar, isNew:boolean, oldSubmission: AssignmentCalendar) => Promise<void>;
+    onSubmit?:  (submission: AssignmentCalendar) => Promise<void>;
+    onUpdate?:  (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => Promise<void>;
+    onDelete?:  (assignment: AssignmentCalendar) => Promise<void>;
     onClose: () => void;
     errors: Array<boolean>;
 }
@@ -58,19 +60,17 @@ const UnitField: React.FC<UnitFieldProps> = ({setUnitCode,unitCode}) => {
 }
 
 // Component used to create a new assignment object
-interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar, b:boolean, old: AssignmentCalendar) => void}
+interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => void}
 export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) => {
-
     const {open, close} = useModal();
-
     const openSubmission = () => {
         open((id) => (
             <Submission 
                 submission={ createAssignmentCalendar()} 
                 isNew={true}
                 errors={[false, false, false] }
-                onSubmit={async (s,b,o) => {
-                    onSubmit(s,b,o);
+                onSubmit={async (s) => {
+                    onSubmit(s);
                     close(id);
                 }}
                 onClose={() => close(id)}
@@ -82,7 +82,7 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) 
         open((id: string) => (
             <FileInput onFiles={async (f: File) => {
                 const ac = await importCalendar(f);
-                onSubmit(ac,true,ac);
+                onSubmit(ac);
                 close(id);
             }} accept="/"/>
         ))
@@ -111,18 +111,67 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) 
         </section>
     )
 }
+// FUNCTIONALITY BUTTONS
+// Used to add completely new assignments
+const CreationButton: React.FC<{pending:boolean, canSubmit:boolean, onCreate:()=>void, }> = ({pending, canSubmit, onCreate}) => {
+    return (
+            <button
+                type="button"
+                onClick={onCreate}
+                disabled={!canSubmit || pending}
+                className={clsx(
+                "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
+                !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+                )}
+                >
+                {pending ? "Creating..." : "Create"}
+            </button>
+    )
+}
 
+// Used to update existing assignments
+const UpdateButton: React.FC<{canSubmit:boolean, pending:boolean, onUpdate:()=>void }> = ({canSubmit, pending, onUpdate}) => {
+    return (
+            <button
+                type="button"
+                onClick={onUpdate}
+                disabled={!canSubmit || pending}
+                className={clsx(
+                "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
+                !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+                )}
+                >
+                {pending ? "Updating..." : "Update"}
+            </button>
+    )
+}
+
+// Used to delete the selected assignment
+const DeleteButton: React.FC<{pending:boolean, onDelete:()=>void}> = ({pending, onDelete}) => {
+    return (
+            <button
+                type="button"
+                onClick={onDelete}
+                className={clsx(
+                "bg-red-400 w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
+                )}
+                >
+                {pending ? "Deleting..." : "Delete"}
+            </button>
+    )
+}
 /** This component is now "content-only".
  * The modal is provided by the global ModalProvider host.
  * Keep markup minimal.
  */
-const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onClose, errors}) => {
+const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onClose, onUpdate, onDelete, errors}) => {
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [assignmentName, setAssignmentName] = useState("");
     const [unitCode, setUnitCode] = useState("");
     const [pending, setPending] = useState(false);
 
+    // UNPACK ASSIGNMENT CONTEXT - UPDATE
     // If the asisgnment is being edited, unpack its old variables into states
     useEffect(()=>{    
         if(!isNew){
@@ -253,12 +302,36 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
         };
     }
 
-    // Attempts to add/update assignments to the website
-    async function onCreate() {
+    // ASYNC FUNCTIONS
+    // Attempts to add assignment to the website asyncronously
+    async function onCreateAsync() {
         if (!canSubmit || pending) return;
         setPending(true);
         try {
-            await onSubmit(buildSubmission(),isNew,submission);
+            await onSubmit!(buildSubmission());
+            onClose();
+        } finally {
+            setPending(false);
+        }
+    }
+
+    // Attempts to update an existing assignment asyncronously
+    async function onUpdateAsync(oldAssignment:AssignmentCalendar, newAssignment:AssignmentCalendar) {
+        if (!canSubmit || pending) return;
+        setPending(true);
+        try {
+            await onUpdate!(oldAssignment, newAssignment);
+            onClose();
+        } finally {
+            setPending(false);
+        }
+    }
+
+    // Attempts to delet an existing assignment asyncronously
+    async function onDeleteAsync(assignment:AssignmentCalendar) {
+        setPending(true);
+        try {
+            await onDelete!(assignment);
             onClose();
         } finally {
             setPending(false);
@@ -275,17 +348,16 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
                     <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
                     <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
                 </section>
-                <button
-                    type="button"
-                    onClick={onCreate}
-                    disabled={!canSubmit || pending}
-                    className={clsx(
-                        "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
-                        !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
-                    )}
-                >
-                    {pending ? "Creating..." : "Create"}
-                </button>
+                {/* Render different buttons for creation & edit pages */}
+                <div className="flex flex-row justify-center items-center gap-4">
+                    {isNew?
+                        <CreationButton pending={pending} canSubmit={canSubmit} onCreate={onCreateAsync}/>:
+                        <>
+                        <DeleteButton pending={pending} onDelete={()=>onDeleteAsync(submission)}/>
+                        <UpdateButton pending={pending} canSubmit={canSubmit} onUpdate={()=>onUpdateAsync(submission,buildSubmission())}/>
+                        </>
+                    }
+                </div>
             </form>
         </div>
     );

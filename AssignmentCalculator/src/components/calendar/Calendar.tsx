@@ -15,14 +15,14 @@ export type CalendarRef = {
     updateAssignment: (o: AssignmentCalendar, n: AssignmentCalendar) => void;
 }
 
-// Pass down the assignment modal submission function
-type CalendarProps = {onSubmit: (s: AssignmentCalendar, b: boolean, o: AssignmentCalendar) => void};
+// Passes down the utilities of update & delete, used within the priority queue
+type CalendarProps = {onUpdate: (o: AssignmentCalendar ,n: AssignmentCalendar) => void, onDelete: (a: AssignmentCalendar)=>void};
 
 /*  this initialisation is a bit confusing, so let me explain
 *   we want to access our calendar element from the top-level App component (meaning we need a ref)
 *   normally React ref's only work on DOM elements (div's, class components, etc...)
 *   so we wrap our component in a forwardRef */
-const Calendar = forwardRef<CalendarRef, CalendarProps>(({onSubmit}, ref) => {
+const Calendar = forwardRef<CalendarRef, CalendarProps>(({onUpdate, onDelete}, ref) => {
     
     const [assignments, setAssignments] = useState<Record<string, AssignmentCalendar[]>>({});
     const [newestAssignment, setNewestAssignment] = useState<AssignmentCalendar|null>(null);
@@ -39,6 +39,7 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>(({onSubmit}, ref) => {
         }
 
         // If no such unit code exists yet, create a new color (or inherit old color of edited assignment)
+        // HACK SOLUTION FOR COLOR: when unit code branch is wiped, color is directly passed to prevent identity loss
         else{
             assignment.color = color?color:pickRandomColor();
             return {...prev,[assignment.unitCode!]:[assignment]};
@@ -81,7 +82,7 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>(({onSubmit}, ref) => {
     return (
         <div className="flex flex-col gap-4 items-center">
             <CalendarOptions isCalendarFormat={isVisual} changeFormat={setIsVisual}/>
-            <PriorityQueue newest={newestAssignment} onSubmit={onSubmit}/>
+            <PriorityQueue newest={newestAssignment} onUpdate={onUpdate} onDelete={onDelete}/>
             <VisualCalendar show={isVisual} assignments={assignments} />
             <TextCalendar show={!isVisual} assignments={assignments}/>
         </div>

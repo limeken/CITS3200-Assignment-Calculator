@@ -10,11 +10,12 @@ import Submission from "../Submission";
 const MED = (14)* 24 * 60 * 60 * 1000;
 const HIGH = (5)* 24 * 60 * 60 * 1000;
 
-const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onSubmit: (submission: AssignmentCalendar, isNew:boolean, oldSubmission: AssignmentCalendar) => void}> = ({newest,onSubmit}) => {
+const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => void, onDelete: (assignment:AssignmentCalendar) => void}> = 
+({newest, onUpdate, onDelete}) => {
     // Keeps track of the currently sorted list of assignments
     const [sortedAssignments,setSortedAssignments] = useState<AssignmentCalendar[]>([]);
 
-    // Used to delete stale assignments
+    // Used to delete stale assignments once main assignment list is updated
     const deleteAssignment = (assignment:AssignmentCalendar) => { setSortedAssignments((prev) =>{return [...prev].filter(a => a !== assignment);})}
 
     // Reopen modified submission modal for editing
@@ -25,9 +26,15 @@ const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onSubmit: (submis
                 submission={selected} 
                 isNew={false}
                 errors={[false, false, false] }
-                onSubmit={async (s,b,o) => {
+                onUpdate={async (o,n) => {
+                    {/* This wipes assignment memory from priority queue */}
                     deleteAssignment(selected);
-                    onSubmit(s,b,o);
+                    onUpdate(o,n);
+                    close(id);
+                }}
+                onDelete={async (a) => {
+                    deleteAssignment(selected);
+                    onDelete(a);
                     close(id);
                 }}
                 onClose={() => close(id)}
