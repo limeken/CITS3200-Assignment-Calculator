@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import type { AssignmentCalendar } from "./CalendarTypes.ts";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon, MinusIcon} from "@heroicons/react/24/solid";
-import {DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {DocumentIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 import { assignmentTypes } from "../testdata.ts";
 
@@ -108,13 +108,19 @@ const TextCalendar: React.FC<{show:boolean; assignments:Record<string, Assignmen
     }
     else{        
         return (
-            <div className={`size-150 bg-slate-200 rounded-xl flex flex-col gap-2 justify-center items-center shadow-xl ${show?"":"hidden"}`}>
-                <div className="relative size-45">
-                    <DocumentTextIcon className="z-20 w-30 h-30 absolute left-1/2 top-1/2 text-slate-300 transform -translate-x-1/2 -translate-y-1/2"/>
-                    <XMarkIcon className="z-21 w-50 h-50 absolute left-1/2 top-1/2 text-red-300 transform -translate-x-1/2 -translate-y-1/2" strokeWidth={0.8}/>
+            <div className={`size-150 p-5 bg-slate-200 rounded-xl flex justify-center items-center shadow-xl ${show?"":"hidden"}`}>
+                <div className="size-full rounded-xl flex flex-col gap-6 justify-center items-center border-4 border-slate-300 relative">
+                    <div className="relative inline-block text-slate-300">
+                        <DocumentIcon className="w-30 h-30" />
+                        <XMarkIcon
+                            className="w-50 h-50 absolute top-2/5 left-1/2 -translate-x-1/2 -translate-y-2/5 text-slate-200 z-0" strokeWidth={1.6}
+                        />
+                        <XMarkIcon
+                            className="w-50 h-50 absolute top-2/5 left-1/2 -translate-x-1/2 -translate-y-2/5 text-red-300 z-10" strokeWidth={0.9}
+                        />
+                    </div>
+                    <p className="font-semibold text-slate-400 text-xl"> No Assignments Available.</p>
                 </div>
-                <div className="font-semibold text-slate-400 text-lg">No assignments available</div>
-                <button className="bg-uwaBlue w-1/3 h-15 text-white rounded-xl font-bold shadow-xl">Create</button>
             </div>
         );
     }
