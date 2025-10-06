@@ -1,9 +1,10 @@
-import React, { useState, Fragment} from "react";
+import React, { useState } from "react";
 import type { AssignmentCalendar } from "./CalendarTypes.ts";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import { assignmentTypes } from "../testdata.ts";
 import type { Assignment } from "./CalendarTypes.ts";
+import { pageSection } from "../../styles/tailwindStyles.ts";
 
 
 // This component displays the steps for valid assignments, in top-down order
@@ -11,15 +12,18 @@ const AssignmentStepsComponent: React.FC<{assignmentTypes:Record<string,Assignme
     const assignmentType = assignment ? assignmentTypes[assignment.assignmentType] : null;
     if(assignment != null){
         return (
-            <div className={`flex flex-col items-center bg-slate-200 rounded-xl shadow-soft p-4 w-4/5`}>
-                <h1 className="font-bold">{assignment.unitCode} - {assignment.name}</h1>
-                <div className = "flex flex-col gap-4 items-center w-3/4">
-                {assignmentType!.events.map((step, index)=>
-                    <div className="bg-slate-300 rounded-xl w-full h-10 flex items-center justify-center gap-2">
-                        <span className="font-bold">Step {index+1}: {step.name}</span>
-                        <ChevronDownIcon className="w-5 h-5"/>
-                    </div>
-                )}
+            <div className="flex w-full flex-col items-center gap-5 rounded-2xl border border-slate-200/70 bg-white/90 p-5 text-center shadow-[0_24px_55px_-32px_rgba(15,23,42,0.35)] sm:w-4/5 lg:w-3/4">
+                <h1 className="text-base font-semibold text-slate-900 sm:text-lg">{assignment.unitCode} - {assignment.name}</h1>
+                <div className="flex w-full flex-col items-center gap-3 sm:w-3/4">
+                    {assignmentType!.events.map((step, index)=>
+                        <div
+                            key={`${assignment.unitCode}-${assignment.name}-${index}`}
+                            className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200/70 bg-white/80 px-4 py-2 text-left text-sm font-medium text-slate-600 transition hover:-translate-y-[1px] hover:border-slate-300 sm:text-base"
+                        >
+                            <span>Step {index+1}: {step.name}</span>
+                            <ChevronDownIcon className="h-5 w-5 text-slate-400"/>
+                        </div>
+                    )}
                 </div>
             </div>
         )
@@ -34,43 +38,43 @@ const AssignmentStepsComponent: React.FC<{assignmentTypes:Record<string,Assignme
 const TextCalendar: React.FC<{show:boolean; assignments:Record<string, AssignmentCalendar[]>}> = ({show, assignments}) => {
     const[currentAssignment, setCurrentAssignment] = useState<AssignmentCalendar|null>(null);
     return(
-        <section className={`flex flex-col items-center gap-5 mx-auto w-full max-w-6xl px-4 sm:px-6 mt-6 ${show?"":"hidden"}`}>
-            {/* Tab group for unit selection */}
-            <TabGroup className="w-full flex flex-col gap-5 justify-center mx-auto w-full">
-                {/* Lists buttons for each unit*/}
-                <TabList className="bg-slate-200 rounded-xl shadow-soft p-4 grid grid-cols-4 gap-4 w-full">
-                    {Object.keys(assignments).map((code)=> 
-                        <Tab key={code}
-                            className="w-full h-12 bg-uwaBlue rounded-lg text-white px-4 flex items-center justify-between data-selected:bg-blue-800"
-                        >
-                            {({ selected }) => (
-                                <>
-                                <span className="font-bold">{code}</span>
-                                <CheckIcon className={`w-5 h-5 ml-2 text-white ${selected ? 'block' : 'hidden'}`} />
-                                </>
-                            )}
-                        </Tab>
-                    )}
-                </TabList>
+        <section className={`${pageSection} mt-6 ${show ? "" : "hidden"}`}>
+            <div className="surface-card flex flex-col items-center gap-6 px-4 py-6 sm:px-6">
+                <TabGroup className="flex w-full flex-col gap-5">
+                    <TabList className="grid w-full grid-cols-1 gap-3 rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)] sm:grid-cols-2 lg:grid-cols-4">
+                        {Object.keys(assignments).map((code)=> 
+                            <Tab
+                                key={code}
+                                className="group flex h-12 w-full items-center justify-between rounded-xl border border-transparent bg-white/75 px-4 text-sm font-semibold text-slate-600 transition hover:border-slate-200/70 hover:text-slate-700 data-selected:border-transparent data-selected:bg-gradient-to-r data-selected:from-uwaBlue data-selected:via-indigo-500 data-selected:to-purple-500 data-selected:text-white data-selected:shadow-[0_24px_50px_-28px_rgba(79,70,229,0.65)] sm:text-base"
+                            >
+                                {({ selected }) => (
+                                    <>
+                                        <span className="font-semibold tracking-wide">{code}</span>
+                                        <CheckIcon className={`ml-2 h-5 w-5 transition-opacity duration-200 ${selected ? 'opacity-100' : 'opacity-0'}`} />
+                                    </>
+                                )}
+                            </Tab>
+                        )}
+                    </TabList>
 
-                {/* Shows assessment buttons based on unit selected */}
-                <TabPanels className="w-full">
-                    {Object.keys(assignments).map((code)=> 
-                        <TabPanel key={code} className="bg-slate-200 rounded-xl shadow-soft p-4 grid grid-cols-4 gap-4 w-full">
-                            {/* Tab group for assessments associated with a unit */}
-                            {assignments[code].map((assignment)=>
-                            <button 
-                                className="w-full h-12 bg-white rounded-lg px-4 flex items-center justify-between"
-                                onClick={()=>setCurrentAssignment(assignment)}
-                                >
-                                {assignment.name}
-                            </button>
-                            )}
-                        </TabPanel>
-                    )}
-                </TabPanels>
-            </TabGroup>
-            <AssignmentStepsComponent assignmentTypes={assignmentTypes} assignment={currentAssignment}/>
+                    <TabPanels className="w-full">
+                        {Object.keys(assignments).map((code)=> 
+                            <TabPanel key={code} className="grid w-full grid-cols-1 gap-3 rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)] sm:grid-cols-2 lg:grid-cols-3">
+                                {assignments[code].map((assignment)=>
+                                    <button
+                                        key={`${code}-${assignment.name}`}
+                                        className="flex h-12 w-full items-center justify-between rounded-xl border border-slate-200/60 bg-white/90 px-4 text-sm font-semibold text-slate-600 transition hover:-translate-y-[1px] hover:border-slate-300 hover:text-uwaBlue sm:text-base"
+                                        onClick={()=>setCurrentAssignment(assignment)}
+                                    >
+                                        {assignment.name}
+                                    </button>
+                                )}
+                            </TabPanel>
+                        )}
+                    </TabPanels>
+                </TabGroup>
+                <AssignmentStepsComponent assignmentTypes={assignmentTypes} assignment={currentAssignment}/>
+            </div>
         </section>
     )
 }

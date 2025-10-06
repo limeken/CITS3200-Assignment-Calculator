@@ -3,8 +3,10 @@ import {type AssignmentCalendar, type AssignmentEvent, type CalendarColor, downl
 import clsx from "clsx";
 import {Popover, PopoverButton, PopoverPanel} from "@headlessui/react";
 import {ArrowDownOnSquareIcon} from "@heroicons/react/24/outline";
+import { pageSection } from "../../styles/tailwindStyles.ts";
 
 const DAYS_MS = 24 * 60 * 60 * 1000;
+const WEEK_DAYS = 7;
 
 // TODO: this is a terrible way to do this
 const BG100: Record<CalendarColor, string> = {
@@ -26,16 +28,6 @@ const BG200: Record<CalendarColor, string> = {
     pink: "bg-pink-200", rose: "bg-rose-200",
 };
 
-// TODO: im sure you get the idea by now
-const SHADOWS: Record<CalendarColor, string> = {
-    red: "shadow-red-50", orange: "shadow-orange-50", amber: "shadow-amber-50",
-    yellow: "shadow-yellow-50", lime: "shadow-lime-50", green: "shadow-green-50",
-    emerald: "shadow-emerald-50", teal: "shadow-teal-50", cyan: "shadow-cyan-50",
-    sky: "shadow-sky-50", blue: "shadow-blue-50", indigo: "shadow-indigo-50",
-    violet: "shadow-violet-50", purple: "shadow-purple-50", fuchsia: "shadow-fuchsia-50",
-    pink: "shadow-pink-50", rose: "shadow-rose-50",
-};
-
 interface AssignmentDateProps {
     uid: number;
     color: CalendarColor;
@@ -50,9 +42,12 @@ const AssignmentDate: React.FC<AssignmentDateProps> = ({ uid, color, event }) =>
         <div
             key={uid}
             className={clsx(
-                `${event ? BG200[color] : BG100[color]}`,
-                `aspect-square w-16 rounded-md ${BG100[color]} shadow-md ${SHADOWS[color]} transition-transform duration-150 ease-out hover:scale-95`
+                "aspect-square rounded-xl border border-slate-200/70 transition-transform duration-200 ease-out hover:-translate-y-[1px]",
+                event
+                    ? [BG200[color], "shadow-[0_22px_40px_-26px_rgba(15,23,42,0.45)]", "bg-opacity-90"]
+                    : [BG100[color], "shadow-[0_16px_32px_-25px_rgba(15,23,42,0.32)]", "bg-opacity-60", "backdrop-blur"]
             )}
+            style={{ width: "var(--day-size)" }}
         />
     )
 
@@ -64,16 +59,22 @@ const AssignmentDate: React.FC<AssignmentDateProps> = ({ uid, color, event }) =>
             <PopoverButton as="div">
                 {square}
             </PopoverButton>
-            <PopoverPanel anchor={"top"} transition
-                className="flex rounded-md bg-white p-2 shadow-lg transition duration-200 ease-out data-closed:scale-95 data-closed:opacity-0">
-            <p data-hover className="text-sm text-gray-900">{event.summary}</p>
-        </PopoverPanel>
+            <PopoverPanel
+                anchor={"top"}
+                transition
+                className="flex max-w-xs rounded-2xl border border-slate-200/70 bg-white/95 px-4 py-3 text-left shadow-[0_24px_45px_-28px_rgba(15,23,42,0.4)] transition duration-200 ease-out data-closed:-translate-y-1 data-closed:scale-95 data-closed:opacity-0"
+            >
+                <p data-hover className="text-sm font-medium text-slate-700">{event.summary}</p>
+            </PopoverPanel>
         </Popover>
     )
 };
 
 
 /* The events row gets passed baby */
+const TIMELINE_DIMENSIONS = "[--day-size:3rem] [--day-gap:0.375rem] sm:[--day-size:3.5rem] sm:[--day-gap:0.5rem] md:[--day-size:4rem]";
+const GRID_COLUMN_GAP = "2.5rem";
+
 const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignment }) => {
 
     const dateAtIndex = (i: number): Date => {
@@ -97,7 +98,10 @@ const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignmen
     }
 
     return(
-        <div className="flex flex-row gap-2 min-w-max">
+        <div
+            className={clsx("flex min-w-max items-center", TIMELINE_DIMENSIONS)}
+            style={{ gap: "var(--day-gap)" }}
+        >
             {Array.from({length: sem2.length}, (_, i) => {
                 const d = dateAtIndex(i);
                 const ev = eventForDate(d);
@@ -107,7 +111,26 @@ const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignmen
     )
 };
 
-const RowLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, height: number}> = ({ code, assignment, height }) => {
+const buildWeekSegments = (totalDays: number, daysPerWeek: number): number[] => {
+    const segments: number[] = [];
+    for (let start = 0; start < totalDays; start += daysPerWeek) {
+        const remaining = totalDays - start;
+        segments.push(Math.min(daysPerWeek, remaining));
+    }
+    return segments;
+};
+
+const WEEK_SEGMENTS = buildWeekSegments(sem2.length, WEEK_DAYS);
+
+const LABEL_COLUMN_WIDTH = "11.5rem";
+
+const RowLabel: React.FC<{
+    code?: string,
+    assignment: AssignmentCalendar,
+    height: number,
+    className?: string,
+    style?: React.CSSProperties,
+}> = ({ code, assignment, height, className, style }) => {
     // Equivalent rem sizes for tailwind sizing, used to make sure heading boxes grow correctly
     const gap = (height-1) * 0.75;
     const boxsize = height * 4;
@@ -119,62 +142,110 @@ const RowLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, height
     }
 
     return (
-        <div className={`w-36 shrink-0 mr-2 ${BG200[assignment.color]} rounded-md`} style={{ height: `${boxsize + gap}rem` }} onClick={handleClick}>
-            <div className={clsx(
-                "w-full h-full flex items-center rounded-md border-2 font-semibold text-white gap-2 group",
+        <div
+            className={clsx(
+                "group rounded-2xl border border-white/50 bg-opacity-95 transition-transform duration-200 hover:-translate-y-[2px] hover:scale-[0.99] hover:shadow-[0_22px_45px_-28px_rgba(15,23,42,0.45)]",
+                "pointer-events-auto",
+                BG200[assignment.color],
+                className
+            )}
+            style={{
+                height: `${boxsize + gap}rem`,
+                width: LABEL_COLUMN_WIDTH,
+                marginRight: GRID_COLUMN_GAP,
+                ...style
+            }}
+            onClick={handleClick}
+        >
+            <div
+                className={clsx(
+                    "flex h-full w-full items-center gap-2 rounded-2xl px-4 font-semibold text-white",
                     "transition-all duration-300 ease-out justify-center group-hover:justify-between"
-                )}>
-                <span className={"absolute transition-all duration-300 ease-out scale-100 group-hover:opacity-0 group-hover:scale-95"}>{code ?? ""}</span>
-                <ArrowDownOnSquareIcon className={"h-8 transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100" }/>
+                )}
+            >
+                <span className="text-lg uppercase tracking-wide transition-all duration-300 ease-out group-hover:scale-95 group-hover:opacity-0">
+                    {code ?? ""}
+                </span>
+                <ArrowDownOnSquareIcon className="h-7 w-7 opacity-0 transition-all duration-300 ease-out group-hover:scale-110 group-hover:opacity-100" />
             </div>
         </div>
     );
 }
 
 /* it should render with the assignments array */
-const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, AssignmentCalendar[]>}> = ({ show, assignments }) => (
+const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, AssignmentCalendar[]>}> = ({ show, assignments }) => {
+    const codes = Object.keys(assignments);
 
-    <div className={`w-4/5 mx-auto bg-slate-100 px-4 py-6 rounded-lg inset-shadow-sm inset-shadow-indigo-100 grid grid-cols-[9rem_1fr] items-start ${!show ? 'hidden' : ''}`}>
-        {/* Left gutter: non-scrolling labels */}
-        <div className="space-y-3">
-            {/* header spacer to align with weeks row height */}
-            <div className="w-36 h-16 mr-2" />
-            {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
-                <RowLabel key={code ?? i} code={code} assignment={assignments[code][0]} height={assignments[code].length}/>
+    const gridChildren: React.ReactNode[] = [
+        <div key="label-placeholder" aria-hidden />,
+        <div
+            key="week-row"
+            className={clsx("flex min-w-max items-center", TIMELINE_DIMENSIONS)}
+            style={{ gap: "var(--day-gap)" }}
+        >
+            {WEEK_SEGMENTS.map((daysInWeek, i) => (
+                <div
+                    key={i}
+                    className="box-border flex h-14 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/90 px-3 text-center text-sm font-semibold text-slate-600 shadow-[0_16px_35px_-28px_rgba(15,23,42,0.35)] sm:h-16 sm:px-4 sm:text-base"
+                    style={{
+                        minWidth: `calc(var(--day-size) * ${daysInWeek} + var(--day-gap) * ${Math.max(daysInWeek - 1, 0)})`,
+                        flexGrow: daysInWeek,
+                        flexBasis: 0
+                    }}
+                >
+                    <span>Week {i + 1}</span>
+                </div>
             ))}
         </div>
+    ];
 
-        <div className="overflow-x-auto ml-2">
-            <div className="min-w-max space-y-3 pb-4">
+    if (codes.length === 0) {
+        gridChildren.push(
+            <div key="empty" className="col-span-2 px-2 text-sm font-medium text-[color:var(--color-text-muted)] sm:text-base">
+                Nothing to show yet — add an assignment to populate the timeline.
+            </div>
+        );
+    } else {
+        codes.forEach(code => {
+            const group = assignments[code];
+            if (!group || group.length === 0) return;
 
-                {/* display the weeks as a grid */}
-                <div className="flex flex-row gap-2 items-center">
+            gridChildren.push(
+                <RowLabel
+                    key={`label-${code}`}
+                    code={code}
+                    assignment={group[0]}
+                    height={group.length}
+                    className="sticky left-0 top-0 z-10"
+                    style={{ gridRow: `span ${group.length}` }}
+                />
+            );
 
-                    {/* TODO: Use a "current semester" object */}
-                    {Array.from({ length: sem2.length / 7 }, (_, i) => (
-                        <div key={i} className="
-                    shrink-0 box-border rounded-md h-16
-                    bg-uwaBlue shadow-md shadow-gray-100
-                    w-[calc(theme(width.16)*7+theme(spacing.2)*6)]
-                    flex justify-center items-center
-                  ">
-                            <span className="p-3 text-lg font-semibold text-white">Week {i + 1}</span>
-                        </div>
-                    ))}
+            group.forEach((assignment, rowIndex) => {
+                gridChildren.push(
+                    <AssignmentRow key={`${code}-${rowIndex}`} assignment={assignment} />
+                );
+            });
+        });
+    }
+
+    return (
+        <div className={clsx(pageSection, "mt-6", !show && "hidden") }>
+            <div className="surface-card overflow-visible px-4 py-6 sm:px-6">
+                <div className="overflow-x-auto">
+                    <div
+                        className="grid min-w-full gap-y-5"
+                        style={{
+                            gridTemplateColumns: `${LABEL_COLUMN_WIDTH} minmax(0, 1fr)`,
+                            columnGap: 0
+                        }}
+                    >
+                        {gridChildren}
+                    </div>
                 </div>
-
-                {Object.keys(assignments).length === 0 ? (
-                    <p className="text-gray-400 px-2">nothing to show...</p>
-                ) : (
-                    Object.keys(assignments).flatMap((code: string) => (
-                        assignments[code].map((assignment, i) => (
-                            <AssignmentRow key={i} assignment={assignment} />
-                        ))
-                    ))
-                )}
             </div>
         </div>
-    </div>
-)
+    );
+}
 
 export default VisualCalendar;

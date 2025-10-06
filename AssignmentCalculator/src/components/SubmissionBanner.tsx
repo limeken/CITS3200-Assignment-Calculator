@@ -19,18 +19,31 @@ const SubmissionBanner: React.FC<SubmissionResult> = ({showNotification, setNoti
     }, [showNotification, setNotification])
 
     return (
-        <Transition appear show={showNotification}
-            enter="transition origin-top ease-out duration-300"
-            enterFrom="scale-y-0 opacity-0"
-            enterTo="scale-y-100 opacity-100"
-            leave="transition origin-top ease-in duration-200 opacity-0"
-            leaveFrom="scale-y-100"
-            leaveTo="scale-y-0"
+        <Transition
+            appear
+            show={showNotification}
+            enter="transition ease-out duration-300"
+            enterFrom="-translate-y-4 opacity-0"
+            enterTo="translate-y-0 opacity-100"
+            leave="transition ease-in duration-200"
+            leaveFrom="translate-y-0 opacity-100"
+            leaveTo="-translate-y-2 opacity-0"
         >
-            <div className={`fixed t-0 r-0 w-full h-10 text-white overflow-hidden flex items-center justify-center text-center ${successful?"bg-green-400":"bg-red-400"}`}>
-                {/* Shows alternative messages and boxes based on the outcome of adding an assignment */}
-                <span className="px-5">{successful?<CheckIcon className="w-7 h-7 text-white"/>:<ExclamationCircleIcon className="w-7 h-7 text-white"/>}</span>      
-                <span className="font-semibold">{successful?" The assignment has successfuly been added.":"Something went wrong. Please try again."}</span>
+            <div
+                className={`pointer-events-none fixed left-1/2 top-6 z-[60] flex w-[min(100%-2rem,28rem)] -translate-x-1/2 items-center justify-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium shadow-[0_25px_45px_-20px_rgba(15,23,42,0.4)] backdrop-blur ${successful ? "border-emerald-200/70 bg-emerald-50/90 text-emerald-900" : "border-rose-200/70 bg-rose-50/90 text-rose-900"}`}
+            >
+                <span>
+                    {successful ? (
+                        <CheckIcon className="h-5 w-5 text-emerald-600 sm:h-6 sm:w-6" />
+                    ) : (
+                        <ExclamationCircleIcon className="h-5 w-5 text-rose-500 sm:h-6 sm:w-6" />
+                    )}
+                </span>
+                <span className="text-center">
+                    {successful
+                        ? "Assignment added to your planner."
+                        : "Something went wrong. Please try again."}
+                </span>
             </div>
         </Transition>
     )

@@ -1,5 +1,6 @@
 import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
 import clsx from "clsx";
+import { floatingActionButtonBase, floatingActionButtonFrame } from "../styles/tailwindStyles.ts";
 
 interface NewAssignmentButton {
     onImport: () => Promise<void> | void,
@@ -10,7 +11,7 @@ interface NewAssignmentButton {
 const NewAssignmentButton: React.FC<NewAssignmentButton> = ({onImport, modalOpenKey}) => {
     const buttonStyle = "text-white bg-uwaBlue border-uwaBlue border-2 w-full h-full mt-3 rounded-xl font-semibold px-4 py-3 flex flex-row gap-2 items-center justify-start transition-all duration-170 ease-out hover:bg-white hover:text-uwaBlue";
     
-    const floatingButtonStyle = "fixed bottom-6 w-14 h-14 rounded-full bg-uwaBlue text-white shadow-lg flex items-center justify-center transition-all duration-170 ease-out hover:scale-110 hover:shadow-xl z-50";
+    const floatingButtonStyle = clsx(floatingActionButtonFrame, floatingActionButtonBase);
     
     return (
         <>

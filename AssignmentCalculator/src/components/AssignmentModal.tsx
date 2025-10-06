@@ -27,11 +27,11 @@ const NotificationDot: React.FC<{show: boolean}> = ({ show }) => !show ? null : 
 
 // Component representing the additional resource panel that comes out of the main modal
 const AdditionalResources: React.FC<{open: boolean, onToggle: () => void, resources: string[]}> = ({ open, onToggle, resources }) => (
-    <div className="absolute right-0 top-16 h-72 z-[1] pointer-events-auto">
+    <div className="pointer-events-auto absolute right-0 top-16 h-64 sm:h-72">
         <div className="relative size-full">
             {/* Slide-out panel sits UNDER the main panel */}
             <div
-                className={`absolute right-0 top-0 z-[1] h-full w-72 translate-x-full rounded-br-md bg-slate-300 p-3 text-gray-900 shadow-xl transition-transform duration-300 ease-out pointer-events-auto ${open ? '' : '!translate-x-0'}`}
+                className={`pointer-events-auto absolute right-0 top-0 z-[1] h-full w-60 translate-x-full rounded-br-md bg-slate-300 p-3 text-gray-900 shadow-xl transition-transform duration-300 ease-out sm:w-72 ${open ? '' : '!translate-x-0'}`}
                 aria-hidden={!open}
             >
                 <h2 className="py-2 text-center font-bold">Additional Resources</h2>
@@ -45,7 +45,7 @@ const AdditionalResources: React.FC<{open: boolean, onToggle: () => void, resour
 
             {/* Tab rides with panel and carries the dot; pinned to the modal's right edge */}
             <button
-                className={`absolute z-20 left-0 top-0 z-[3] flex h-20 w-10 items-center justify-center rounded-r-md bg-uwaBlue hover:bg-slate-400 font-bold text-white shadow-sm shadow-black/30 transition-transform duration-300 ease-out pointer-events-auto ${open ? 'translate-x-[18rem]' : 'translate-x-0'}`}
+                className={`pointer-events-auto absolute left-0 top-0 z-20 flex h-16 w-10 items-center justify-center rounded-r-md bg-uwaBlue font-bold text-white shadow-sm shadow-black/30 transition-transform duration-300 ease-out hover:bg-slate-400 ${open ? 'translate-x-[15rem] sm:translate-x-[18rem]' : 'translate-x-0'}`}
                 onClick={onToggle}
                 type="button"
                 aria-label="Toggle additional resources"
@@ -96,10 +96,10 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
     // Component that renders the details associated with a particular assignment step
     function CurrentPage() {
         return (
-            <div className="basis-4/5">
-                <h3 className="my-5 text-center">{assignment.name}</h3>
-                <div className="my-5 h-[70%] overflow-y-auto rounded-xl bg-white p-4 shadow-md">
-                    <h3 className="mb-5 font-semibold">
+            <div className="w-full sm:basis-4/5">
+                <h3 className="my-3 text-center text-lg font-semibold sm:my-5">{assignment.name}</h3>
+                <div className="my-3 h-[60vh] overflow-y-auto rounded-xl bg-white p-4 shadow-md sm:my-5 sm:h-[70%]">
+                    <h3 className="mb-4 text-base font-semibold sm:mb-5">
                         {currentStep.name}:
                     </h3>
                     {Array.isArray(currentStep?.instructions) && currentStep.instructions.length > 0 ? (
@@ -119,18 +119,18 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
     // Combines the current step's information with navigation buttons to switch between pages
     function DisplayBody() {
         return (
-            <div className="flex h-4/5 w-full flex-row justify-center">
+            <div className="flex h-full w-full flex-wrap items-center justify-center gap-4 sm:flex-nowrap">
                 {/* Left */}
                 <button
                     className={
                         pagenumber === 0
-                            ? 'invisible basis-1/10'
-                            : 'basis-1/10 self-center transition duration-200 ease-in-out hover:scale-110'
+                            ? 'invisible w-12 sm:basis-1/10'
+                            : 'flex h-12 w-12 items-center justify-center self-center rounded-full bg-slate-200 transition duration-200 ease-in-out hover:scale-105 sm:basis-1/10 sm:bg-transparent sm:hover:scale-110'
                     }
                     onClick={() => setPageNumber((prev) => (prev === 0 ? prev : prev - 1))}
                     type="button"
                 >
-                    <ChevronLeftIcon className="h-10 w-10" />
+                    <ChevronLeftIcon className="h-6 w-6 sm:h-10 sm:w-10" />
                 </button>
 
                 <CurrentPage />
@@ -139,13 +139,13 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                 <button
                     className={
                         steps.length === 0 || pagenumber === steps.length - 1
-                            ? 'invisible basis-1/10'
-                            : 'basis-1/10 self-center transition duration-200 ease-in-out hover:scale-110'
+                            ? 'invisible w-12 sm:basis-1/10'
+                            : 'flex h-12 w-12 items-center justify-center self-center rounded-full bg-slate-200 transition duration-200 ease-in-out hover:scale-105 sm:basis-1/10 sm:bg-transparent sm:hover:scale-110'
                     }
                     onClick={() => setPageNumber((prev) => (steps.length === 0 || prev === steps.length - 1 ? prev : prev + 1))}
                     type="button"
                 >
-                    <ChevronRightIcon className="h-10 w-10" />
+                    <ChevronRightIcon className="h-6 w-6 sm:h-10 sm:w-10" />
                 </button>
             </div>
         );
@@ -177,8 +177,8 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                     <div className="fixed inset-0 bg-black/30" />
                 </Transition.Child>
 
-                <div className="fixed inset-0 overflow-y-auto z-10">
-                    <div className="flex min-h-full items-center justify-center p-4 z-10">
+                <div className="fixed inset-0 z-10 overflow-y-auto">
+                    <div className="flex min-h-full items-center justify-center p-3 sm:p-6">
                         {/* Specifies the animation for the modal itself */}
                         <Transition.Child
                             as={Fragment}
@@ -190,17 +190,17 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                             leaveTo="opacity-0 scale-95"
                         >
                             {/* Specifies the modal as the clickable area, allowing for the modal to close when clicked off */}
-                            <Dialog.Panel className="relative z-40 h-[75vh] w-[33vw] transform rounded-xl bg-slate-200/20 p-0 text-left align-middle shadow-2xl">
-                                <div className="relative z-40 bg-slate-200 rounded-xl h-full">
+                            <Dialog.Panel className="relative z-40 h-[85vh] w-full max-w-3xl transform overflow-hidden rounded-xl bg-slate-200/20 p-0 text-left align-middle shadow-2xl sm:h-[75vh]">
+                                <div className="relative z-40 h-full rounded-xl bg-slate-200">
                                     {/* Header */}
-                                    <div className="relative z-40 flex h-[10%] w-full flex-row items-center justify-center rounded-t-xl bg-uwaBlue py-2 shadow-sm shadow-black">
-                                        <Dialog.Title className="text-white">
+                                    <div className="relative z-40 flex w-full flex-row items-center justify-center gap-2 rounded-t-xl bg-uwaBlue px-4 py-3 text-center shadow-sm shadow-black">
+                                        <Dialog.Title className="text-sm font-semibold text-white sm:text-base">
                                             {title ?? `CITS3200 - ${assignment.name}`}
                                         </Dialog.Title>
                                     </div>
 
                                     {/* Body */}
-                                    <div className="relative z-[5] flex h-[85%] w-full flex-row items-start justify-center p-3 text-gray-900">
+                                    <div className="relative z-[5] flex h-[calc(100%-4.5rem)] w-full flex-col items-center justify-center p-3 text-gray-900 sm:h-[85%] sm:flex-row sm:items-start">
                                         <DisplayBody />
                                         <CreatePageDots dots={steps.length} />
                                     </div>

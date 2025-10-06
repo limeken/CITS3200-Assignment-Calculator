@@ -1,6 +1,6 @@
 @import "tailwindcss";
-/* Google font */
-@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap");
+/* Refreshed typography */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 /* Tailwind v4.1 base */
 @layer base {
@@ -8,7 +8,11 @@
     height: auto;
   }
   body {
-    @apply m-0 min-h-screen bg-gray-50 text-gray-900 font-sans pt-50 pb-20;
+    @apply m-0 min-h-screen bg-slate-100 text-slate-900 font-sans pt-36 sm:pt-48 lg:pt-56 pb-24;
+    background-image:
+      radial-gradient(circle at top right, rgba(79, 70, 229, 0.12), transparent 55%),
+      radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.1), transparent 45%);
+    background-attachment: fixed;
   }
   /* Make the root take full width; no max-width or padding here */
   #root {
@@ -21,13 +25,23 @@
 /* WebStorm has a hissy fit over this at-rule so the next like ignores it --Maxwell */
 /*noinspection CssInvalidAtRule*/
 @theme {
-  --color-uwaBlue: #27348B;
-  --color-uwaGold: #E2B600;
-  --color-uwaGrey: #ececec;
+  --color-uwaBlue: #4338CA;
+  --color-uwaGold: #F97316;
+  --color-uwaGrey: #E2E8F0;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F3F4F6;
+  --color-border-muted: rgba(15, 23, 42, 0.1);
+  --color-text-muted: #64748B;
 
-  --font-sans: "Source Sans Pro", Arial, sans-serif;
+  --font-sans: "TT Norms Pro", "Inter", Arial, sans-serif;
   --font-uwa: "UWA Regular", UWA, Georgia, serif;
 
-  --radius-xl: 0.75rem;
-  --shadow-soft: 0 8px 30px rgba(0,0,0,0.08);
+  --radius-xl: 0.85rem;
+  --shadow-soft: 0 24px 48px rgba(15, 23, 42, 0.12);
+}
+
+@layer components {
+  .surface-card {
+    @apply rounded-2xl bg-white/90 p-5 shadow-[0_20px_45px_-20px_rgba(15,23,42,0.35)] backdrop-blur;
+  }
 }
