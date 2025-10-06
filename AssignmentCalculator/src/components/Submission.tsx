@@ -339,26 +339,28 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     }
 
     return (
-        <div className="bg-white p-5 flex flex-col justify-center">
-            <h1 className="text-base font-semibold text-gray-900 w-full mb-2"> {isNew?"Create New Assignment":"Edit Assignment"} </h1>
-            <form className="my-3 text-left w-full flex flex-col gap-2 items-center justify-center">
-                <section className="gap-4 flex flex-col items-center justify-center w-4/5">
-                    <AssessmentTypeInput />
-                    <AssessmentDateInput error={[errors[1], errors[2]]} />
-                    <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
-                    <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
-                </section>
-                {/* Render different buttons for creation & edit pages */}
-                <div className="flex flex-row justify-center items-center gap-4">
-                    {isNew?
-                        <CreationButton pending={pending} canSubmit={canSubmit} onCreate={onCreateAsync}/>:
-                        <>
-                        <DeleteButton pending={pending} onDelete={()=>onDeleteAsync(submission)}/>
-                        <UpdateButton pending={pending} canSubmit={canSubmit} onUpdate={()=>onUpdateAsync(submission,buildSubmission())}/>
-                        </>
-                    }
-                </div>
-            </form>
+        <div className="bg-white p-5 flex justify-center items-center">
+            <div className="size-full p-4 rounded-xl flex flex-col gap-2 justify-center items-center border-3 border-slate-300 relative">
+                <h1 className="text-center font-bold text-lg text-gray-900 w-full mb-2"> {isNew?"Create New Assignment:":"Edit Assignment:"} </h1>
+                <form className="my-3 text-left w-full flex flex-col gap-2 items-center justify-center">
+                    <section className="gap-4 flex flex-col items-center justify-center w-4/5">
+                        <AssessmentTypeInput />
+                        <AssessmentDateInput error={[errors[1], errors[2]]} />
+                        <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
+                        <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
+                    </section>
+                    {/* Render different buttons for creation & edit pages */}
+                    <div className="flex flex-row justify-center items-center gap-4">
+                        {isNew?
+                            <CreationButton pending={pending} canSubmit={canSubmit} onCreate={onCreateAsync}/>:
+                            <>
+                            <DeleteButton pending={pending} onDelete={()=>onDeleteAsync(submission)}/>
+                            <UpdateButton pending={pending} canSubmit={canSubmit} onUpdate={()=>onUpdateAsync(submission,buildSubmission())}/>
+                            </>
+                        }
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
