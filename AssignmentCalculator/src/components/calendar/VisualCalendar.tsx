@@ -74,8 +74,7 @@ const AssignmentDate: React.FC<AssignmentDateProps> = ({ uid, color, event }) =>
 
 
 /* The events row gets passed baby */
-const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignment }) => {
-
+const AssignmentRow: React.FC<{ assignment: AssignmentCalendar}> = ({ assignment }) => {
     const dateAtIndex = (i: number): Date => {
         return new Date(sem2.start.getTime() + i * DAYS_MS)
     }
@@ -95,13 +94,13 @@ const AssignmentRow: React.FC<{ assignment: AssignmentCalendar }> = ({ assignmen
         const idx = Math.min(n - 1, Math.floor(fraction * n));
         return assignment.events[idx];
     }
-
+    
     return(
         <div className="flex flex-row gap-2 min-w-max">
             {Array.from({length: sem2.length}, (_, i) => {
                 const d = dateAtIndex(i);
                 const ev = eventForDate(d);
-                return ( <AssignmentDate uid={i} color={assignment.color} event={ev}/> )
+                return ( <AssignmentDate uid={i} color={assignment.color} event={ev!}/> )
             })}
         </div>
     )
@@ -131,6 +130,32 @@ const RowLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, height
     );
 }
 
+// Decides how many default rows and actual rows need to be displayed
+const CalendarRows: React.FC<{assignments:Record<string,AssignmentCalendar[]>}> = ({assignments}) => {
+    const rows = Object.keys(assignments).length;
+    const TemporaryRows = 4 - rows > 0? 4 - rows:0;
+    return (
+        <>
+            {(Object.keys(assignments).flatMap((code: string) => (
+                assignments[code].map((assignment, i) => (
+                    <AssignmentRow key={i} assignment={assignment} />
+                ))
+            ))
+            )}
+            {Array.from({length:TemporaryRows}).map((_)=>
+                <div className="flex flex-row gap-2 min-w-max">
+                    {Array.from({length: sem2.length}, (_, i) => 
+                        <div
+                            key={i}
+                            className={clsx(`bg-white aspect-square w-16 rounded-md shadow-md transition-transform duration-150 ease-out hover:scale-95`
+                        )}>
+                        </div>
+                    )}
+                </div>
+            )}
+        </>
+    )
+}
 /* it should render with the assignments array */
 const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, AssignmentCalendar[]>}> = ({ show, assignments }) => (
 
@@ -138,7 +163,7 @@ const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, Assig
         {/* Left gutter: non-scrolling labels */}
         <div className="space-y-3">
             {/* header spacer to align with weeks row height */}
-            <div className="w-36 h-16 mr-2" />
+            <div className="w-36 h-16 mr-2"/>
             {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
                 <RowLabel key={code ?? i} code={code} assignment={assignments[code][0]} height={assignments[code].length}/>
             ))}
@@ -162,16 +187,7 @@ const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, Assig
                         </div>
                     ))}
                 </div>
-
-                {Object.keys(assignments).length === 0 ? (
-                    <p className="text-gray-400 px-2">nothing to show...</p>
-                ) : (
-                    Object.keys(assignments).flatMap((code: string) => (
-                        assignments[code].map((assignment, i) => (
-                            <AssignmentRow key={i} assignment={assignment} />
-                        ))
-                    ))
-                )}
+                <CalendarRows assignments={assignments}/>
             </div>
         </div>
     </div>
