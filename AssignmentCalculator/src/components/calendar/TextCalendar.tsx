@@ -35,7 +35,7 @@ const AssignmentStepsComponent: React.FC<{assignment:AssignmentCalendar|null}> =
                                     <span className="font-semibold">Step {index+1}: {step.name}</span>
                                     {index===openStep?<ChevronUpIcon className="w-5 h-5 absolute right-5"/>:<ChevronDownIcon className="w-5 h-5 absolute right-5"/>}
                                 </button>
-                                <div className={`flex flex-col gap-4 w-full transition-all duration-150 ease-in-out origin-top overflow-hidden
+                                <div className={`flex flex-col gap-4 w-full transition-all duration-300 ease-in-out origin-top overflow-hidden
                                     ${index === openStep ? "max-h-500" : "max-h-0"}`}>
                                     <div className="p-5 bg-white rounded-xl">
                                         <ul className="flex list-disc flex-col gap-3 pl-4 text-md">
