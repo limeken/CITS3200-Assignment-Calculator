@@ -11,6 +11,7 @@ import { CheckIcon, ChevronUpDownIcon, DocumentArrowDownIcon } from "@heroicons/
 import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions} from "@headlessui/react";
 import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
 import {useModal} from "../providers/ModalProvider.tsx";
+import {useNotification} from "../providers/NotificationProvider.tsx";
 
 interface SubmissionProps {
     submission: AssignmentCalendar;
@@ -170,6 +171,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     const [assignmentName, setAssignmentName] = useState("");
     const [unitCode, setUnitCode] = useState("");
     const [pending, setPending] = useState(false);
+    const { notify } = useNotification();
 
     // UNPACK ASSIGNMENT CONTEXT - UPDATE
     // If the asisgnment is being edited, unpack its old variables into states
@@ -307,8 +309,10 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     async function onCreateAsync() {
         if (!canSubmit || pending) return;
         setPending(true);
+        const next = buildSubmission();
         try {
-            await onSubmit!(buildSubmission());
+            await onSubmit!(next);
+            notify(`${next.name ?? "Assignment"} created.`, { success: true });
             onClose();
         } finally {
             setPending(false);
@@ -321,6 +325,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
         setPending(true);
         try {
             await onUpdate!(oldAssignment, newAssignment);
+            notify(`${newAssignment.name ?? "Assignment"} updated.`, { success: true });
             onClose();
         } finally {
             setPending(false);
@@ -332,6 +337,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
         setPending(true);
         try {
             await onDelete!(assignment);
+            notify(`${assignment.name ?? "Assignment"} deleted.`, { success: false });
             onClose();
         } finally {
             setPending(false);

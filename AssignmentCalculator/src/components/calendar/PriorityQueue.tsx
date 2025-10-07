@@ -43,6 +43,7 @@ const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAss
     };
 
     // Insertion Sort Implementation to sort each new assignment
+    // TODO: dude why did we write our own insertion sort lol
     const insertionSort = (list:AssignmentCalendar[], addition:AssignmentCalendar|null) => {
         if(addition === null){return list;}
 
