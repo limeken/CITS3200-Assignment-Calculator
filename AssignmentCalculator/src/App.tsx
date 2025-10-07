@@ -23,15 +23,12 @@ export type StateFunctions = {
 export default function App() {
     
     // TODO: This also needs to be a modal, kind of.
-    const [showNotification, setNotification] = useState<boolean>(false);
-
     // TODO: Errors should be validated differently
     const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
 
-    /* when we add the assignment, trigger a few things */
+    // Called whenever a new assignment is added.
     const onSubmitAssignment = async (submission: AssignmentCalendar) => {
-        setNotification(true)
         await calRef.current?.addAssignment(submission);
     }
 
@@ -39,14 +36,13 @@ export default function App() {
     return (
         <>
             {/* University Banner */}
-            {/* Todo: rework notifications system so it uses a modal */}
-            <UniversityBanner showNotification={showNotification} setNotification = {setNotification} successful={true}/>
+            <UniversityBanner/>
 
             {/* Button which triggers the instructions modal*/}
             <InstructionsButton />
 
             {/* Button which triggers the assignment submission modal */}
-            <SubmissionButton onSubmit={(submission) => onSubmitAssignment(submission)} />
+            <SubmissionButton onSubmit={onSubmitAssignment}/>
 
             {/* Displays either the calendar or textual visualisation*/}
             <Calendar ref={calRef} />
