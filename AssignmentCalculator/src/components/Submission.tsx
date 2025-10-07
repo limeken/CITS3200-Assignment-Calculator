@@ -8,13 +8,17 @@ import clsx from "clsx";
 
 import { CheckIcon, ChevronUpDownIcon, DocumentArrowDownIcon } from "@heroicons/react/20/solid";
 
-import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions, DialogTitle,} from "@headlessui/react";
+import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions} from "@headlessui/react";
 import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
 import {useModal} from "../providers/ModalProvider.tsx";
+import {useNotification} from "../providers/NotificationProvider.tsx";
 
 interface SubmissionProps {
     submission: AssignmentCalendar;
-    onSubmit:  (submission: AssignmentCalendar) => Promise<void>;
+    isNew: boolean;
+    onSubmit?:  (submission: AssignmentCalendar) => Promise<void>;
+    onUpdate?:  (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => Promise<void>;
+    onDelete?:  (assignment: AssignmentCalendar) => Promise<void>;
     onClose: () => void;
     errors: Array<boolean>;
 }
@@ -56,14 +60,16 @@ const UnitField: React.FC<UnitFieldProps> = ({setUnitCode,unitCode}) => {
     )
 }
 
-interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => void, onImport: (s: AssignmentCalendar ) => void }
-export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit, onImport }) => {
-
+// Component used to create a new assignment object
+interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => void}
+export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) => {
     const {open, close} = useModal();
-
     const openSubmission = () => {
         open((id) => (
-            <Submission submission={ createAssignmentCalendar()} errors={[false, false, false] }
+            <Submission 
+                submission={ createAssignmentCalendar()} 
+                isNew={true}
+                errors={[false, false, false] }
                 onSubmit={async (s) => {
                     onSubmit(s);
                     close(id);
@@ -106,17 +112,78 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit, on
         </section>
     )
 }
+// FUNCTIONALITY BUTTONS
+// Used to add completely new assignments
+const CreationButton: React.FC<{pending:boolean, canSubmit:boolean, onCreate:()=>void, }> = ({pending, canSubmit, onCreate}) => {
+    return (
+            <button
+                type="button"
+                onClick={onCreate}
+                disabled={!canSubmit || pending}
+                className={clsx(
+                "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
+                !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+                )}
+                >
+                {pending ? "Creating..." : "Create"}
+            </button>
+    )
+}
 
+// Used to update existing assignments
+const UpdateButton: React.FC<{canSubmit:boolean, pending:boolean, onUpdate:()=>void }> = ({canSubmit, pending, onUpdate}) => {
+    return (
+            <button
+                type="button"
+                onClick={onUpdate}
+                disabled={!canSubmit || pending}
+                className={clsx(
+                "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
+                !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+                )}
+                >
+                {pending ? "Updating..." : "Update"}
+            </button>
+    )
+}
+
+// Used to delete the selected assignment
+const DeleteButton: React.FC<{pending:boolean, onDelete:()=>void}> = ({pending, onDelete}) => {
+    return (
+            <button
+                type="button"
+                onClick={onDelete}
+                className={clsx(
+                "bg-red-400 w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
+                )}
+                >
+                {pending ? "Deleting..." : "Delete"}
+            </button>
+    )
+}
 /** This component is now "content-only".
  * The modal is provided by the global ModalProvider host.
  * Keep markup minimal.
  */
-const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, errors}) => {
+const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onClose, onUpdate, onDelete, errors}) => {
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [assignmentName, setAssignmentName] = useState("");
     const [unitCode, setUnitCode] = useState("");
     const [pending, setPending] = useState(false);
+    const { notify } = useNotification();
+
+    // UNPACK ASSIGNMENT CONTEXT - UPDATE
+    // If the asisgnment is being edited, unpack its old variables into states
+    useEffect(()=>{    
+        if(!isNew){
+            setStartDate(submission.start);
+            setEndDate(submission.end);
+            setAssignmentName(submission.name!);
+            setUnitCode(submission.unitCode!)
+        }
+    },[submission])
+
 
     const items = useMemo<Assignment[]>(() => Object.values(assignmentTypes), []);
     const [selected, setSelected] = useState<Assignment>(
@@ -223,6 +290,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
         );
     };
 
+    // Called on submission to pack state variables into the newly created assignment before being sent off
     function buildSubmission(): AssignmentCalendar {
         if (!startDate || !endDate) throw new Error("invalid dates");
         return {
@@ -236,11 +304,40 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
         };
     }
 
-    async function onCreate() {
+    // ASYNC FUNCTIONS
+    // Attempts to add assignment to the website asyncronously
+    async function onCreateAsync() {
+        if (!canSubmit || pending) return;
+        setPending(true);
+        const next = buildSubmission();
+        try {
+            await onSubmit!(next);
+            notify(`${next.name ?? "Assignment"} created.`, { success: true });
+            onClose();
+        } finally {
+            setPending(false);
+        }
+    }
+
+    // Attempts to update an existing assignment asyncronously
+    async function onUpdateAsync(oldAssignment:AssignmentCalendar, newAssignment:AssignmentCalendar) {
         if (!canSubmit || pending) return;
         setPending(true);
         try {
-            await onSubmit(buildSubmission());
+            await onUpdate!(oldAssignment, newAssignment);
+            notify(`${newAssignment.name ?? "Assignment"} updated.`, { success: true });
+            onClose();
+        } finally {
+            setPending(false);
+        }
+    }
+
+    // Attempts to delet an existing assignment asyncronously
+    async function onDeleteAsync(assignment:AssignmentCalendar) {
+        setPending(true);
+        try {
+            await onDelete!(assignment);
+            notify(`${assignment.name ?? "Assignment"} deleted.`, { success: false });
             onClose();
         } finally {
             setPending(false);
@@ -248,32 +345,28 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
     }
 
     return (
-        <div className="bg-white p-5 flex flex-col justify-center">
-            <DialogTitle className="h3 text-base font-semibold text-gray-900 w-full mb-2"> Create New Assignment </DialogTitle>
-            <form className="my-3 text-left w-full flex flex-col gap-2 items-center justify-center">
-                <section className="gap-4 flex flex-col items-center justify-center w-4/5">
-                    <AssessmentTypeInput />
-                    <AssessmentDateInput error={[errors[1], errors[2]]} />
-                    <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
-                    <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
-                </section>
-                <div className="mt-4 flex items-center justify-end gap-2 w-full">
-                    <button type="button" className="inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100" onClick={onClose}>
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCreate}
-                        disabled={!canSubmit || pending}
-                        className={clsx(
-                            "inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
-                            !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
-                        )}
-                    >
-                        {pending ? "Creating..." : "Create"}
-                    </button>
-                </div>
-            </form>
+        <div className="bg-white p-5 flex justify-center items-center">
+            <div className="size-full p-4 rounded-xl flex flex-col gap-2 justify-center items-center border-3 border-slate-300 relative">
+                <h1 className="text-center font-bold text-lg text-gray-900 w-full mb-2"> {isNew?"Create New Assignment:":"Edit Assignment:"} </h1>
+                <form className="my-3 text-left w-full flex flex-col gap-2 items-center justify-center">
+                    <section className="gap-4 flex flex-col items-center justify-center w-4/5">
+                        <AssessmentTypeInput />
+                        <AssessmentDateInput error={[errors[1], errors[2]]} />
+                        <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
+                        <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
+                    </section>
+                    {/* Render different buttons for creation & edit pages */}
+                    <div className="flex flex-row justify-center items-center gap-4">
+                        {isNew?
+                            <CreationButton pending={pending} canSubmit={canSubmit} onCreate={onCreateAsync}/>:
+                            <>
+                            <DeleteButton pending={pending} onDelete={()=>onDeleteAsync(submission)}/>
+                            <UpdateButton pending={pending} canSubmit={canSubmit} onUpdate={()=>onUpdateAsync(submission,buildSubmission())}/>
+                            </>
+                        }
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

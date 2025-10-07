@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { ModalProvider } from "./providers/ModalProvider.tsx";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { NotificationProvider } from "./providers/NotificationProvider.tsx";
 
 const qc = new QueryClient();
 
@@ -16,13 +17,16 @@ const qc = new QueryClient();
  *      4. Modal state is not lost if a child unmounts (if we ever want to build something more complex in our modal)
  */
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-      {/* the Query Client Provider is our component enabling data querying from the backend */}
-      <QueryClientProvider client={qc}>
-          {/* the Modal Provider is our component enabling modals to be rendered and sent above the DOM */}
-          <ModalProvider>
-              <App />
-          </ModalProvider>
-      </QueryClientProvider>
-  </StrictMode>,
+    <StrictMode>
+        {/* the Query Client Provider is our component enabling data querying from the backend */}
+        <QueryClientProvider client={qc}>
+            {/* the Notification Provider supplies toast context across the app and modal portals */}
+            <NotificationProvider>
+                {/* the Modal Provider is our component enabling modals to be rendered and sent above the DOM */}
+                <ModalProvider>
+                    <App />
+                </ModalProvider>
+            </NotificationProvider>
+        </QueryClientProvider>
+    </StrictMode>,
 )

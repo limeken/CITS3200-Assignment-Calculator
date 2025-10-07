@@ -1,8 +1,5 @@
-import SubmissionBanner from "./SubmissionBanner.tsx"
-import type { SubmissionResult } from "./SubmissionBanner";
-
 // UWA branded banner for university associated websites
-export default function UniversityBanner({showNotification,setNotification,successful}:SubmissionResult){
+export default function UniversityBanner(){
     return (
         <header className="fixed w-full h-40 top-0 right-0 z-50 bg-uwaBlue text-white">
             <div className="h-3/5 mx-auto w-full max-w-6xl px-4 sm:px-6 py-4 flex items-center justify-between">
@@ -24,7 +21,6 @@ export default function UniversityBanner({showNotification,setNotification,succe
                     </h1>
                 </div>
             </div>
-            <SubmissionBanner showNotification={showNotification} setNotification={setNotification} successful={successful}/>
         </header>
         );
     }
