@@ -1,141 +1,111 @@
 // calendar element, all by me
-import {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from "react";
-import {type AssignmentCalendar, type AssignmentEvent, pickRandomColor } from "./CalendarTypes.ts";
+import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
+import {type AssignmentCalendar, pickRandomColor } from "./CalendarTypes.ts";
 import TextCalendar from "./TextCalendar.tsx";
 import VisualCalendar from "./VisualCalendar.tsx";
 import CalendarOptions from "./CalendarOptions.tsx";
+import PriorityQueue from "./PriorityQueue.tsx";
 
 // TODO: this is fine
 export type CalendarRef = {
     // this is called when a new assignment finishes loading
     addAssignment: (a: AssignmentCalendar) => void;
-}
-
-// empty prop set to stop linting errors
-type CalendarProps = Record<string, never>;
-
-const STORAGE_KEY = "assignment-calendars";
-
-type StoredAssignmentEvent = Omit<AssignmentEvent, "start" | "end"> & {
-    start: string;
-    end: string;
 };
 
-type StoredAssignmentCalendar = Omit<AssignmentCalendar, "start" | "end" | "events"> & {
-    start: string | null;
-    end: string | null;
-    events: StoredAssignmentEvent[];
-};
-
-const serializeAssignments = (assignments: Record<string, AssignmentCalendar[]>): string => {
-    const serializable: Record<string, StoredAssignmentCalendar[]> = {};
-    for (const [unitCode, calendars] of Object.entries(assignments)) {
-        serializable[unitCode] = calendars.map((calendar) => ({
-            ...calendar,
-            start: calendar.start ? calendar.start.toISOString() : null,
-            end: calendar.end ? calendar.end.toISOString() : null,
-            events: calendar.events.map((event) => ({
-                ...event,
-                start: event.start.toISOString(),
-                end: event.end.toISOString(),
-            })),
-        }));
-    }
-    return JSON.stringify(serializable);
-};
-
-const deserializeAssignments = (raw: string): Record<string, AssignmentCalendar[]> => {
-    const hydrated: Record<string, AssignmentCalendar[]> = {};
-    const parsed = JSON.parse(raw) as Record<string, StoredAssignmentCalendar[]>;
-    for (const [unitCode, calendars] of Object.entries(parsed)) {
-        hydrated[unitCode] = calendars.map((calendar) => {
-            const start = calendar.start ? new Date(calendar.start) : new Date();
-            const end = calendar.end ? new Date(calendar.end) : start;
-            const events = calendar.events.map((event) => ({
-                ...event,
-                start: new Date(event.start),
-                end: new Date(event.end),
-            }));
-
-            return {
-                ...calendar,
-                start,
-                end,
-                events,
-            } as AssignmentCalendar;
-        });
-    }
-    return hydrated;
-};
-
-const getStoredAssignments = (): Record<string, AssignmentCalendar[]> => {
-    if (typeof window === "undefined") return {};
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return {};
-    try {
-        return deserializeAssignments(stored);
-    } catch (error) {
-        console.warn("Failed to read stored assignments", error);
-        return {};
-    }
-};
+// Passes down the utilities of update & delete, used within the priority queue
+type CalendarProps = {};
 
 /*  this initialisation is a bit confusing, so let me explain
 *   we want to access our calendar element from the top-level App component (meaning we need a ref)
 *   normally React ref's only work on DOM elements (div's, class components, etc...)
 *   so we wrap our component in a forwardRef */
 const Calendar = forwardRef<CalendarRef, CalendarProps>((_props, ref) => {
-
-    const [assignments, setAssignments] = useState<Record<string, AssignmentCalendar[]>>(() => getStoredAssignments());
-
-    //  TODO: Explain why the visual settings are in <Calendar />
+    
+    const [assignments, setAssignments] = useState<Record<string, AssignmentCalendar[]>>({});
+    const [newestAssignment, setNewestAssignment] = useState<AssignmentCalendar|null>(null);
     const [isVisual, setIsVisual] = useState<boolean>(true);
 
-    // this function exposes a callback method
-    // TODO: This is good because it keeps assignment and state all internal to the component.
-    const addAssignment = useCallback((assignment: AssignmentCalendar) => {
+    // ASSIGNMENT MANIPULATION FUNCTIONS
+    // ADD: Adds the specified assignment to the collection
+    const addAssignment = useCallback((assignment: AssignmentCalendar, color?: string) => {
+        let prepared: AssignmentCalendar = assignment;
         setAssignments(prev => {
-            const key = assignment.unitCode ?? "undefined";
-            const existing = prev[key];
-            const providedColor = assignment.color && assignment.color !== "" ? assignment.color : undefined;
-            const color = existing?.[0]?.color ?? providedColor ?? pickRandomColor();
-            const nextAssignment: AssignmentCalendar = {
-                ...assignment,
-                color,
-            };
-
-            if (existing) {
-                return {
-                    ...prev,
-                    [key]: [...existing, nextAssignment],
-                };
+            const unitCode = assignment.unitCode;
+            if (!unitCode) {
+                return prev;
             }
 
-            return {
-                ...prev,
-                [key]: [nextAssignment],
-            };
-        });
-    }, []); // <- this empty array is the dependency list, a change to any objects in here triggers a re-render
+            const existing = prev[unitCode];
+            if (existing && existing.length > 0) {
+                prepared = { ...assignment, color: existing[0].color };
+                return { ...prev, [unitCode]: [...existing, prepared] };
+            }
 
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        try {
-            window.localStorage.setItem(STORAGE_KEY, serializeAssignments(assignments));
-        } catch (error) {
-            console.warn("Failed to persist assignments", error);
+            const nextColor = color ?? pickRandomColor();
+            prepared = { ...assignment, color: nextColor };
+            return { ...prev, [unitCode]: [prepared] };
+        });
+
+        setNewestAssignment(prepared);
+    }, []);
+
+    const removeAssignment = useCallback((assignment: AssignmentCalendar) => {
+        let wasRemoved = false;
+        setAssignments(prev => {
+            const unitCode = assignment.unitCode;
+            if (!unitCode) {
+                return prev;
+            }
+
+            const existing = prev[unitCode];
+            if (!existing || existing.length === 0) {
+                return prev;
+            }
+
+            if (existing.length === 1) {
+                const rest = { ...prev };
+                delete rest[unitCode];
+                wasRemoved = true;
+                return rest;
+            }
+
+            const filtered = existing.filter(item => item !== assignment);
+            if (filtered.length === existing.length) {
+                return prev;
+            }
+
+            wasRemoved = true;
+            return { ...prev, [unitCode]: filtered };
+        });
+
+        if (wasRemoved) {
+            setNewestAssignment(current => (current === assignment ? null : current));
         }
-    }, [assignments]);
+
+        return wasRemoved;
+    }, []);
+
+    // DELETE: Wipes the stored assignment specified
+    const deleteAssignment = useCallback((assignment: AssignmentCalendar) => {
+        removeAssignment(assignment);
+    }, [removeAssignment]);
+
+    // UPDATE: Wipes memory of old assignment & adds the new assignment
+    const updateAssignment = useCallback((oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => {
+        removeAssignment(oldAssignment);
+        addAssignment(newAssignment, oldAssignment.color);
+    }, [addAssignment, removeAssignment]);
 
     /* since we need an object API node, we expose this handle to addAssignment and it's API */
     useImperativeHandle(ref, () => ({ addAssignment }), [addAssignment]);
 
     return (
-        <>
+        <div className="flex flex-col gap-4 items-center">
             <CalendarOptions isCalendarFormat={isVisual} changeFormat={setIsVisual}/>
+            <PriorityQueue newest={newestAssignment} onUpdate={updateAssignment} onDelete={deleteAssignment}/>
             <VisualCalendar show={isVisual} assignments={assignments} />
             <TextCalendar show={!isVisual} assignments={assignments}/>
-        </>
+        </div>
     );
 });
 
