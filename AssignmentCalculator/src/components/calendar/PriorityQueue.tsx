@@ -68,7 +68,10 @@ const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAss
     }
 
     // Adds the newest assignment in sorted order, when a new assignment is created
-    useEffect(() => {setSortedAssignments(insertionSort(sortedAssignments, newest))}, [newest])
+    useEffect(() => {
+        if (!newest) return;
+        setSortedAssignments(prev => insertionSort(prev, newest));
+    }, [newest]);
 
     // Picks colour based on distance from due date
     const pickPriority = (end:Date) => {

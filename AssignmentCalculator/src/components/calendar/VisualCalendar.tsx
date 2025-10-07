@@ -142,17 +142,16 @@ const CalendarRows: React.FC<{assignments:Record<string,AssignmentCalendar[]>}> 
                 ))
             ))
             )}
-            {Array.from({length:TemporaryRows}).map((_)=>
-                <div className="flex flex-row gap-2 min-w-max">
-                    {Array.from({length: sem2.length}, (_, i) => 
+            {Array.from({ length: TemporaryRows }, (_, placeholderIndex) => (
+                <div key={`placeholder-${placeholderIndex}`} className="flex flex-row gap-2 min-w-max">
+                    {Array.from({ length: sem2.length }, (_ignore, weekIndex) => (
                         <div
-                            key={i}
-                            className={clsx(`bg-white aspect-square w-16 rounded-md shadow-md transition-transform duration-150 ease-out hover:scale-95`
-                        )}>
-                        </div>
-                    )}
+                            key={weekIndex}
+                            className={clsx("bg-white aspect-square w-16 rounded-md shadow-md transition-transform duration-150 ease-out hover:scale-95")}
+                        />
+                    ))}
                 </div>
-            )}
+            ))}
         </>
     )
 }

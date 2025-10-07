@@ -86,8 +86,8 @@ export interface AssignmentEvent {
 export interface AssignmentCalendar {
     name: string | null;
     color: CalendarColor;
-    start: Date;
-    end: Date;
+    start: Date | null;
+    end: Date | null;
     events: AssignmentEvent[]; // this should be an ICAL.Event
     assignmentType: string;
     unitCode?: string;
@@ -120,40 +120,49 @@ export function mapEvents(a: Assignment, start: Date, end: Date): AssignmentEven
 
 /* FUNCTIONS */
 
-export const createAssignmentCalendar = () => {
-    const newCalendar:AssignmentCalendar = {name: "", color: "", start: null, end: null, events: new Array<AssignmentEvent>, assignmentType: "Essay"};
-    return newCalendar;
-}
+export const createAssignmentCalendar = (): AssignmentCalendar => ({
+    name: "",
+    color: "",
+    start: null,
+    end: null,
+    events: [],
+    assignmentType: "Essay",
+});
 
 export async function importCalendar(file: File): Promise<AssignmentCalendar> {
     const text = await file.text();
     const jcal = ICAL.parse(text);
     const vcal = new ICAL.Component(jcal);
 
-    const name =
-        vcal.getFirstPropertyValue("x-wr-calname") ||
-        vcal.getFirstPropertyValue("x-wr-cal-name") ||
+    const nameValue =
+        vcal.getFirstPropertyValue("x-wr-calname") ??
+        vcal.getFirstPropertyValue("x-wr-cal-name") ??
         file.name;
+    const name = typeof nameValue === "string" ? nameValue : file.name;
 
-    const color =
-        vcal.getFirstPropertyValue("x-wr-color") ||
-        vcal.getFirstPropertyValue("x-apple-calendar-color") ||
+    const colorValue =
+        vcal.getFirstPropertyValue("x-wr-color") ??
+        vcal.getFirstPropertyValue("x-apple-calendar-color") ??
         "blue";
+    const color = typeof colorValue === "string" ? colorValue : "blue";
 
-    const assignmentType =
-        vcal.getFirstPropertyValue("x-wr-assignmenttype") || "Imported";
+    const typeValue = vcal.getFirstPropertyValue("x-wr-assignmenttype") ?? "Imported";
+    const assignmentType = typeof typeValue === "string" ? typeValue : "Imported";
 
-    const unitCode =
-        vcal.getFirstPropertyValue("x-wr-unitcode") || undefined;
+    const unitValue = vcal.getFirstPropertyValue("x-wr-unitcode");
+    const unitCode = typeof unitValue === "string" ? unitValue : undefined;
 
     const vevents = vcal.getAllSubcomponents("vevent");
     const events: AssignmentEvent[] = vevents.map((vevent) => {
         const e = new ICAL.Event(vevent);
-        const status = vevent.getFirstPropertyValue("status") || null;
-        const tzid =
-            vevent.getFirstPropertyValue("x-orig-tzid") ||
-            (e.startDate.zone ? e.startDate.zone.tzid : null) ||
-            null;
+        const statusValue = vevent.getFirstPropertyValue("status");
+        const status = typeof statusValue === "string" ? statusValue : null;
+        const tzValue = vevent.getFirstPropertyValue("x-orig-tzid");
+        const tzid = typeof tzValue === "string"
+            ? tzValue
+            : typeof e.startDate.zone?.tzid === "string"
+                ? e.startDate.zone.tzid
+                : null;
 
         return {
             uid: e.uid || null,
@@ -200,7 +209,12 @@ export function exportAssignmentCalendar(ac: AssignmentCalendar): string {
     vcal.addPropertyWithValue("method", "PUBLISH");
 
     // Human name plus custom metadata
-    vcal.addPropertyWithValue("X-WR-CALNAME", ac.name);
+    const calName = ac.name ?? "Assignment";
+    if (!ac.start || !ac.end) {
+        throw new Error("Assignment calendar must have start and end dates before export");
+    }
+
+    vcal.addPropertyWithValue("X-WR-CALNAME", calName);
     vcal.addPropertyWithValue("X-WR-COLOR", ac.color);
     vcal.addPropertyWithValue("X-WR-ASSIGNMENTTYPE", ac.assignmentType);
     if (ac.unitCode) vcal.addPropertyWithValue("X-WR-UNITCODE", ac.unitCode);

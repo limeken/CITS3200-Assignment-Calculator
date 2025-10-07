@@ -1,4 +1,4 @@
-import { useRef, useState} from "react";
+import { useRef } from "react";
 import "./index.css";
 
 // Import website components from components subfolder
@@ -8,23 +8,8 @@ import { SubmissionButton } from "./components/Submission.tsx";
 
 import Calendar, {type CalendarRef} from "./components/calendar/Calendar.tsx";
 import { type AssignmentCalendar} from "./components/calendar/CalendarTypes.ts";
-
-
-// TODO: Not a necessary component of App.tsx and should be moved to submission typeas
-export type StateFunctions = {
-    setSelectedType: (type: string) => void,
-    setName: (name: string) => void,
-    setCode: (code: string) => void,
-    setStartDate: (start: Date) => void,
-    setEndDate: (end: Date) => void,
-}
-
 // Main application component
 export default function App() {
-    
-    // TODO: This also needs to be a modal, kind of.
-    // TODO: Errors should be validated differently
-    const [errors, setErrors] = useState<Array<boolean>>([true, true, true]);
     const calRef = useRef<CalendarRef>(null);
 
     // Called whenever a new assignment is added.

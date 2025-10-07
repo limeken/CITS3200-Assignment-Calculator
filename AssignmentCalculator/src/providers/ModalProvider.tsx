@@ -16,6 +16,7 @@ type Ctx = {
 
 const ModalCtx = createContext<Ctx | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useModal = () => {
     const ctx = useContext(ModalCtx);
     if (!ctx) throw new Error("useModal must be used within a ModalProvider");

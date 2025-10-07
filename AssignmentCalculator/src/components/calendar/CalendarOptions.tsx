@@ -43,7 +43,7 @@ const CalendarOptionsModal: React.FC<CalendarOptionsModalProps> = ({ onClose }) 
     const [options, setOptions] = useState(sem_data[0]);
 
     return (
-        <div>
+        <div className="space-y-4">
             <DialogTitle className="h3 text-base font-semibold text-gray-900 w-full mb-2"> Calendar Settings </DialogTitle>
             <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
                 <Label className="block text-sm font-semibold text-gray-900 mb-2">Assessment type</Label>
@@ -78,6 +78,14 @@ const CalendarOptionsModal: React.FC<CalendarOptionsModalProps> = ({ onClose }) 
                     </Listbox>
                 </div>
             </Field>
+            <div className="flex justify-end">
+                <Button
+                    onClick={onClose}
+                    className="rounded-xl bg-uwaBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-uwaBlue"
+                >
+                    Done
+                </Button>
+            </div>
         </div>
     )
 }

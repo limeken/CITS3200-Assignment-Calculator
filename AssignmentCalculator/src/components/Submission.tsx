@@ -166,29 +166,27 @@ const DeleteButton: React.FC<{pending:boolean, onDelete:()=>void}> = ({pending, 
  * Keep markup minimal.
  */
 const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onClose, onUpdate, onDelete, errors}) => {
-    const [startDate, setStartDate] = useState<Date | null>(null);
-    const [endDate, setEndDate] = useState<Date | null>(null);
-    const [assignmentName, setAssignmentName] = useState("");
-    const [unitCode, setUnitCode] = useState("");
+    const [startDate, setStartDate] = useState<Date | null>(submission.start ?? null);
+    const [endDate, setEndDate] = useState<Date | null>(submission.end ?? null);
+    const [assignmentName, setAssignmentName] = useState(submission.name ?? "");
+    const [unitCode, setUnitCode] = useState(submission.unitCode ?? "");
     const [pending, setPending] = useState(false);
     const { notify } = useNotification();
 
     // UNPACK ASSIGNMENT CONTEXT - UPDATE
     // If the asisgnment is being edited, unpack its old variables into states
-    useEffect(()=>{    
-        if(!isNew){
-            setStartDate(submission.start);
-            setEndDate(submission.end);
-            setAssignmentName(submission.name!);
-            setUnitCode(submission.unitCode!)
-        }
-    },[submission])
-
-
     const items = useMemo<Assignment[]>(() => Object.values(assignmentTypes), []);
     const [selected, setSelected] = useState<Assignment>(
-        items.find(i => i.name === "Essay") ?? items[0]
+        items.find(i => i.name === (submission.assignmentType ?? "")) ?? items[0]
     );
+
+    useEffect(() => {
+        setStartDate(submission.start ?? null);
+        setEndDate(submission.end ?? null);
+        setAssignmentName(submission.name ?? "");
+        setUnitCode(submission.unitCode ?? "");
+        setSelected(items.find(i => i.name === (submission.assignmentType ?? "")) ?? items[0]);
+    }, [isNew, submission, items]);
 
     const datesValid = !!startDate && !!endDate && startDate <= endDate;
     const canSubmit = assignmentName.trim().length > 0 && unitCode.trim().length > 0 && datesValid;
