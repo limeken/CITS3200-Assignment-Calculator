@@ -8,7 +8,15 @@ import clsx from "clsx";
 
 import { CheckIcon, ChevronUpDownIcon, DocumentArrowDownIcon } from "@heroicons/react/20/solid";
 
-import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions} from "@headlessui/react";
+import {
+    Input,
+    Field,
+    Label,
+    Listbox,
+    ListboxButton,
+    ListboxOption,
+    ListboxOptions
+} from "@headlessui/react";
 import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
 import {useModal} from "../providers/ModalProvider.tsx";
 import {useNotification} from "../providers/NotificationProvider.tsx";
@@ -61,7 +69,7 @@ const UnitField: React.FC<UnitFieldProps> = ({setUnitCode,unitCode}) => {
 }
 
 // Component used to create a new assignment object
-interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => void}
+interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => Promise<void> | void }
 export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) => {
     const {open, close} = useModal();
 
@@ -72,7 +80,7 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) 
                 isNew={true}
                 errors={[false, false, false] }
                 onSubmit={async (s) => {
-                    onSubmit(s);
+                    await onSubmit(s);
                     close(id);
                 }}
                 onClose={() => close(id)}
@@ -84,19 +92,19 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) 
         open((id: string) => (
             <FileInput onFiles={async (f: File) => {
                 const ac = await importCalendar(f);
-                onSubmit(ac);
+                await onSubmit(ac);
                 close(id);
             }} accept="/"/>
         ))
     }
 
-    const buttonStyle = "text-white bg-uwaBlue border-uwaBlue border-2 w-full h-full mt-3 rounded-xl font-semibold px-4 py-3 flex flex-row gap-2 items-center justify-start transition-all duration-170 ease-out hover:bg-white hover:text-uwaBlue";
+    const buttonStyle = "inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-uwaBlue bg-uwaBlue px-4 py-3 font-semibold text-white transition-all duration-200 ease-out hover:bg-white hover:text-uwaBlue";
     return (
-        <section className="flex flex-row justify-center items-center gap-5 w-1/2 mx-auto">
+        <section className="mx-auto mt-4 flex w-full max-w-4xl flex-col gap-3 sm:flex-row">
             {/* New Assignment Button */}
             <button
-                onClick={() => openSubmission()}
-                className={clsx(buttonStyle, "xl:col-span-2")}
+                onClick={openSubmission}
+                className={clsx(buttonStyle, "sm:flex-1")}
             >
                 <PlusIcon className="h-5 w-5"/>
                 Create New Assignment
@@ -104,8 +112,8 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) 
 
             {/* Import Button */}
             <button
-                onClick={() => openImport()}
-                className={clsx(buttonStyle)}
+                onClick={openImport}
+                className={clsx(buttonStyle, "sm:flex-1")}
             >
                 <ArrowDownTrayIcon className="h-5 w-5"/>
                 Import
@@ -166,114 +174,104 @@ const DeleteButton: React.FC<{pending:boolean, onDelete:()=>void}> = ({pending, 
  * The modal is provided by the global ModalProvider host.
  * Keep markup minimal.
  */
-const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, errors}) => {
-    const [startDate, setStartDate] = useState<Date | null>(null);
-    const [endDate, setEndDate] = useState<Date | null>(null);
-    const [assignmentName, setAssignmentName] = useState("");
-    const [unitCode, setUnitCode] = useState("");
+const Submission: React.FC<SubmissionProps> = ({
+    submission,
+    isNew,
+    onSubmit,
+    onUpdate,
+    onDelete,
+    onClose,
+    errors,
+}) => {
+    const [startDate, setStartDate] = useState<Date | null>(submission.start ?? null);
+    const [endDate, setEndDate] = useState<Date | null>(submission.end ?? null);
+    const [assignmentName, setAssignmentName] = useState(submission.name ?? "");
+    const [unitCode, setUnitCode] = useState(submission.unitCode ?? "");
     const [pending, setPending] = useState(false);
-    const { notify } = useNotification();
-
-    // UNPACK ASSIGNMENT CONTEXT - UPDATE
-    // If the asisgnment is being edited, unpack its old variables into states
-    useEffect(()=>{
-        if(!isNew){
-            setStartDate(submission.start);
-            setEndDate(submission.end);
-            setAssignmentName(submission.name!);
-            setUnitCode(submission.unitCode!)
-        }
-    },[submission])
-
-
     const items = useMemo<Assignment[]>(() => Object.values(assignmentTypes), []);
     const [selected, setSelected] = useState<Assignment>(
-        items.find(i => i.name === "Essay") ?? items[0]
+        items.find(i => i.name === submission.assignmentType) ?? items[0]
     );
+    const { notify } = useNotification();
+
+    useEffect(() => {
+        setStartDate(submission.start ?? null);
+        setEndDate(submission.end ?? null);
+        setAssignmentName(submission.name ?? "");
+        setUnitCode(submission.unitCode ?? "");
+        setSelected(items.find(i => i.name === submission.assignmentType) ?? items[0]);
+    }, [submission, items]);
 
     const datesValid = !!startDate && !!endDate && startDate <= endDate;
     const canSubmit = assignmentName.trim().length > 0 && unitCode.trim().length > 0 && datesValid;
 
-    function handleStartDate(date: string) {
-        const next = parseISO(date);
-        setStartDate(next);
-    }
-    function handleEndDate(date: string) {
-        const next = parseISO(date);
-        setEndDate(next);
-    }
+    const handleStartDate = (date: string) => setStartDate(parseISO(date));
+    const handleEndDate = (date: string) => setEndDate(parseISO(date));
 
-    function useError(trigger: boolean, ms = 400) {
+    const useError = (trigger: boolean, ms = 400) => {
         const [flashing, setFlashing] = useState(false);
         useEffect(() => {
-            if (trigger) {
-                setFlashing(true);
-                const t = setTimeout(() => setFlashing(false), ms);
-                return () => clearTimeout(t);
-            }
+            if (!trigger) return;
+            setFlashing(true);
+            const timeout = window.setTimeout(() => setFlashing(false), ms);
+            return () => window.clearTimeout(timeout);
         }, [trigger, ms]);
         return flashing;
-    }
-
-    const AssessmentTypeInput: React.FC = () => {
-        const onChange = (it: Assignment) => setSelected(it);
-        return (
-            <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
-                <Label className="block text-sm font-semibold text-gray-900 mb-2">Assessment type</Label>
-                <div className="flex w-full flex-row items-center align-center">
-                    <Listbox value={selected} onChange={onChange}>
-                        <div className="relative mt-1 ml-2 w-full">
-                            <ListboxButton
-                                id="assessment-type"
-                                className="grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500"
-                            >
-                                <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
-                                  <selected.icon className="size-5 shrink-0 text-blue-600" />
-                                  <span className="block truncate">{selected.name}</span>
-                                </span>
-                                <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400" />
-                            </ListboxButton>
-                            <ListboxOptions className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
-                                {items.map(it => (
-                                    <ListboxOption
-                                        key={it.id}
-                                        value={it}
-                                        className="group relative cursor-default py-2 pr-9 pl-3 text-gray-900 select-none data-focus:bg-blue-100 data-focus:outline-hidden"
-                                    >
-                                        <div className="flex items-center">
-                                            <it.icon className="size-5 shrink-0 text-blue-600" />
-                                            <span className="ml-3 block truncate font-normal group-data-selected:font-semibold">{it.name}</span>
-                                        </div>
-                                        <span className="absolute inset-y-0 right-0 hidden items-center pr-4 text-blue-600 group-data-selected:flex group-data-focus:text-blue-700">
-                                            <CheckIcon aria-hidden="true" className="size-5" />
-                                        </span>
-                                    </ListboxOption>
-                                ))}
-                            </ListboxOptions>
-                        </div>
-                    </Listbox>
-                </div>
-            </Field>
-        );
     };
 
+    const AssessmentTypeInput: React.FC = () => (
+        <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
+            <Label className="block text-sm font-semibold text-gray-900 mb-2">Assessment type</Label>
+            <div className="flex w-full flex-row items-center">
+                <Listbox value={selected} onChange={setSelected}>
+                    <div className="relative mt-1 ml-2 w-full">
+                        <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500">
+                            <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
+                                <selected.icon className="size-5 shrink-0 text-blue-600" />
+                                <span className="block truncate">{selected.name}</span>
+                            </span>
+                            <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400" />
+                        </ListboxButton>
+                        <ListboxOptions className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
+                            {items.map(option => (
+                                <ListboxOption
+                                    key={option.id}
+                                    value={option}
+                                    className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-focus:bg-blue-100 data-focus:outline-hidden"
+                                >
+                                    <div className="flex items-center">
+                                        <option.icon className="size-5 shrink-0 text-blue-600" />
+                                        <span className="ml-3 block truncate font-normal group-data-selected:font-semibold">{option.name}</span>
+                                    </div>
+                                    <span className="absolute inset-y-0 right-0 hidden items-center pr-4 text-blue-600 group-data-selected:flex">
+                                        <CheckIcon aria-hidden="true" className="size-5" />
+                                    </span>
+                                </ListboxOption>
+                            ))}
+                        </ListboxOptions>
+                    </div>
+                </Listbox>
+            </div>
+        </Field>
+    );
+
     const AssessmentDateInput: React.FC<{ error: boolean[] }> = ({ error }) => {
-        const err_start = useError(error[0]);
-        const err_end = useError(error[1]);
+        const errStart = useError(error[0]);
+        const errEnd = useError(error[1]);
         const base = "mt-1 w-full rounded-xl px-3 py-2 duration-500 ease-out";
         const alert = "bg-red-200 animate-pulse";
         return (
             <div className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
                 <h2 className="text-lg font-semibold mb-3">Dates</h2>
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                     <Field>
                         <Label className="text-sm font-medium" htmlFor="start">Start date</Label>
                         <Input
                             id="start"
                             type="date"
                             value={startDate ? format(startDate, "yyyy-MM-dd") : ""}
-                            onChange={e => handleStartDate(e.target.value)}
-                            className={clsx(base, err_start ? alert : "bg-white")}
+                            onChange={event => handleStartDate(event.target.value)}
+                            className={clsx(base, errStart ? alert : "bg-white")}
                         />
                     </Field>
                     <Field>
@@ -282,8 +280,8 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
                             id="end"
                             type="date"
                             value={endDate ? format(endDate, "yyyy-MM-dd") : ""}
-                            onChange={e => handleEndDate(e.target.value)}
-                            className={clsx(base, err_end ? alert : "bg-white")}
+                            onChange={event => handleEndDate(event.target.value)}
+                            className={clsx(base, errEnd ? alert : "bg-white")}
                         />
                     </Field>
                 </div>
@@ -291,7 +289,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
         );
     };
 
-    function buildSubmission(): AssignmentCalendar {
+    const buildSubmission = (): AssignmentCalendar => {
         if (!startDate || !endDate) throw new Error("invalid dates");
         return {
             ...submission,
@@ -299,78 +297,82 @@ const Submission: React.FC<SubmissionProps> = ({submission, onSubmit, onClose, e
             end: endDate,
             name: assignmentName.trim(),
             unitCode: unitCode.trim(),
-            assignmentType:selected.name,
-            events: mapEvents(selected, startDate, endDate)
+            assignmentType: selected.name,
+            events: mapEvents(selected, startDate, endDate),
         };
-    }
+    };
 
-    // ASYNC FUNCTIONS
-    // Attempts to add assignment to the website asyncronously
-    async function onCreateAsync() {
-        if (!canSubmit || pending) return;
+    const onCreateAsync = async () => {
+        if (!onSubmit || !canSubmit || pending) return;
         setPending(true);
         const next = buildSubmission();
         try {
-            await onSubmit!(next);
+            await onSubmit(next);
             notify(`${next.name ?? "Assignment"} created.`, { success: true });
             onClose();
         } finally {
             setPending(false);
         }
-    }
+    };
 
-    // Attempts to update an existing assignment asyncronously
-    async function onUpdateAsync(oldAssignment:AssignmentCalendar, newAssignment:AssignmentCalendar) {
-        if (!canSubmit || pending) return;
+    const onUpdateAsync = async (oldAssignment: AssignmentCalendar) => {
+        if (!onUpdate || !canSubmit || pending) return;
         setPending(true);
+        const next = buildSubmission();
         try {
-            await onUpdate!(oldAssignment, newAssignment);
-            notify(`${newAssignment.name ?? "Assignment"} updated.`, { success: true });
+            await onUpdate(oldAssignment, next);
+            notify(`${next.name ?? "Assignment"} updated.`, { success: true });
             onClose();
         } finally {
             setPending(false);
         }
-    }
+    };
 
-    // Attempts to delet an existing assignment asyncronously
-    async function onDeleteAsync(assignment:AssignmentCalendar) {
+    const onDeleteAsync = async (assignment: AssignmentCalendar) => {
+        if (!onDelete || pending) return;
         setPending(true);
         try {
-            await onDelete!(assignment);
+            await onDelete(assignment);
             notify(`${assignment.name ?? "Assignment"} deleted.`, { success: false });
             onClose();
         } finally {
             setPending(false);
         }
-    }
+    };
 
     return (
-        <div className="bg-white p-5 flex flex-col justify-center">
-            <DialogTitle className="h3 text-base font-semibold text-gray-900 w-full mb-2"> Create New Assignment </DialogTitle>
-            <form className="my-3 text-left w-full flex flex-col gap-2 items-center justify-center">
-                <section className="gap-4 flex flex-col items-center justify-center w-4/5">
-                    <AssessmentTypeInput />
-                    <AssessmentDateInput error={[errors[1], errors[2]]} />
-                    <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
-                    <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
-                </section>
-                <div className="mt-4 flex items-center justify-end gap-2 w-full">
-                    <button type="button" className="inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100" onClick={onClose}>
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCreate}
-                        disabled={!canSubmit || pending}
-                        className={clsx(
-                            "inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
-                            !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+        <div className="bg-white p-5 flex justify-center items-center">
+            <div className="size-full p-4 rounded-xl flex flex-col gap-2 justify-center items-center border-3 border-slate-300 relative">
+                <h1 className="text-center font-bold text-lg text-gray-900 w-full mb-2">
+                    {isNew ? "Create New Assignment:" : "Edit Assignment:"}
+                </h1>
+                <form className="my-3 text-left w-full flex flex-col gap-2 items-center justify-center">
+                    <section className="gap-4 flex flex-col items-center justify-center w-4/5">
+                        <AssessmentTypeInput />
+                        <AssessmentDateInput error={[errors[1], errors[2]]} />
+                        <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
+                        <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
+                    </section>
+                    <div className="flex flex-row justify-center items-center gap-4">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="rounded-md px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+                            disabled={pending}
+                        >
+                            Cancel
+                        </button>
+                        {isNew ? (
+                            <CreationButton pending={pending} canSubmit={canSubmit} onCreate={onCreateAsync} />
+                        ) : (
+                            <>
+                                <DeleteButton pending={pending} onDelete={() => onDeleteAsync(submission)} />
+                                <UpdateButton pending={pending} canSubmit={canSubmit} onUpdate={() => onUpdateAsync(submission)} />
+                            </>
                         )}
-                    >
-                        {pending ? "Creating..." : "Create"}
-                    </button>
-                </div>
-            </form>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

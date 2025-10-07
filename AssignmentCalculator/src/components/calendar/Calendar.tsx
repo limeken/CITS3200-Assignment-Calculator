@@ -13,7 +13,7 @@ export type CalendarRef = {
 };
 
 // Passes down the utilities of update & delete, used within the priority queue
-type CalendarProps = {};
+type CalendarProps = Record<string, never>;
 
 /*  this initialisation is a bit confusing, so let me explain
 *   we want to access our calendar element from the top-level App component (meaning we need a ref)

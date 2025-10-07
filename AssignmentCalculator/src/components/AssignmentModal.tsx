@@ -4,7 +4,6 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import type { Assignment } from './calendar/CalendarTypes.ts';
 
 export interface AssignmentModalProps {
-    isOpen: boolean;
     onClose: () => void;
     title?: string;
     assignment: Assignment;
@@ -60,7 +59,6 @@ const AdditionalResources: React.FC<{open: boolean, onToggle: () => void, resour
 // Final exported modal component, fully put together from smaller components
 export const AssignmentModal: React.FC<AssignmentModalProps> = ({
     assignment,
-    isOpen,
     onClose,
     title,
 }) => {
@@ -76,8 +74,8 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
 
     // Reset to first page every resourcesOpen
     useEffect(() => {
-        if (isOpen) setPageNumber(0);
-    }, [isOpen]);
+        setPageNumber(0);
+    }, []);
 
     // Renders the dots representing pages, makes the dot for the current page indetifiable
     function CreatePageDots({ dots }: { dots: number }) {
@@ -162,57 +160,24 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
     * Now with this handling, we can unify the modal handling logic on the top-level App.
     * */
     return (
-        <Transition appear show={isOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-50" onClose={onClose}>
-                {/* Specifies the animation for the modal background */}
-                <Transition.Child
-                    as={Fragment}
-                    enter="ease-out duration-200"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-150"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <div className="fixed inset-0 bg-black/30" />
-                </Transition.Child>
-
-                <div className="fixed inset-0 z-10 overflow-y-auto">
-                    <div className="flex min-h-full items-center justify-center p-3 sm:p-6">
-                        {/* Specifies the animation for the modal itself */}
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-200"
-                            enterFrom="opacity-0 scale-95"
-                            enterTo="opacity-100 scale-100"
-                            leave="ease-in duration-150"
-                            leaveFrom="opacity-100 scale-100"
-                            leaveTo="opacity-0 scale-95"
-                        >
-                            {/* Specifies the modal as the clickable area, allowing for the modal to close when clicked off */}
-                            <Dialog.Panel className="relative z-40 h-[85vh] w-full max-w-3xl transform overflow-hidden rounded-xl bg-slate-200/20 p-0 text-left align-middle shadow-2xl sm:h-[75vh]">
-                                <div className="relative z-40 h-full rounded-xl bg-slate-200">
-                                    {/* Header */}
-                                    <div className="relative z-40 flex w-full flex-row items-center justify-center gap-2 rounded-t-xl bg-uwaBlue px-4 py-3 text-center shadow-sm shadow-black">
-                                        <Dialog.Title className="text-sm font-semibold text-white sm:text-base">
-                                            {title ?? `CITS3200 - ${assignment.name}`}
-                                        </Dialog.Title>
-                                    </div>
-
-                                    {/* Body */}
-                                    <div className="relative z-[5] flex h-[calc(100%-4.5rem)] w-full flex-col items-center justify-center p-3 text-gray-900 sm:h-[85%] sm:flex-row sm:items-start">
-                                        <DisplayBody />
-                                        <CreatePageDots dots={steps.length} />
-                                    </div>
-                                </div>
-                                {/* Resources rail pinned to modal right edge (under content) */}
-                                <AdditionalResources open={resourcesOpen} onToggle={() => setResourcesOpen(v => !v)} resources={currentStep?.resources ?? []}/>
-                            </Dialog.Panel>
-                        </Transition.Child>
-                    </div>
+        <Dialog.Panel className="relative z-40 h-[85vh] w-full max-w-3xl transform overflow-hidden rounded-xl bg-slate-200/20 p-0 text-left align-middle shadow-2xl sm:h-[75vh]">
+            <div className="relative z-40 h-full rounded-xl bg-slate-200">
+                {/* Header */}
+                <div className="relative z-40 flex w-full flex-row items-center justify-center gap-2 rounded-t-xl bg-uwaBlue px-4 py-3 text-center shadow-sm shadow-black">
+                    <Dialog.Title className="text-sm font-semibold text-white sm:text-base">
+                        {title ?? `CITS3200 - ${assignment.name}`}
+                    </Dialog.Title>
                 </div>
-            </Dialog>
-        </Transition>
+
+                {/* Body */}
+                <div className="relative z-[5] flex h-[calc(100%-4.5rem)] w-full flex-col items-center justify-center p-3 text-gray-900 sm:h-[85%] sm:flex-row sm:items-start">
+                    <DisplayBody />
+                    <CreatePageDots dots={steps.length} />
+                </div>
+            </div>
+            {/* Resources rail pinned to modal right edge (under content) */}
+            <AdditionalResources open={resourcesOpen} onToggle={() => setResourcesOpen(v => !v)} resources={currentStep?.resources ?? []}/>
+        </Dialog.Panel>
     );
 };
 

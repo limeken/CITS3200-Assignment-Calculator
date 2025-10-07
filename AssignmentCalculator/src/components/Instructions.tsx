@@ -19,7 +19,7 @@ export const InstructionsButton = () => {
     }
 
     return (
-        <div className={clsx(pageSection, "mt-4 sm:mt-6")}>
+        <div className={clsx(pageSection, "sm:mt-6")}>
             <button
                 type="button"
                 onClick={() => openInstructions()}

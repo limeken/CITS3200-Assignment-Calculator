@@ -124,11 +124,8 @@ const CalendarOptions: React.FC<CalendarOptionsProps> = ({isCalendarFormat, chan
                         <Cog6ToothIcon className="h-6 w-6" />
                         <span className="hidden sm:inline">Calendar settings</span>
                     </Button>
-                    <p className="text-sm font-medium text-[color:var(--color-text-muted)] sm:text-base">
-                        Fine-tune the semester window and default assignment pacing.
-                    </p>
                 </div>
-                <div className="relative flex h-12 w-full overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-inner shadow-white/[0.35] sm:w-[22rem]">
+                <div className="relative flex h-12 w-full flex-1 min-w-[16rem] overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-inner shadow-white/[0.35]">
                     <span className={switchIndicator} />
                     <button
                         type="button"
