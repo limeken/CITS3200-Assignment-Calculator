@@ -84,10 +84,10 @@ export interface AssignmentEvent {
  *  This *isn't* a class for the key reasons that we want to mutate, serialize, and compare it.
  */
 export interface AssignmentCalendar {
-    name: string | null;
+    name: string;
     color: CalendarColor;
-    start: Date | null;
-    end: Date | null;
+    start: Date;
+    end: Date;
     events: AssignmentEvent[]; // this should be an ICAL.Event
     assignmentType: string;
     unitCode?: string;
@@ -123,8 +123,8 @@ export function mapEvents(a: Assignment, start: Date, end: Date): AssignmentEven
 export const createAssignmentCalendar = (): AssignmentCalendar => ({
     name: "",
     color: "",
-    start: null,
-    end: null,
+    start: new Date(),
+    end: new Date(),
     events: [],
     assignmentType: "Essay",
 });
@@ -175,16 +175,28 @@ export async function importCalendar(file: File): Promise<AssignmentCalendar> {
         };
     });
 
-    const metaStart = vcal.getFirstPropertyValue("x-vc-start");
-    const metaEnd = vcal.getFirstPropertyValue("x-vc-end");
+    const rawStart = vcal.getFirstPropertyValue("x-vc-start");
+    const rawEnd = vcal.getFirstPropertyValue("x-vc-end");
 
-    const start = metaStart
+    const metaStart = typeof rawStart === "string" || typeof rawStart === "number"
+        ? rawStart
+        : rawStart instanceof Date
+            ? rawStart.toISOString()
+            : null;
+
+    const metaEnd = typeof rawEnd === "string" || typeof rawEnd === "number"
+        ? rawEnd
+        : rawEnd instanceof Date
+            ? rawEnd.toISOString()
+            : null;
+
+    const start = metaStart !== null
         ? new Date(metaStart)
         : events.length
             ? new Date(Math.min(...events.map((e) => e.start.getTime())))
             : new Date();
 
-    const end = metaEnd
+    const end = metaEnd !== null
         ? new Date(metaEnd)
         : events.length
             ? new Date(Math.max(...events.map((e) => e.end.getTime())))
@@ -228,7 +240,7 @@ export function exportAssignmentCalendar(ac: AssignmentCalendar): string {
         const e = new ICAL.Event(vevent);
 
         e.uid = ev.uid ?? `${Date.now()}-${Math.random().toString(36).slice(2)}@visualcalendar`;
-        e.summary = ev.summary ?? ac.name;
+        e.summary = ac.name;
         if (ev.description) e.description = ev.description;
 
         // Time handling: write UTC for reliability, but keep original tzid as metadata
