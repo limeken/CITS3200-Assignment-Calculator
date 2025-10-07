@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import type { AssignmentCalendar } from "./CalendarTypes.ts";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
-import { CheckIcon, ChevronDownIcon} from "@heroicons/react/24/solid";
-import {DocumentIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/solid";
+import {DocumentIcon, XMarkIcon, TagIcon } from '@heroicons/react/24/outline';
 
 import { assignmentTypes } from "../testdata.ts";
 
 // This component displays the steps for valid assignments, in top-down order
 const AssignmentStepsComponent: React.FC<{assignment:AssignmentCalendar|null}> = ({assignment}) => {
     // Keeps track of what step is currently open
-    const [openStep, setOpenStep] = useState<number>(0);
+    const [openStep, setOpenStep] = useState<number|null>(0);
 
     // Reset the step count every time a new assignment is shown
     useEffect(() => {setOpenStep(0);}, [assignment]);
@@ -20,31 +20,44 @@ const AssignmentStepsComponent: React.FC<{assignment:AssignmentCalendar|null}> =
         return (
             <div className={`flex items-center justify-center bg-slate-200 rounded-xl shadow-soft p-4 w-4/5`}>
                 <div className="size-full p-4 rounded-xl flex flex-col items-center border-3 border-slate-300 relative">
-                    <h1 className="font-bold text-xl">{assignment.unitCode} - {assignment.name}</h1>
-                    <hr className="w-4/5 my-5"/>
+                    <h1 className="font-bold text-xl mb-4">{assignment.unitCode} - {assignment.name}</h1>
                     <div className = "flex flex-col gap-2 items-center w-3/4">
                     {/* This creates a descending sequence of step elements to show*/}
                     {assignmentType!.events.map((step, index)=>
-                        <div key={index} className="flex flex-col gap-4 w-full">
+                        <div key={index} className="flex flex-col w-full">
                             {/* Element that when clicked shows the dot points for a given step */}
-                            <button 
-                            className="bg-slate-300 rounded-xl w-full h-10 flex items-center justify-left pl-4 gap-2 relative"
-                            onClick={()=>setOpenStep(index)}
-                            >
-                                <span className="font-bold">Step {index+1}: {step.name}</span>
-                                {index===openStep?<div className="w-3 h-3 rounded-full"/>:<ChevronDownIcon className="w-5 h-5"/>}
-                            </button>
-
                             {/* Panel that is shown for a given step when selected */}
-                            <div className="overflow-hidden rounded-xl">
-                                <div className={`bg-white rounded-xl w-full transition-all duration-300 ease-in-out origin-top
-                                    ${index === openStep ? "max-h-50 p-5 overflow-y-auto" : "max-h-0 p-0 overflow-hidden"}`}>
-                                    <ul className="mt-2 flex list-disc flex-col gap-3 pl-4 text-md">
-                                        {/* Lists all the dot points within a given step's panel */}
-                                        {step.instructions && step.instructions.map((dotpoint,id)=>
-                                            <li key={id}>{dotpoint}</li>
-                                        )}
-                                    </ul>
+                            <div className="flex flex-col gap-4 rounded-xl">
+                                <button 
+                                className="bg-uwaBlue text-white text-lg rounded-xl shadow-lg w-full h-10 flex items-center justify-left pl-4 gap-2 relative"
+                                onClick={()=>openStep===index?setOpenStep(null):setOpenStep(index)}
+                                >
+                                    <span className="font-semibold">Step {index+1}: {step.name}</span>
+                                    {index===openStep?<ChevronUpIcon className="w-5 h-5 absolute right-5"/>:<ChevronDownIcon className="w-5 h-5 absolute right-5"/>}
+                                </button>
+                                <div className={`flex flex-col gap-4 w-full transition-all duration-150 ease-in-out origin-top overflow-hidden
+                                    ${index === openStep ? "max-h-500" : "max-h-0"}`}>
+                                    <div className="p-5 bg-white rounded-xl">
+                                        <ul className="flex list-disc flex-col gap-3 pl-4 text-md">
+                                            {/* Lists all the dot points within a given step's panel */}
+                                            {step.instructions && step.instructions.map((dotpoint,id)=>
+                                                <li key={id}>{dotpoint}</li>
+                                            )}
+                                        </ul>
+                                    </div>
+
+                                    {/* Only show additional resources when available */}
+                                    {step.resources && step.resources.length > 0?
+                                    <div className="p-5 bg-white rounded-xl">
+                                        <h1 className="font-bold">Additional Resources:</h1>
+                                        <ul className="mt-2 flex list-disc flex-col gap-3 pl-4 text-md">
+                                            {/* Lists all Additional Resources */}
+                                            {step.resources.map((resource,id)=>
+                                                <li key={id}>{resource}</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                    :null}
                                 </div>
                             </div>
                         </div>
@@ -68,9 +81,14 @@ const TextCalendar: React.FC<{show:boolean; assignments:Record<string, Assignmen
             <section className={`flex flex-col items-center gap-5 w-full max-w-6xl px-4 sm:px-6 mt-6 ${show?"":"hidden"}`}>
                 {/* Tab group for unit selection */}
                 <TabGroup className="w-4/5 flex flex-row items-center gap-4 mx-auto">
-                    <div className="bg-slate-100 rounded-xl shadow-lg p-4 w-1/3 h-60">
+                    <div className="bg-slate-100 flex flex-col gap-2 rounded-xl shadow-lg p-4 w-1/3">
+                        <h1 className="font-bold text-lg flex flex-row gap-2">
+                            <TagIcon className="w-5 h-5"/>
+                            <span>Units:</span>
+                        </h1>
+                        <hr className="border-slate-300"/>
                         {/* Lists buttons for each unit*/}
-                        <TabList className="flex flex-col overflow-y-auto gap-4">
+                        <TabList className="flex flex-col overflow-y-auto gap-4 h-60">
                             {Object.keys(assignments).map((code)=> 
                                 <Tab key={code}
                                     className={`w-full h-12 rounded-lg text-white px-4 flex flex-shrink-0 items-center justify-between ${"bg-"+assignments[code][0].color+"-200"} ${"data-selected:bg-"+assignments[code][0].color+"-200"}`}
@@ -87,24 +105,31 @@ const TextCalendar: React.FC<{show:boolean; assignments:Record<string, Assignmen
                     </div>
 
                     {/* Shows assessment buttons based on unit selected */}
-                    <TabPanels className="w-2/3">
-                        {Object.keys(assignments).map((code)=> 
-                            <TabPanel key={code} className="bg-slate-100 flex flex-col rounded-xl shadow-lg overflow-y-auto gap-4 w-full h-60 p-4">
-                                {/* Tab group for assessments associated with a unit */}
-                                {assignments[code].map((assignment)=>
-                                <button 
-                                    className="w-full h-12 bg-white rounded-lg px-4 flex flex-shrink-0 items-center justify-between hover:bg-slate-100"
-                                    onClick={()=>setCurrentAssignment(assignment)}
-                                    >
-                                    <span>{assignment.name}</span>
-                                    <div className={`${assignment===currentAssignment?"block":"hidden"}`}>
-                                        <CheckIcon className="w-6 h-6 ml-2 text-green-200"/>
-                                    </div>
-                                </button>
-                                )}
-                            </TabPanel>
-                        )}
-                    </TabPanels>
+                    <div className="bg-slate-100 flex flex-col gap-2 rounded-xl shadow-lg p-4 w-2/3">
+                        <h1 className="font-bold text-lg flex flex-row gap-2">
+                            <DocumentIcon className="w-5 h-5"/>
+                            <span>Assignments:</span>
+                        </h1>
+                        <hr className="border-slate-300"/>
+                        <TabPanels className="w-full h-60">
+                            {Object.keys(assignments).map((code)=> 
+                                <TabPanel key={code} className="flex flex-col overflow-y-auto gap-4 w-full">
+                                    {/* Tab group for assessments associated with a unit */}
+                                    {assignments[code].map((assignment)=>
+                                    <button 
+                                        className="w-full h-12 bg-white rounded-lg px-4 flex flex-shrink-0 items-center justify-between hover:bg-grey-100"
+                                        onClick={()=>setCurrentAssignment(assignment)}
+                                        >
+                                        <span>{assignment.name}</span>
+                                        <div className={`${assignment===currentAssignment?"block":"hidden"}`}>
+                                            <CheckIcon className="w-6 h-6 ml-2 text-green-200"/>
+                                        </div>
+                                    </button>
+                                    )}
+                                </TabPanel>
+                            )}
+                        </TabPanels>
+                    </div>
                 </TabGroup>
                 <AssignmentStepsComponent assignment={currentAssignment}/>
             </section>

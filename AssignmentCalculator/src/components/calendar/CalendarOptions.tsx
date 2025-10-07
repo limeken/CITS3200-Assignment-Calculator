@@ -104,7 +104,7 @@ const CalendarOptions: React.FC<CalendarOptionsProps> = ({isCalendarFormat, chan
                     <Cog6ToothIcon className="w-6 h-6"/>
                 </Button>
                 <div className="flex flex-row relative w-full bg-slate-400 shadow-xl rounded-xl overflow-hidden">
-                    <div className={`z-1 absolute top-0 h-full w-1/2 bg-uwaBlue transition-transform duration-300 ${isCalendarFormat?"translate-x-0":"translate-x-full"}`}></div>
+                    <div className={`z-1 absolute top-0 h-full w-1/2 bg-uwaBlue rounded-xl transition-transform duration-300 ${isCalendarFormat?"translate-x-0":"translate-x-full"}`}></div>
                     <button type="button"
                         className={`z-5 flex justify-center items-center gap-2 w-1/2 bg-transparent`}
                         onClick={()=> changeFormat((prev)=>(!prev))}>
