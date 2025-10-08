@@ -13,8 +13,9 @@ export function usePlan() {
       const p = await createPlan(body);
       const g = await generateMilestones(p.plan_id);
       setPlan(g);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Failed";
+      setError(message);
     } finally {
       setLoading(false);
     }
