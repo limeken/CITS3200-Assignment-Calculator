@@ -4,22 +4,23 @@ import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/24/solid';
 
 // Defines its visible state, stored in main, along with a variable representing if an assignment was successfully added
 export interface SubmissionResult{
-    showNotification:boolean;
-    setNotification: (state:boolean) => void;
+    notification:string|null;
+    setNotification: (state:string|null) => void;
     successful?:boolean;
 };
 
 // Takes a boolean representing the result of submission and generates a banner based on the outcome
-const SubmissionBanner: React.FC<SubmissionResult> = ({showNotification, setNotification, successful=true}) => {
-
+const NotificationBanner: React.FC<SubmissionResult> = ({notification, setNotification, successful=true}) => {
+    // Displays the banner whenever a new message is broadcast
     useEffect(() => {
-        if(!showNotification) return;
-        const id = setTimeout(() => setNotification(false), 3000);
+        if(!notification) return;
+        const id = setTimeout(() => setNotification(null), 3000);
         return () => clearTimeout(id);
-    }, [showNotification, setNotification])
+    }, [notification, setNotification])
 
     return (
-        <Transition appear show={showNotification}
+        // Styling options for the notification banner drop down
+        <Transition appear show={notification !== null}
             enter="transition origin-top ease-out duration-300"
             enterFrom="scale-y-0 opacity-0"
             enterTo="scale-y-100 opacity-100"
@@ -28,11 +29,11 @@ const SubmissionBanner: React.FC<SubmissionResult> = ({showNotification, setNoti
             leaveTo="scale-y-0"
         >
             <div className={`fixed t-0 r-0 w-full h-10 text-white overflow-hidden flex items-center justify-center text-center ${successful?"bg-green-400":"bg-red-400"}`}>
-                {/* Shows alternative messages and boxes based on the outcome of adding an assignment */}
+                {/* Alternative banners depending on if message was a success */}
                 <span className="px-5">{successful?<CheckIcon className="w-7 h-7 text-white"/>:<ExclamationCircleIcon className="w-7 h-7 text-white"/>}</span>      
-                <span className="font-semibold">{successful?" The assignment has successfuly been added.":"Something went wrong. Please try again."}</span>
+                <span className="font-semibold">{notification}</span>
             </div>
         </Transition>
     )
 }
-export default SubmissionBanner;
+export default NotificationBanner;

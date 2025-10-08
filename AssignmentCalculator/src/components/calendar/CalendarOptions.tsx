@@ -96,7 +96,7 @@ const CalendarOptions: React.FC<CalendarOptionsProps> = ({isCalendarFormat, chan
     };
 
     return (
-        <div className="flex flex-row w-full h-10 my-10">
+        <div className="flex flex-row w-full h-10 mt-6">
             <div className="text-center text-white font-bold flex flex-row mx-auto w-4/5 relative">
                 <Button onClick={openSubmission}
                     className="flex rounded-xl inset-ring-0 bg-uwaBlue h-full aspect-square items-center justify-center mr-6 transition-all ease-out hover:bg-white hover:text-uwaBlue hover:inset-ring-2 hover:inset-ring-uwaBlue"

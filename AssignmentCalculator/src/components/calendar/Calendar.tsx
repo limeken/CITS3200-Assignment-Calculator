@@ -4,15 +4,15 @@ import {type AssignmentCalendar, pickRandomColor } from "./CalendarTypes.ts";
 import TextCalendar from "./TextCalendar.tsx";
 import VisualCalendar from "./VisualCalendar.tsx";
 import CalendarOptions from "./CalendarOptions.tsx";
-import {SemesterSelector} from "./SemesterSelector.tsx";
+import PriorityQueue from "./PriorityQueue.tsx";
 
 // TODO: this is fine
 export type CalendarRef = {
     // this is called when a new assignment finishes loading
     addAssignment: (a: AssignmentCalendar) => void;
-}
+};
 
-// empty prop set to stop linting errors
+// Passes down the utilities of update & delete, used within the priority queue
 type CalendarProps = {};
 
 /*  this initialisation is a bit confusing, so let me explain
@@ -20,40 +20,92 @@ type CalendarProps = {};
 *   normally React ref's only work on DOM elements (div's, class components, etc...)
 *   so we wrap our component in a forwardRef */
 const Calendar = forwardRef<CalendarRef, CalendarProps>((_props, ref) => {
-
+    
     const [assignments, setAssignments] = useState<Record<string, AssignmentCalendar[]>>({});
-
-    //  TODO: Explain why the visual settings are in <Calendar />
+    const [newestAssignment, setNewestAssignment] = useState<AssignmentCalendar|null>(null);
     const [isVisual, setIsVisual] = useState<boolean>(true);
 
-    // this function exposes a callback method
-    // TODO: This is good because it keeps assignment and state all internal to the component.
-    const addAssignment = useCallback((a: AssignmentCalendar) => {
+    // ASSIGNMENT MANIPULATION FUNCTIONS
+    // ADD: Adds the specified assignment to the collection
+    const addAssignment = useCallback((assignment: AssignmentCalendar, color?: string) => {
+        let prepared: AssignmentCalendar = assignment;
+        setAssignments(prev => {
+            const unitCode = assignment.unitCode;
+            if (!unitCode) {
+                return prev;
+            }
 
-        // Check if the unit code is already in use. If so, reuse the existing associated color and append to the unit list
-        if (a.unitCode! in assignments) {
-            a.color = assignments[a.unitCode!][0].color
-            setAssignments(prev => ({...prev, [a.unitCode!]: [...prev[a.unitCode!], a]}));
+            const existing = prev[unitCode];
+            if (existing && existing.length > 0) {
+                prepared = { ...assignment, color: existing[0].color };
+                return { ...prev, [unitCode]: [...existing, prepared] };
+            }
+
+            const nextColor = color ?? pickRandomColor();
+            prepared = { ...assignment, color: nextColor };
+            return { ...prev, [unitCode]: [prepared] };
+        });
+
+        setNewestAssignment(prepared);
+    }, []);
+
+    const removeAssignment = useCallback((assignment: AssignmentCalendar) => {
+        let wasRemoved = false;
+        setAssignments(prev => {
+            const unitCode = assignment.unitCode;
+            if (!unitCode) {
+                return prev;
+            }
+
+            const existing = prev[unitCode];
+            if (!existing || existing.length === 0) {
+                return prev;
+            }
+
+            if (existing.length === 1) {
+                const rest = { ...prev };
+                delete rest[unitCode];
+                wasRemoved = true;
+                return rest;
+            }
+
+            const filtered = existing.filter(item => item !== assignment);
+            if (filtered.length === existing.length) {
+                return prev;
+            }
+
+            wasRemoved = true;
+            return { ...prev, [unitCode]: filtered };
+        });
+
+        if (wasRemoved) {
+            setNewestAssignment(current => (current === assignment ? null : current));
         }
 
-        // If no such unit code exists yet, create a new color and associated unit list
-        else{
-            a.color = pickRandomColor();
-            setAssignments(prev => ({...prev,[a.unitCode!]:[a]}))
-        }
+        return wasRemoved;
+    }, []);
 
-        console.log(a)
-    }, [assignments]) // <- this empty array is the dependency list, a change to any objects in here triggers a re-render
+    // DELETE: Wipes the stored assignment specified
+    const deleteAssignment = useCallback((assignment: AssignmentCalendar) => {
+        removeAssignment(assignment);
+    }, [removeAssignment]);
+
+    // UPDATE: Wipes memory of old assignment & adds the new assignment
+    const updateAssignment = useCallback((oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => {
+        removeAssignment(oldAssignment);
+        addAssignment(newAssignment, oldAssignment.color);
+    }, [addAssignment, removeAssignment]);
 
     /* since we need an object API node, we expose this handle to addAssignment and it's API */
     useImperativeHandle(ref, () => ({ addAssignment }), [addAssignment]);
 
     return (
-        <>
+        <div className="flex flex-col gap-4 items-center">
             <CalendarOptions isCalendarFormat={isVisual} changeFormat={setIsVisual}/>
+            <PriorityQueue newest={newestAssignment} onUpdate={updateAssignment} onDelete={deleteAssignment}/>
             <VisualCalendar show={isVisual} assignments={assignments} />
             <TextCalendar show={!isVisual} assignments={assignments}/>
-        </>
+        </div>
     );
 });
 
