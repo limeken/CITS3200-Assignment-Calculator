@@ -6,7 +6,6 @@ import {ArrowDownOnSquareIcon} from "@heroicons/react/24/outline";
 
 const DAYS_MS = 24 * 60 * 60 * 1000;
 
-// TODO: this is a terrible way to do this
 const BG100: Record<CalendarColor, string> = {
     red: "bg-red-100", orange: "bg-orange-100", amber: "bg-amber-100",
     yellow: "bg-yellow-100", lime: "bg-lime-100", green: "bg-green-100",
@@ -45,7 +44,6 @@ interface AssignmentDateProps {
 /* Now we're able to pass the event to the actual box itself */
 /* Non-event boxes don't have anything to read from */
 const AssignmentDate: React.FC<AssignmentDateProps> = ({ uid, color, event }) => {
-
     const square = (
         <div
             key={uid}
@@ -54,7 +52,7 @@ const AssignmentDate: React.FC<AssignmentDateProps> = ({ uid, color, event }) =>
                 `aspect-square w-16 rounded-md ${BG100[color]} shadow-md ${SHADOWS[color]} transition-transform duration-150 ease-out hover:scale-95`
             )}
         />
-    )
+    );
 
     if (!event) return square;
 
@@ -66,44 +64,77 @@ const AssignmentDate: React.FC<AssignmentDateProps> = ({ uid, color, event }) =>
             </PopoverButton>
             <PopoverPanel anchor={"top"} transition
                 className="flex rounded-md bg-white p-2 shadow-lg transition duration-200 ease-out data-closed:scale-95 data-closed:opacity-0">
-            <p data-hover className="text-sm text-gray-900">{event.summary}</p>
-        </PopoverPanel>
+                <p data-hover className="text-sm text-gray-900">{event.summary}</p>
+            </PopoverPanel>
         </Popover>
-    )
+    );
 };
 
-
 /* The events row gets passed baby */
+// Horizontal layout component (existing)
 const AssignmentRow: React.FC<{ assignment: AssignmentCalendar}> = ({ assignment }) => {
     const dateAtIndex = (i: number): Date => {
-        return new Date(sem2.start.getTime() + i * DAYS_MS)
-    }
+        return new Date(sem2.start.getTime() + i * DAYS_MS);
+    };
 
     const eventForDate = (d: Date) => {
         const n = assignment.events.length;
-        if ( n == 0 ) return null;
+        if (n === 0) return null;
         const t0 = assignment.start.getTime();
         const t1 = assignment.end.getTime();
         const t = d.getTime();
 
         if (t < t0 || t > t1) return null;
         const span = t1 - t0;
-        if (span === 0 ) return assignment.events[n-1]
+        if (span === 0) return assignment.events[n - 1];
 
         const fraction = (t - t0) / span;
         const idx = Math.min(n - 1, Math.floor(fraction * n));
         return assignment.events[idx];
-    }
+    };
     
-    return(
+    return (
         <div className="flex flex-row gap-2 min-w-max">
             {Array.from({length: sem2.length}, (_, i) => {
                 const d = dateAtIndex(i);
                 const ev = eventForDate(d);
-                return ( <AssignmentDate uid={i} color={assignment.color} event={ev!}/> )
+                return <AssignmentDate key={i} uid={i} color={assignment.color} event={ev!}/>;
             })}
         </div>
-    )
+    );
+};
+
+// NEW: Vertical layout component (rotated 90° clockwise)
+const AssignmentColumn: React.FC<{ assignment: AssignmentCalendar}> = ({ assignment }) => {
+    const dateAtIndex = (i: number): Date => {
+        return new Date(sem2.start.getTime() + i * DAYS_MS);
+    };
+
+    const eventForDate = (d: Date) => {
+        const n = assignment.events.length;
+        if (n === 0) return null;
+        const t0 = assignment.start.getTime();
+        const t1 = assignment.end.getTime();
+        const t = d.getTime();
+
+        if (t < t0 || t > t1) return null;
+        const span = t1 - t0;
+        if (span === 0) return assignment.events[n - 1];
+
+        const fraction = (t - t0) / span;
+        const idx = Math.min(n - 1, Math.floor(fraction * n));
+        return assignment.events[idx];
+    };
+    
+    return (
+        <div className="flex flex-col gap-2 min-h-max">
+            {Array.from({length: sem2.length}, (_, i) => {
+                const d = dateAtIndex(i);
+                const ev = eventForDate(d);
+                return <AssignmentDate key={i} uid={i} color={assignment.color} event={ev!}/>;
+            })}
+        </div>
+    );
 };
 
 const RowLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, height: number}> = ({ code, assignment, height }) => {
@@ -113,84 +144,175 @@ const RowLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, height
 
     //handle calendar download
     function handleClick() {
-        const ics= exportAssignmentCalendar(assignment);
+        const ics = exportAssignmentCalendar(assignment);
         downloadIcs(assignment.name && `${assignment.unitCode}-${assignment.name}` || "New Assignment", ics);
     }
 
     return (
-        <div className={`w-36 shrink-0 mr-2 ${BG200[assignment.color]} rounded-md`} style={{ height: `${boxsize + gap}rem` }} onClick={handleClick}>
+        <div className={`w-36 shrink-0 mr-2 ${BG200[assignment.color]} rounded-md group`} style={{ height: `${boxsize + gap}rem` }} onClick={handleClick}>
             <div className={clsx(
-                "w-full h-full flex items-center rounded-md border-2 font-semibold text-white gap-2 group",
-                    "transition-all duration-300 ease-out justify-center group-hover:justify-between"
-                )}>
+                "w-full h-full flex items-center rounded-md border-2 font-semibold text-white gap-2",
+                "transition-all duration-300 ease-out justify-center group-hover:justify-between"
+            )}>
                 <span className={"absolute transition-all duration-300 ease-out scale-100 group-hover:opacity-0 group-hover:scale-95"}>{code ?? ""}</span>
-                <ArrowDownOnSquareIcon className={"h-8 transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100" }/>
+                <ArrowDownOnSquareIcon className={"h-8 transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100"}/>
             </div>
         </div>
     );
-}
+};
+
+// NEW: Column label for vertical layout
+const ColumnLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, width: number}> = ({ code, assignment, width }) => {
+    const gap = (width-1) * 0.5;
+    const boxsize = width * 4;
+
+    function handleClick() {
+        const ics = exportAssignmentCalendar(assignment);
+        downloadIcs(assignment.name && `${assignment.unitCode}-${assignment.name}` || "New Assignment", ics);
+    }
+
+    return (
+        <div className={`h-36 shrink-0 mb-2 ${BG200[assignment.color]} rounded-md group`} style={{ width: `${boxsize + gap}rem` }} onClick={handleClick}>
+            <div className={clsx(
+                "w-full h-full flex items-center justify-center rounded-md border-2 font-semibold text-white gap-2",
+                "transition-all duration-300 ease-out"
+            )}>
+                <span className={"transition-all duration-300 ease-out scale-100 group-hover:opacity-0 group-hover:scale-95"}>{code ?? ""}</span>
+                <ArrowDownOnSquareIcon className={"h-8 absolute transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100"}/>
+            </div>
+        </div>
+    );
+};
 
 // Decides how many default rows and actual rows need to be displayed
 const CalendarRows: React.FC<{assignments:Record<string,AssignmentCalendar[]>}> = ({assignments}) => {
     const rows = Object.keys(assignments).length;
-    const TemporaryRows = 4 - rows > 0? 4 - rows:0;
+    const temporaryRows = 4 - rows > 0 ? 4 - rows : 0;
+    
     return (
         <>
-            {(Object.keys(assignments).flatMap((code: string) => (
+            {Object.keys(assignments).flatMap((code: string) => (
                 assignments[code].map((assignment, i) => (
-                    <AssignmentRow key={i} assignment={assignment} />
+                    <AssignmentRow key={`${code}-${i}`} assignment={assignment} />
                 ))
-            ))
-            )}
-            {Array.from({length:TemporaryRows}).map((_)=>
-                <div className="flex flex-row gap-2 min-w-max">
+            ))}
+            {Array.from({length: temporaryRows}).map((_, idx) => (
+                <div key={`empty-row-${idx}`} className="flex flex-row gap-2 min-w-max">
                     {Array.from({length: sem2.length}, (_, i) => 
                         <div
                             key={i}
-                            className={clsx(`bg-white aspect-square w-16 rounded-md shadow-md transition-transform duration-150 ease-out hover:scale-95`
-                        )}>
-                        </div>
+                            className={clsx("bg-white aspect-square w-16 rounded-md shadow-md transition-transform duration-150 ease-out hover:scale-95")}
+                        />
                     )}
                 </div>
-            )}
-        </>
-    )
-}
-/* it should render with the assignments array */
-const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, AssignmentCalendar[]>}> = ({ show, assignments }) => (
-
-    <div className={`w-4/5 mx-auto bg-slate-100 px-4 py-6 rounded-lg inset-shadow-sm inset-shadow-indigo-100 grid grid-cols-[9rem_1fr] items-start ${!show ? 'hidden' : ''}`}>
-        {/* Left gutter: non-scrolling labels */}
-        <div className="space-y-3">
-            {/* header spacer to align with weeks row height */}
-            <div className="w-36 h-16 mr-2"/>
-            {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
-                <RowLabel key={code ?? i} code={code} assignment={assignments[code][0]} height={assignments[code].length}/>
             ))}
-        </div>
+        </>
+    );
+};
 
-        <div className="overflow-x-auto ml-2">
-            <div className="min-w-max space-y-3 pb-4">
+// NEW: Calendar columns for vertical layout
+const CalendarColumns: React.FC<{assignments:Record<string,AssignmentCalendar[]>}> = ({assignments}) => {
+    const cols = Object.keys(assignments).length;
+    const temporaryCols = 4 - cols > 0 ? 4 - cols : 0;
+    
+    return (
+        <>
+            {Object.keys(assignments).flatMap((code: string) => (
+                assignments[code].map((assignment, i) => (
+                    <AssignmentColumn key={`${code}-${i}`} assignment={assignment} />
+                ))
+            ))}
+            {Array.from({length: temporaryCols}).map((_, idx) => (
+                <div key={`empty-col-${idx}`} className="flex flex-col gap-2 min-h-max">
+                    {Array.from({length: sem2.length}, (_, i) => 
+                        <div
+                            key={i}
+                            className={clsx("bg-white aspect-square w-16 rounded-md shadow-md transition-transform duration-150 ease-out hover:scale-95")}
+                        />
+                    )}
+                </div>
+            ))}
+        </>
+    );
+};
 
-                {/* display the weeks as a grid */}
-                <div className="flex flex-row gap-2 items-center">
+const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, AssignmentCalendar[]>}> = ({ show, assignments }) => {
+    const numWeeks = Math.ceil(sem2.length / 7);
 
-                    {/* TODO: Use a "current semester" object */}
-                    {Array.from({ length: sem2.length / 7 }, (_, i) => (
-                        <div key={i} className="
-                    shrink-0 box-border rounded-md h-16
-                    bg-uwaBlue shadow-md shadow-gray-100
-                    w-[calc(theme(width.16)*7+theme(spacing.2)*6)]
-                    flex justify-center items-center
-                  ">
-                            <span className="p-3 text-lg font-semibold text-white">Week {i + 1}</span>
-                        </div>
+    return (
+        <div className={`w-4/5 mx-auto bg-slate-100 px-4 py-6 rounded-lg inset-shadow-sm inset-shadow-indigo-100 ${!show ? 'hidden' : ''}`}>
+            
+            {/* HORIZONTAL LAYOUT (lg and above) */}
+            <div className="hidden lg:grid lg:grid-cols-[9rem_1fr] lg:items-start">
+                {/* Left gutter: non-scrolling labels */}
+                <div className="space-y-3">
+                    <div className="w-36 h-16 mr-2"/>
+                    {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
+                        <RowLabel key={code ?? i} code={code} assignment={assignments[code][0]} height={assignments[code].length}/>
                     ))}
                 </div>
-                <CalendarRows assignments={assignments}/>
+
+                <div className="overflow-x-auto ml-2">
+                    <div className="min-w-max space-y-3 pb-4">
+                        <div className="flex flex-row gap-2 items-center">
+                            {Array.from({ length: numWeeks }, (_, i) => (
+                                <div key={i} className="
+                                    shrink-0 box-border rounded-md h-16
+                                    bg-uwaBlue shadow-md shadow-gray-100
+                                    w-[calc(theme(width.16)*7+theme(spacing.2)*6)]
+                                    flex justify-center items-center
+                                ">
+                                    <span className="p-3 text-lg font-semibold text-white">Week {i + 1}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <CalendarRows assignments={assignments}/>
+                    </div>
+                </div>
+            </div>
+
+            {/* VERTICAL LAYOUT (below lg) - rotated 90° clockwise with sticky headers */}
+            <div className="lg:hidden relative h-[80vh] overflow-hidden">
+                {/* Scrollable container for everything */}
+                <div className="h-full overflow-auto">
+                    <div className="relative">
+                        {/* Sticky top header: Unit code labels */}
+                        <div className="sticky top-0 z-10 bg-slate-100 pb-2">
+                            <div className="flex flex-row space-x-3">
+                                {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
+                                    <ColumnLabel key={code ?? i} code={code} assignment={assignments[code][0]} width={assignments[code].length}/>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        {/* Main content area with sticky right column */}
+                        <div className="flex flex-row space-x-3 relative">
+                            {/* Assignment columns */}
+                            <div className="flex flex-row space-x-3">
+                                <CalendarColumns assignments={assignments}/>
+                            </div>
+
+                            {/* Sticky right column: Week labels */}
+                            <div className="sticky right-0 z-20 bg-slate-100 pl-3">
+                                <div className="flex flex-col gap-2">
+                                    {Array.from({ length: numWeeks }, (_, i) => (
+                                        <div key={i} className="
+                                            box-border rounded-md w-16
+                                            bg-uwaBlue shadow-md shadow-gray-100
+                                            h-[calc(theme(width.16)*7+theme(spacing.2)*6)]
+                                            flex justify-center items-center
+                                        ">
+                                            <span className="p-3 text-lg font-semibold text-white -rotate-90">Week {i + 1}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-)
+    );
+};
 
 export default VisualCalendar;
