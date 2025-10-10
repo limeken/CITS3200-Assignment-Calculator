@@ -1,85 +1,69 @@
 # app/services/pdf.py
-from io import BytesIO
-from datetime import datetime
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from weasyprint import HTML, CSS
+from flask import make_response
+from textwrap import dedent
+from datetime import date
 
-def build_plan_pdf(plan: dict) -> BytesIO:
-    """
-    Build a simple, readable one-page PDF of a plan:
-    - UWA header placeholder
-    - Plan metadata
-    - Assignments table with milestones (if present)
-    Returns an in-memory BytesIO ready to send.
-    """
-    buf = BytesIO()
-    doc = SimpleDocTemplate(
-        buf,
-        pagesize=A4,
-        title=f"UWA Assignment Plan {plan.get('plan_id','')}",
-        author="UWA Assignment Planner",
-        leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36,
-    )
+def build_plan_pdf(plan: dict):
+    a = plan.get("assignments", [])
+    # group by unit
+    by_unit = {}
+    for x in a:
+        by_unit.setdefault(x.get("unit","(No unit)"), []).append(x)
 
-    styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name="Header", fontSize=16, leading=20, spaceAfter=8, alignment=1))  # centered
-    styles.add(ParagraphStyle(name="Subtle", fontSize=9, textColor=colors.grey))
-    styles.add(ParagraphStyle(name="Section", fontSize=12, leading=14, spaceBefore=12, spaceAfter=6,))
+    # rows HTML
+    def row(unit, title, due, mlist):
+        ms = "".join(f"<li>{m['name']} – {m['date']}</li>" for m in (mlist or []))
+        return f"""
+        <tr>
+          <td>{unit}</td>
+          <td>{title}</td>
+          <td>{due or ""}</td>
+          <td><ul>{ms}</ul></td>
+        </tr>"""
 
-    story = []
+    sections = []
+    for unit, items in by_unit.items():
+        items = sorted(items, key=lambda x: x.get("due_date") or "9999-12-31")
+        rows = "".join(row(unit, it.get("title",""), it.get("due_date",""), it.get("milestones")) for it in items)
+        sections.append(f"""
+          <h2>{unit}</h2>
+          <table class="grid"><thead>
+            <tr><th>Unit</th><th>Title</th><th>Due</th><th>Milestones</th></tr>
+          </thead><tbody>{rows}</tbody></table>
+        """)
 
-    # Header
-    story.append(Paragraph("University of Western Australia", styles["Header"]))
-    story.append(Paragraph("Assignment Planner — PDF Export (v1)", styles["Normal"]))
-    story.append(Paragraph(f"Generated: {datetime.utcnow().isoformat(timespec='seconds')}Z", styles["Subtle"]))
-    story.append(Spacer(1, 8))
+    html = dedent(f"""
+    <html>
+    <head><meta charset="utf-8">
+      <style>
+        @page {{ size: A4; margin: 20mm; @bottom-center {{ content: "UWA Assignment Planner — {{page}}/{{pages}}"; font-size: 10px; color: #666; }} }}
+        body {{ font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }}
+        .title {{ display:flex; align-items:center; gap:12px; margin-bottom: 12px; }}
+        .brand {{ font-size: 22px; font-weight: 700; }}
+        .meta  {{ color:#555; font-size: 12px; margin-bottom: 16px; }}
+        h2 {{ font-size: 16px; margin: 18px 0 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }}
+        table.grid {{ width:100%; border-collapse: collapse; }}
+        th, td {{ border: 1px solid #e5e7eb; padding: 8px; vertical-align: top; font-size: 12px; }}
+        thead th {{ background: #f3f4f6; text-align:left; }}
+        tbody tr:nth-child(even) {{ background: #fafafa; }}
+        ul {{ margin:0; padding-left: 18px; }}
+      </style>
+    </head>
+    <body>
+      <div class="title">
+        <div class="brand">University of Western Australia — Assignment Plan</div>
+      </div>
+      <div class="meta">
+        <div><b>Plan ID:</b> {plan.get('plan_id','')}</div>
+        <div><b>Generated:</b> {date.today().isoformat()}</div>
+      </div>
+      {''.join(sections) if sections else "<p>No assignments yet.</p>"}
+    </body></html>
+    """)
 
-    # Plan metadata
-    plan_id = plan.get("plan_id", "—")
-    created = plan.get("created_utc", "—")
-    version = plan.get("version", "v1")
-    story.append(Paragraph(f"<b>Plan ID:</b> {plan_id}", styles["Normal"]))
-    story.append(Paragraph(f"<b>Created (UTC):</b> {created}", styles["Normal"]))
-    story.append(Paragraph(f"<b>Version:</b> {version}", styles["Normal"]))
-
-    # Assignments table
-    story.append(Paragraph("Assignments", styles["Section"]))
-    data = [["Unit", "Title", "Start", "Due", "Milestones"]]
-
-    for a in plan.get("assignments", []):
-        unit = a.get("unit_code", "")
-        title = a.get("title", "")
-        start = a.get("start_date", "")
-        due = a.get("due_date", "")
-        ms = a.get("milestones") or []
-        # milestone lines: "YYYY-MM-DD - Name"
-        ms_lines = [f"{m.get('date','')} - {m.get('name','')}" for m in ms]
-        ms_text = "\n".join(ms_lines) if ms_lines else "—"
-        data.append([unit, title, start, due, ms_text])
-
-    tbl = Table(data, colWidths=[60, 160, 70, 70, 180])
-    tbl.setStyle(TableStyle([
-        ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
-        ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#e6eef7")),
-        ("TEXTCOLOR", (0,0), (-1,0), colors.HexColor("#003366")),
-        ("VALIGN", (0,0), (-1,-1), "TOP"),
-        ("FONTSIZE", (0,0), (-1,-1), 9),
-        ("LEFTPADDING", (0,0), (-1,-1), 4),
-        ("RIGHTPADDING", (0,0), (-1,-1), 4),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 4),
-        ("TOPPADDING", (0,0), (-1,-1), 4),
-    ]))
-    story.append(tbl)
-
-    # Footer note
-    story.append(Spacer(1, 8))
-    story.append(Paragraph(
-        "Dates are ISO-8601 (UTC internally). Milestones are generated evenly and may be staggered to avoid collisions.",
-        styles["Subtle"]
-    ))
-
-    doc.build(story)
-    buf.seek(0)
-    return buf
+    pdf_bytes = HTML(string=html).write_pdf(stylesheets=[CSS(string="")])
+    resp = make_response(pdf_bytes)
+    resp.headers["Content-Type"] = "application/pdf"
+    resp.headers["Content-Disposition"] = f"attachment; filename=plan_{plan.get('plan_id','')}.pdf"
+    return resp

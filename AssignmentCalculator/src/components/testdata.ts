@@ -17,7 +17,8 @@ export const assignmentTypes: Record<string, Assignment> = {
                 instructions: [
                     "Read the full assignment instructions and any associated materials",
                     "Read the rubric! Pay attention to specific details such as number/type of sources needed, suggested structure, and referencing style",
-                    "Ask clarifying questions if you are unsure about the instructions" ]
+                    "Ask clarifying questions if you are unsure about the instructions" ],
+                resources: ["This is a test","So is this","And this"]
             },
             { name: "Break down Question", percentage: 5,
                 instructions: [

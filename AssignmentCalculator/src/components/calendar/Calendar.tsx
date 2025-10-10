@@ -13,6 +13,7 @@ export type CalendarRef = {
 };
 
 // Passes down the utilities of update & delete, used within the priority queue
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type CalendarProps = {};
 
 /*  this initialisation is a bit confusing, so let me explain

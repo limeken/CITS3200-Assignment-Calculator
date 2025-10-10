@@ -23,6 +23,7 @@ const NotificationCtx = createContext<NotificationContext | null>(null);
 
 const DEFAULT_DURATION = 4000;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useNotification = () => {
     const ctx = useContext(NotificationCtx);
     if (!ctx) throw new Error("useNotification must be used within a NotificationProvider");

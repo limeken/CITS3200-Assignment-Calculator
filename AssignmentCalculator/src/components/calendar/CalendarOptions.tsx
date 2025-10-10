@@ -43,7 +43,7 @@ const CalendarOptionsModal: React.FC<CalendarOptionsModalProps> = ({ onClose }) 
     const [options, setOptions] = useState(sem_data[0]);
 
     return (
-        <div>
+        <div className="space-y-4">
             <DialogTitle className="h3 text-base font-semibold text-gray-900 w-full mb-2"> Calendar Settings </DialogTitle>
             <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
                 <Label className="block text-sm font-semibold text-gray-900 mb-2">Assessment type</Label>
@@ -78,6 +78,14 @@ const CalendarOptionsModal: React.FC<CalendarOptionsModalProps> = ({ onClose }) 
                     </Listbox>
                 </div>
             </Field>
+            <div className="flex justify-end">
+                <Button
+                    onClick={onClose}
+                    className="rounded-xl bg-uwaBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-uwaBlue"
+                >
+                    Done
+                </Button>
+            </div>
         </div>
     )
 }
@@ -104,7 +112,7 @@ const CalendarOptions: React.FC<CalendarOptionsProps> = ({isCalendarFormat, chan
                     <Cog6ToothIcon className="w-6 h-6"/>
                 </Button>
                 <div className="flex flex-row relative w-full bg-slate-400 shadow-xl rounded-xl overflow-hidden">
-                    <div className={`z-1 absolute top-0 h-full w-1/2 bg-uwaBlue transition-transform duration-300 ${isCalendarFormat?"translate-x-0":"translate-x-full"}`}></div>
+                    <div className={`z-1 absolute top-0 h-full w-1/2 bg-uwaBlue rounded-xl transition-transform duration-300 ${isCalendarFormat?"translate-x-0":"translate-x-full"}`}></div>
                     <button type="button"
                         className={`z-5 flex justify-center items-center gap-2 w-1/2 bg-transparent`}
                         onClick={()=> changeFormat((prev)=>(!prev))}>

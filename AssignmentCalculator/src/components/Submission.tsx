@@ -9,7 +9,7 @@ import clsx from "clsx";
 import { CheckIcon, ChevronUpDownIcon, DocumentArrowDownIcon } from "@heroicons/react/20/solid";
 
 import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions} from "@headlessui/react";
-import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
+import {ArrowDownTrayIcon, PencilSquareIcon, PlusIcon} from "@heroicons/react/24/solid";
 import {useModal} from "../providers/ModalProvider.tsx";
 import {useNotification} from "../providers/NotificationProvider.tsx";
 
@@ -193,29 +193,27 @@ const DeleteButton: React.FC<{pending:boolean, onDelete:()=>void}> = ({pending, 
  * Keep markup minimal.
  */
 const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onClose, onUpdate, onDelete, errors}) => {
-    const [startDate, setStartDate] = useState<Date | null>(null);
-    const [endDate, setEndDate] = useState<Date | null>(null);
-    const [assignmentName, setAssignmentName] = useState("");
-    const [unitCode, setUnitCode] = useState("");
+    const [startDate, setStartDate] = useState<Date | null>(submission.start ?? null);
+    const [endDate, setEndDate] = useState<Date | null>(submission.end ?? null);
+    const [assignmentName, setAssignmentName] = useState(submission.name ?? "");
+    const [unitCode, setUnitCode] = useState(submission.unitCode ?? "");
     const [pending, setPending] = useState(false);
     const { notify } = useNotification();
 
     // UNPACK ASSIGNMENT CONTEXT - UPDATE
     // If the asisgnment is being edited, unpack its old variables into states
-    useEffect(()=>{    
-        if(!isNew){
-            setStartDate(submission.start);
-            setEndDate(submission.end);
-            setAssignmentName(submission.name!);
-            setUnitCode(submission.unitCode!)
-        }
-    },[submission])
-
-
     const items = useMemo<Assignment[]>(() => Object.values(assignmentTypes), []);
     const [selected, setSelected] = useState<Assignment>(
-        items.find(i => i.name === "Essay") ?? items[0]
+        items.find(i => i.name === (submission.assignmentType ?? "")) ?? items[0]
     );
+
+    useEffect(() => {
+        setStartDate(submission.start ?? null);
+        setEndDate(submission.end ?? null);
+        setAssignmentName(submission.name ?? "");
+        setUnitCode(submission.unitCode ?? "");
+        setSelected(items.find(i => i.name === (submission.assignmentType ?? "")) ?? items[0]);
+    }, [isNew, submission, items]);
 
     const datesValid = !!startDate && !!endDate && startDate <= endDate;
     const canSubmit = assignmentName.trim().length > 0 && unitCode.trim().length > 0 && datesValid;
@@ -372,9 +370,12 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     }
 
     return (
-        <div className="bg-white p-5 flex justify-center items-center">
+        <div className="bg-white p-2 flex justify-center items-center">
             <div className="size-full p-4 rounded-xl flex flex-col gap-2 justify-center items-center border-3 border-slate-300 relative">
-                <h1 className="text-center font-bold text-lg text-gray-900 w-full mb-2"> {isNew?"Create New Assignment:":"Edit Assignment:"} </h1>
+                <h1 className="flex flex-row gap-2 justify-center items-center font-bold text-lg text-gray-900 w-full mb-2"> 
+                    <PencilSquareIcon className="w-6 h-6"/>
+                    <span>{isNew?"Create New Assignment:":"Edit Assignment:"}</span>
+                </h1>
                 <form className="my-3 text-left w-full flex flex-col gap-2 items-center justify-center">
                     <section className="gap-4 flex flex-col items-center justify-center w-4/5">
                         <AssessmentTypeInput />
