@@ -7,6 +7,8 @@ from .routes.health import bp as health_bp
 
 def create_app():
     app = Flask(__name__)
+    app.url_map.strict_slashes = False  # 👈 Accept both /path and /path/
+
     app.config.update(
         APP_VERSION="v1",
         JSON_SORT_KEYS=False,
@@ -16,22 +18,22 @@ def create_app():
     if "PLANS" not in app.config:
         app.config["PLANS"] = {}
 
-    #  Metrics setup
+    # Metrics setup
     init_metrics(app)
     register_metrics_hooks(app)
 
-    #  Register blueprints
+    # Register blueprints
     app.register_blueprint(health_bp)
     app.register_blueprint(plan_bp, url_prefix="/plan")
     app.register_blueprint(export_bp)
 
-    #  Add no-store headers to all responses
+    # Add no-store headers to all responses
     @app.after_request
     def add_headers(resp):
         resp.headers["Cache-Control"] = "no-store"
         return resp
 
-    #  Handle HTTP errors (e.g., 404, 400)
+    # Handle HTTP errors (e.g., 404, 400)
     @app.errorhandler(HTTPException)
     def handle_http_exc(e: HTTPException):
         return jsonify({
@@ -39,7 +41,7 @@ def create_app():
             "message": e.description
         }), e.code
 
-    #  Handle uncaught exceptions
+    # Handle uncaught exceptions
     @app.errorhandler(Exception)
     def handle_uncaught(e: Exception):
         return jsonify({
