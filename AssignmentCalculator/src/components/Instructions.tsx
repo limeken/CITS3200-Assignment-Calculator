@@ -23,7 +23,7 @@ export const InstructionsButton = () => {
                 onClick={() => openInstructions()}
                 className="inline-flex items-center rounded-md bg-uwaBlue px-3 py-2 text-white hover:bg-slate-700"
             >
-                View instructions
+                View Instructions
             </button>
         </div>
     )
