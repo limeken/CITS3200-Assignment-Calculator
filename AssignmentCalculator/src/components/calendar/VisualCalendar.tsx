@@ -163,8 +163,10 @@ const RowLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, height
 
 // NEW: Column label for vertical layout
 const ColumnLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, width: number}> = ({ code, assignment, width }) => {
-    const gap = (width-1) * 0.5;
-    const boxsize = width * 4;
+    // Each assignment column is w-16 (4rem)
+    // Gap between assignment columns within the same unit is gap-3 (0.75rem)
+    // Previous bug was caused by forgetting to account for gaps between boxes, just a bugfix.
+    const totalWidth = width * 4 + (width - 1) * 0.75;
 
     function handleClick() {
         const ics = exportAssignmentCalendar(assignment);
@@ -172,7 +174,11 @@ const ColumnLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, wid
     }
 
     return (
-        <div className={`h-36 shrink-0 mb-2 ${BG200[assignment.color]} rounded-md group`} style={{ width: `${boxsize + gap}rem` }} onClick={handleClick}>
+        <div 
+            className={`h-36 shrink-0 mb-2 ${BG200[assignment.color]} rounded-md group`} 
+            style={{ width: `${totalWidth}rem` }} 
+            onClick={handleClick}
+        >
             <div className={clsx(
                 "w-full h-full flex items-center justify-center rounded-md border-2 font-semibold text-white gap-2",
                 "transition-all duration-300 ease-out"
