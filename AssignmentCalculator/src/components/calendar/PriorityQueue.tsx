@@ -108,29 +108,36 @@ const PriorityQueue: React.FC<{
     }
 
     return(
-            <div className={`w-4/5 bg-slate-300 rounded-xl transition-all duration-300 ease-in-out overflow-hidden flex flex-row gap-4
-                ${sortedAssignments.length===0?"scale-x-0 opacity-0 overflow-hidden":"scale-x-100 p-4 opacity-100 overflow-x-auto"}`}>
-                    {sortedAssignments.map((assignment)=>{
-                        const { base, days} = pickPriority(assignment.end);
-                        const assignmentType = assignmentTypes[assignment.assignmentType];
-                        return (
-                            <div onClick={() => openAssigment(assignmentType)}
-                                className={`h-9/10 w-70 flex flex-col flex-shrink-0 rounded-lg bg-white overflow-hidden shadow-lg transition duration-300 ease-in-out hover:scale-105 relative`}>
-                                <h1 className={`text-lg font-bold w-full h-1/4 flex justify-center items-center relative ${base}`}>
-                                    <span>{`Due in: ${days} Days`}</span>
-                                    <PencilSquareIcon className="w-5 h-5 text-white absolute right-5 top-1/2 -translate-y-1/2 hover:text-blue-300 transition-transform duration-300 hover:scale-120"
-                                    onClick={()=>openResubmission(assignment)}
-                                    />
-                                </h1>
-                                <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Unit: </span>{assignment.unitCode}</p>
-                                <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Assignment: </span>{assignment.name}</p>
-                                <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Type: </span>{assignment.assignmentType}</p>
-                                <p className="p-2 text-sm"><span className="font-semibold">Due Date: </span>{assignment.end.toISOString().substring(0, 10).replaceAll("-","/")}</p>
-                            </div>
+            <div className={`w-4/5 bg-slate-100 rounded-xl transition-all duration-300 ease-in-out overflow-hidden flex flex-col
+                ${sortedAssignments.length===0?"scale-x-0 opacity-0":"scale-x-100 p-4 opacity-100"}`}>
+                    <hr className="border-slate-300"/>
+                    <div className="flex flex-row gap-4 overflow-x-auto p-4">
+                        {sortedAssignments.map((assignment)=>{
+                            const { base, days} = pickPriority(assignment.end);
+                            const assignmentType = assignmentTypes[assignment.assignmentType];
+                            return (
+                                <div onClick={() => openAssigment(assignmentType)}
+                                    className={`h-9/10 w-70 flex flex-col flex-shrink-0 rounded-lg bg-white overflow-hidden shadow-lg transition duration-300 ease-in-out hover:scale-105 relative`}>
+                                    <h1 className={`text-lg font-bold w-full h-1/4 flex justify-center items-center relative ${base}`}>
+                                        <span>{`Due in: ${days} Days`}</span>
+                                        <PencilSquareIcon className="w-5 h-5 text-white absolute right-5 top-1/2 -translate-y-1/2 hover:text-blue-300 transition-transform duration-300 hover:scale-120"
+                                        onClick={(e)=>{
+                                            e.stopPropagation(); 
+                                            openResubmission(assignment)
+                                        }}
+                                        />
+                                    </h1>
+                                    <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Unit: </span>{assignment.unitCode}</p>
+                                    <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Assignment: </span>{assignment.name}</p>
+                                    <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Type: </span>{assignment.assignmentType}</p>
+                                    <p className="p-2 text-sm"><span className="font-semibold">Due Date: </span>{assignment.end.toISOString().substring(0, 10).replaceAll("-","/")}</p>
+                                </div>
+                                )
+                                }
                             )
-                            }
-                        )
-                    }
+                        }
+                    </div>
+                    <hr className="border-slate-300"/>
             </div>
         )
 }

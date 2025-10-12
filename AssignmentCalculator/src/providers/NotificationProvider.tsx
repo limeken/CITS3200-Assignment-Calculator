@@ -1,5 +1,6 @@
 import React, {createContext, useContext, useEffect, useRef, useState, type ReactNode} from "react";
 import {Transition} from "@headlessui/react";
+import { CheckIcon, ExclamationCircleIcon} from "@heroicons/react/24/solid";
 
 type NotificationNode = {
     id: string;
@@ -94,11 +95,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
                         afterLeave={() => finalize(id)}
                     >
                         <div
-                            className={`pointer-events-auto w-72 rounded-lg p-4 text-sm shadow-lg ring-1 ${success
+                            className={`pointer-events-auto w-72 rounded-lg p-4 text-sm shadow-lg ring-1 flex items-center justify-left gap-2 ${success
                                 ? "bg-green-100 text-green-900 ring-green-500/20"
                                 : "bg-red-100 text-red-900 ring-red-500/20"}`}
                         >
-                            {content}
+                            {success?<CheckIcon className="h-5 w-5 text-emerald-600 sm:h-6 sm:w-6" />:<ExclamationCircleIcon className="h-5 w-5 text-rose-500 sm:h-6 sm:w-6" />}
+                            <span>{content}</span>
                         </div>
                     </Transition>
                 ))}
