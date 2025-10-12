@@ -100,7 +100,7 @@ const CalendarOptions: React.FC<CalendarOptionsProps> = ({isCalendarFormat, chan
 
     const {open, close} = useModal();
 
-    const openSubmission = () => {
+    const openOptions = () => {
         open((id) => (
             <CalendarOptionsModal
                 onClose={() => close(id)}
@@ -118,14 +118,14 @@ const CalendarOptions: React.FC<CalendarOptionsProps> = ({isCalendarFormat, chan
             <div className="surface-card flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                     <Button
-                        onClick={openSubmission}
-                        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/90 px-5 text-sm font-semibold text-slate-700 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-uwaBlue hover:shadow-[0_24px_55px_-30px_rgba(67,56,202,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uwaBlue sm:w-auto"
+                        onClick={openOptions}
+                        className="inline-flex lg:h-12 sm:h-8 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/90 px-5 text-sm font-semibold text-slate-700 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-uwaBlue hover:shadow-[0_24px_55px_-30px_rgba(67,56,202,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uwaBlue sm:w-auto"
                     >
                         <Cog6ToothIcon className="h-6 w-6" />
                         <span className="hidden sm:inline">Calendar settings</span>
                     </Button>
                 </div>
-                <div className="relative flex h-12 w-full flex-1 min-w-[16rem] overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-inner shadow-white/[0.35]">
+                <div className="relative flex h-20 sm:h-16 lg:h-12 w-full flex-1 min-w-[16rem] overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-inner shadow-white/[0.35]">
                     <span className={switchIndicator} />
                     <button
                         type="button"
