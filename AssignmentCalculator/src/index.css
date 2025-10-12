@@ -2,6 +2,13 @@
 /* Refreshed typography */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
+@font-face {
+    font-family: 'PlusJakartaSans';
+    src: url('/fonts/PlusJakartaSans.ttf') format('truetype');
+    font-weight: 100 900;
+    font-display: swap;
+}
+
 /* Tailwind v4.1 base */
 @layer base {
   html, body {
@@ -13,6 +20,7 @@
       radial-gradient(circle at top right, rgba(79, 70, 229, 0.12), transparent 55%),
       radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.1), transparent 45%);
     background-attachment: fixed;
+    font-family: var(--font-PlusJakartaSans);
   }
   /* Make the root take full width; no max-width or padding here */
   #root {
@@ -21,11 +29,13 @@
   }
 }
 
+
+
 /* Tailwind v4.1 tokens */
 /* WebStorm has a hissy fit over this at-rule so the next like ignores it --Maxwell */
 /*noinspection CssInvalidAtRule*/
 @theme {
-  --color-uwaBlue: #4338CA;
+  --color-uwaBlue: oklch(42.4% 0.199 265.638);
   --color-uwaGold: #F97316;
   --color-uwaGrey: #E2E8F0;
   --color-surface: #FFFFFF;
@@ -34,7 +44,7 @@
   --color-text-muted: #64748B;
 
   --font-sans: "TT Norms Pro", "Inter", Arial, sans-serif;
-  --font-uwa: "UWA Regular", UWA, Georgia, serif;
+  --font-uwa: "Jakarta Sans", UWA, system-ui, sans-serif;
 
   --radius-xl: 0.85rem;
   --shadow-soft: 0 24px 48px rgba(15, 23, 42, 0.12);

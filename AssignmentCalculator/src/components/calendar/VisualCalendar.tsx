@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {type AssignmentCalendar, type AssignmentEvent, type CalendarColor, downloadIcs, exportAssignmentCalendar, sem2} from "./CalendarTypes.ts";
 import clsx from "clsx";
 import {Popover, PopoverButton, PopoverPanel} from "@headlessui/react";
@@ -244,27 +244,44 @@ const CalendarColumns: React.FC<{assignments:Record<string,AssignmentCalendar[]>
 
 const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, AssignmentCalendar[]>}> = ({ show, assignments }) => {
     const numWeeks = Math.ceil(sem2.length / 7);
+    const [isEmpty, setIsEmpty] = useState(false);
+
+    useEffect(() => {
+        const totalAssignments = Object.values(assignments)
+            .reduce((count, unitAssignments) => count + unitAssignments.length, 0);
+        setIsEmpty(totalAssignments === 0);
+    }, [assignments]);
+
+    const nonEmptyAssignments = Object.entries(assignments)
+        .filter(([, unitAssignments]) => unitAssignments.length > 0);
 
     return (
         <div className={`w-4/5 mx-auto bg-slate-100 px-4 py-6 rounded-lg inset-shadow-sm inset-shadow-indigo-100 ${!show ? 'hidden' : ''}`}>
             
             {/* HORIZONTAL LAYOUT (lg and above) */}
-            <div className="hidden lg:grid lg:grid-cols-[9rem_1fr] lg:items-start">
+            <div className={clsx("hidden lg:grid lg:items-start", isEmpty ? "lg:grid-cols-1" : "lg:grid-cols-[9rem_1fr]") }>
                 {/* Left gutter: non-scrolling labels */}
-                <div className="space-y-3">
-                    <div className="w-36 h-16 mr-2"/>
-                    {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
-                        <RowLabel key={code ?? i} code={code} assignment={assignments[code][0]} height={assignments[code].length}/>
-                    ))}
-                </div>
+                {!isEmpty && (
+                    <div className="space-y-3">
+                        <div className="w-36 h-16 mr-2"/>
+                        {nonEmptyAssignments.map(([code, unitAssignments], index) => (
+                            <RowLabel
+                                key={`${code}-${index}`}
+                                code={code}
+                                assignment={unitAssignments[0]}
+                                height={unitAssignments.length}
+                            />
+                        ))}
+                    </div>
+                )}
 
-                <div className="overflow-x-auto ml-2">
+                <div className={clsx("overflow-x-auto", { "ml-2": !isEmpty })}>
                     <div className="min-w-max space-y-3 pb-4">
                         <div className="flex flex-row gap-2 items-center">
                             {Array.from({ length: numWeeks }, (_, i) => (
                                 <div key={i} className="
                                     shrink-0 box-border rounded-md h-16
-                                    bg-uwaBlue shadow-md shadow-gray-100
+                                    bg-blue-800 shadow-md shadow-gray-100
                                     w-[calc(theme(width.16)*7+theme(spacing.2)*6)]
                                     flex justify-center items-center
                                 ">
@@ -285,8 +302,13 @@ const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, Assig
                         {/* Sticky top header: Unit code labels */}
                         <div className="sticky top-0 z-10 bg-slate-100 pb-2">
                             <div className="flex flex-row space-x-3">
-                                {Object.keys(assignments).length === 0 ? null : Object.keys(assignments).map((code, i) => (
-                                    <ColumnLabel key={code ?? i} code={code} assignment={assignments[code][0]} width={assignments[code].length}/>
+                                {nonEmptyAssignments.map(([code, unitAssignments], index) => (
+                                    <ColumnLabel
+                                        key={`${code}-${index}`}
+                                        code={code}
+                                        assignment={unitAssignments[0]}
+                                        width={unitAssignments.length}
+                                    />
                                 ))}
                             </div>
                         </div>
@@ -304,7 +326,7 @@ const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, Assig
                                     {Array.from({ length: numWeeks }, (_, i) => (
                                         <div key={i} className="
                                             box-border rounded-md w-16
-                                            bg-uwaBlue shadow-md shadow-gray-100
+                                            bg-blue-800 shadow-md shadow-gray-100
                                             h-[calc(theme(width.16)*7+theme(spacing.2)*6)]
                                             flex justify-center items-center
                                         ">
