@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap");
 
 @import "tailwindcss";
 
@@ -31,7 +31,7 @@
   --color-uwaGrey: #ececec;
 
   --font-sans: "Source Sans Pro", Arial, sans-serif;
-  --font-uwa: "UWA Regular", UWA, Georgia, serif;
+  --font-uwa: "Plus Jakarta Sans", "UWA Regular", UWA, sans-serif;
 
   --radius-xl: 0.75rem;
   --shadow-soft: 0 8px 30px rgba(0,0,0,0.08);
