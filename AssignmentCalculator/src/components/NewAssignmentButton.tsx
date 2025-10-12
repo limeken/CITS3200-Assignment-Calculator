@@ -1,6 +1,6 @@
 import {ArrowDownTrayIcon, PlusIcon} from "@heroicons/react/24/solid";
 import clsx from "clsx";
-import { floatingActionButtonBase, floatingActionButtonFrame } from "../styles/tailwindStyles.ts";
+import { floatingActionButtonBase, floatingActionButtonFrame } from "../styles/styles.ts";
 
 interface NewAssignmentButton {
     onImport: () => Promise<void> | void,

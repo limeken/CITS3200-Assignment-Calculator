@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog } from '@headlessui/react';
 import clsx from "clsx";
 import {useModal} from "../providers/ModalProvider.tsx";
-import { pageSection, primaryPillButton, secondaryPillButton } from "../styles/tailwindStyles.ts";
+import { pageSection, primaryPillButton, secondaryPillButton } from "../styles/styles.ts";
 
 export interface ModalBaseProps {
     onClose: () => void;

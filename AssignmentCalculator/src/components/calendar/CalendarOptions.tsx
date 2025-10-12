@@ -13,7 +13,7 @@ import {useModal} from "../../providers/ModalProvider.tsx";
 import {ChevronUpDownIcon} from "@heroicons/react/20/solid";
 import {createSemester, type Semester} from "./CalendarTypes.ts";
 import clsx from "clsx";
-import { pageSection, primaryPillButton } from "../../styles/tailwindStyles.ts";
+import { pageSection, primaryPillButton } from "../../styles/styles.ts";
 
 const sem_data: {id: number, name: string, semester: Semester}[]  = [
     {
