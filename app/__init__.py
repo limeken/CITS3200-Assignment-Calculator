@@ -1,9 +1,12 @@
 from flask import Flask, jsonify, request, current_app
 from werkzeug.exceptions import HTTPException
 from datetime import timezone
+
 from .routes.export import export_bp, init_metrics, register_metrics_hooks
 from .routes.plan import bp as plan_bp
 from .routes.health import bp as health_bp
+from .routes.types import bp_types
+from .routes.admin import admin_bp  # ✨ NEW: import admin blueprint
 
 def create_app():
     app = Flask(__name__)
@@ -26,6 +29,8 @@ def create_app():
     app.register_blueprint(health_bp)
     app.register_blueprint(plan_bp, url_prefix="/plan")
     app.register_blueprint(export_bp)
+    app.register_blueprint(bp_types)
+    app.register_blueprint(admin_bp)  # ✨ NEW: register admin blueprint
 
     # Add no-store headers to all responses
     @app.after_request

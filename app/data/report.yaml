@@ -1,0 +1,10 @@
+id: report
+title: Report
+milestones:
+  - { name: "Research", offset_days: -21 }
+  - { name: "Outline",  offset_days: -14 }
+  - { name: "Draft",    offset_days: -10 }
+  - { name: "Revise",   offset_days: -5 }
+  - { name: "Finalise", offset_days: -2 }
+defaults:
+  planning_window_days: 28
