@@ -1,0 +1,48 @@
+{
+  "id": "presentation",
+  "title": "Presentation",
+  "icon": "PresentationChartLineIcon",
+  "description": "Oral or visual presentation demonstrating subject mastery and communication skills.",
+  "milestones": [
+    {
+      "name": "Read the assignment instructions",
+      "effort_percent": 10,
+      "description": "Understand timing, audience, assessment criteria, and required artefacts."
+    },
+    {
+      "name": "Read the assignment rubric",
+      "effort_percent": 10,
+      "description": "Highlight what high distinction responses include and plan to meet those standards."
+    },
+    {
+      "name": "Research your topic",
+      "effort_percent": 15,
+      "description": "Gather evidence, case studies, and visuals that support your key message."
+    },
+    {
+      "name": "Draft an outline of what you will cover",
+      "effort_percent": 15,
+      "description": "Sequence ideas logically from introduction to conclusion and allocate speaking time."
+    },
+    {
+      "name": "Structure your content",
+      "effort_percent": 15,
+      "description": "Build supporting materials such as notes, handouts, or demonstrations."
+    },
+    {
+      "name": "Design your slides",
+      "effort_percent": 15,
+      "description": "Create accessible visual aids that reinforce the narrative without overwhelming it."
+    },
+    {
+      "name": "Practice your presentation",
+      "effort_percent": 15,
+      "description": "Rehearse delivery, refine timing, and confirm technology works as expected."
+    },
+    {
+      "name": "Deliver presentation",
+      "effort_percent": 5,
+      "description": "Present confidently, respond to questions, and capture feedback for future growth."
+    }
+  ]
+}

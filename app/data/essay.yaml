@@ -1,0 +1,9 @@
+id: essay
+title: Essay
+icon: DocumentTextIcon
+milestones:
+  - { name: "Research", effort_percent: 20 }
+  - { name: "Outline", effort_percent: 20 }
+  - { name: "Draft", effort_percent: 25 }
+  - { name: "Edit", effort_percent: 20 }
+  - { name: "Finalise", effort_percent: 15 }

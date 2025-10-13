@@ -1,0 +1,11 @@
+id: report
+title: Report
+icon: DocumentTextIcon
+milestones:
+  - { name: "Research", effort_percent: 20 }
+  - { name: "Outline",  effort_percent: 20 }
+  - { name: "Draft",    effort_percent: 25 }
+  - { name: "Revise",   effort_percent: 20 }
+  - { name: "Finalise", effort_percent: 15 }
+defaults:
+  planning_window_days: 28

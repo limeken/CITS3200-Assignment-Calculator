@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint ",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build-cache": "python3 ../scripts/build_assignment_cache.py"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
