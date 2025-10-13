@@ -3,8 +3,6 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import type { Assignment } from './calendar/CalendarTypes.ts';
 
 export interface AssignmentModalProps {
-    onClose: () => void;
-    title?: string;
     assignment: Assignment;
 }
 
@@ -18,8 +16,6 @@ export interface AssignmentModalProps {
 // Final exported modal component, fully put together from smaller components
 export const AssignmentModal: React.FC<AssignmentModalProps> = ({
     assignment,
-    onClose,
-    title,
 }) => {
 
     const steps = assignment.events;

@@ -1,0 +1,48 @@
+{
+  "id": "group_project",
+  "title": "Group Project",
+  "icon": "UserGroupIcon",
+  "description": "Collaborative project requiring coordinated planning, production, and review.",
+  "milestones": [
+    {
+      "name": "Assemble a team",
+      "effort_percent": 10,
+      "description": "Confirm group membership, contact details, and initial expectations."
+    },
+    {
+      "name": "Bond with the crew",
+      "effort_percent": 10,
+      "description": "Establish working agreements, clarify individual strengths, and select communication tools."
+    },
+    {
+      "name": "Endure hardships together",
+      "effort_percent": 10,
+      "description": "Identify project risks, assign roles, and schedule regular checkpoints."
+    },
+    {
+      "name": "Face rising tension",
+      "effort_percent": 15,
+      "description": "Monitor progress against milestones and resolve blockers promptly."
+    },
+    {
+      "name": "One of your disciples betrays you",
+      "effort_percent": 15,
+      "description": "Reassess workload distribution and capture action items in shared documentation."
+    },
+    {
+      "name": "Crucifixion",
+      "effort_percent": 15,
+      "description": "Bring deliverables together, integrate contributions, and rehearse presentations if needed."
+    },
+    {
+      "name": "Oh wait nevermind you somehow made it back",
+      "effort_percent": 15,
+      "description": "Complete peer review, implement final feedback, and prepare submission package."
+    },
+    {
+      "name": "Dance sequence",
+      "effort_percent": 10,
+      "description": "Deliver the final submission and celebrate the team effort responsibly."
+    }
+  ]
+}

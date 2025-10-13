@@ -1,0 +1,48 @@
+{
+  "id": "essay",
+  "title": "Essay",
+  "icon": "DocumentTextIcon",
+  "description": "Structured writing task that synthesises research into a cohesive argument.",
+  "milestones": [
+    {
+      "name": "Read instructions",
+      "effort_percent": 5,
+      "description": "Read the full assignment instructions and any associated materials. Focus on the rubric to understand required sources, structure, and referencing style. Seek clarification early if anything is unclear.",
+      "resources": [
+        "This is a test",
+        "So is this",
+        "And this"
+      ]
+    },
+    {
+      "name": "Break down question",
+      "effort_percent": 10,
+      "description": "Highlight key task words and clarify what the assignment is asking you to do. Refine the topic scope so you can plan targeted research and writing. Attend a drop-in session if you need support interpreting the brief."
+    },
+    {
+      "name": "Do some general research",
+      "effort_percent": 15,
+      "description": "Identify what you already know and what gaps you must fill. Explore broad sources to form an initial position on the topic. Consult with a librarian for search strategies if needed."
+    },
+    {
+      "name": "Brainstorm and plan your answers",
+      "effort_percent": 15,
+      "description": "Generate ideas for your argument and decide on a clear thesis. Outline paragraphs with one main point each and note supporting evidence to find. Continue targeted research to back each main idea."
+    },
+    {
+      "name": "Alternate writing and further research",
+      "effort_percent": 25,
+      "description": "Draft body paragraphs while gathering any missing evidence. Structure introduction and conclusion from general to specific. Reference sources as you go to keep citations accurate."
+    },
+    {
+      "name": "Edit and redraft",
+      "effort_percent": 20,
+      "description": "Review structure, flow, and sources before refining wording and referencing. Confirm every paragraph links back to your central thesis. Proofread carefully and ensure the rubric requirements are satisfied."
+    },
+    {
+      "name": "Submit",
+      "effort_percent": 10,
+      "description": "Verify submission receipt and store confirmation safely."
+    }
+  ]
+}

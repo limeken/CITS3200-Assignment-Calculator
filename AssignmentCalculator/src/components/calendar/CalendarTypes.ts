@@ -58,7 +58,7 @@ export function createSemester(
  *  Technically they need an id, but I'll just key them based on index
  */
 export interface Assignment {
-    id: number;
+    id: string;
     name: string; // The name of the assignment (e.g. essay, report, etc...)
     icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     events: Array<{
@@ -126,7 +126,7 @@ export const createAssignmentCalendar = (): AssignmentCalendar => ({
     start: new Date(),
     end: new Date(),
     events: [],
-    assignmentType: "Essay",
+    assignmentType: "essay",
 });
 
 export async function importCalendar(file: File): Promise<AssignmentCalendar> {
