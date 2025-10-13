@@ -25,16 +25,6 @@ const BG300: Record<CalendarColor, string> = {
     pink: "bg-pink-300", rose: "bg-rose-300",
 };
 
-// TODO: im sure you get the idea by now
-const SHADOWS: Record<CalendarColor, string> = {
-    red: "shadow-red-50", orange: "shadow-orange-50", amber: "shadow-amber-50",
-    yellow: "shadow-yellow-50", lime: "shadow-lime-50", green: "shadow-green-50",
-    emerald: "shadow-emerald-50", teal: "shadow-teal-50", cyan: "shadow-cyan-50",
-    sky: "shadow-sky-50", blue: "shadow-blue-50", indigo: "shadow-indigo-50",
-    violet: "shadow-violet-50", purple: "shadow-purple-50", fuchsia: "shadow-fuchsia-50",
-    pink: "shadow-pink-50", rose: "shadow-rose-50",
-};
-
 interface AssignmentDateProps {
     uid: number;
     color: CalendarColor;

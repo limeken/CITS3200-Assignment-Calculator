@@ -1,6 +1,6 @@
 // calendar element, all by me
 import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
-import {type AssignmentCalendar, pickRandomColor } from "./CalendarTypes.ts";
+import {type AssignmentCalendar, pickRandomColor } from "./CalendarTypes.ts"
 import TextCalendar from "./TextCalendar.tsx";
 import VisualCalendar from "./VisualCalendar.tsx";
 import CalendarOptions from "./CalendarOptions.tsx";
@@ -13,7 +13,7 @@ export type CalendarRef = {
 };
 
 // Passes down the utilities of update & delete, used within the priority queue
-type CalendarProps = Record<string, never>;
+type CalendarProps = {};
 
 /*  this initialisation is a bit confusing, so let me explain
 *   we want to access our calendar element from the top-level App component (meaning we need a ref)
