@@ -9,7 +9,9 @@ try:
 except ImportError:  # pragma: no cover - optional dependency
     yaml = None
 
-SEMESTERS_DIR = Path(os.environ.get("SEMESTERS_DIR", "data/semesters"))
+_BASE_DIR = Path(__file__).resolve().parent.parent
+_DEFAULT_SEMESTERS_DIR = _BASE_DIR / "data" / "semesters"
+SEMESTERS_DIR = Path(os.environ.get("SEMESTERS_DIR", _DEFAULT_SEMESTERS_DIR))
 _cache: Dict[str, Any] = {"items": [], "mtime": 0.0}
 
 

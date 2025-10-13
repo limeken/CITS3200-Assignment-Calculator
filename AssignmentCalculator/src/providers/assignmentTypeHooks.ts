@@ -77,7 +77,7 @@ export function useAssignmentTypeLibrary() {
   return useQuery<AssignmentLibrary>({
     queryKey: LIBRARY_KEY,
     queryFn: fetchAssignmentLibrary,
-    staleTime: 5 * 60_000,
+    staleTime: 30_000, // 30 seconds - faster updates after admin changes
   });
 }
 
@@ -85,7 +85,7 @@ export function useAssignmentTypes() {
   return useQuery<AssignmentTypeSummary[]>({
     queryKey: LIST_KEY,
     queryFn: getAssignmentTypes,
-    staleTime: 5 * 60_000,
+    staleTime: 30_000, // 30 seconds - faster updates after admin changes
   });
 }
 
@@ -94,7 +94,7 @@ export function useAssignmentType(id: string | undefined) {
     queryKey: id ? DETAIL_KEY(id) : LIST_KEY,
     queryFn: () => getAssignmentType(id!),
     enabled: Boolean(id),
-    staleTime: 5 * 60_000,
+    staleTime: 30_000, // 30 seconds - faster updates after admin changes
   });
 }
 

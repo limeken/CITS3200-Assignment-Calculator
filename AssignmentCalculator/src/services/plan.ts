@@ -1,7 +1,5 @@
 // AssignmentCalculator/src/services/plan.ts
-
-// ---- Config ----
-const API_BASE = import.meta.env.VITE_API_BASE ?? "/api"; // your proxy rewrites '/api' → backend root
+import { http, httpBlob, triggerDownload } from '../utils/http';
 
 // ---- Types (align with backend JSON) ----
 export type ISODate = string; // 'YYYY-MM-DD' or ISO 8601
@@ -37,49 +35,6 @@ export interface CreatePlanBody {
   title?: string;
   start_date?: ISODate;
   assignments?: AssignmentInput[];
-}
-
-// ---- Helpers ----
-async function http<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
-    ...init,
-  });
-
-  if (!res.ok) {
-    let detail = "";
-    try {
-      const data = await res.json();
-      detail = data?.error || data?.message || JSON.stringify(data);
-    } catch {
-      detail = await res.text();
-    }
-    throw new Error(`HTTP ${res.status} ${res.statusText}${detail ? `: ${detail}` : ""}`);
-  }
-
-  // Some endpoints return files; caller should use httpBlob for those
-  if (res.status === 204) return undefined as unknown as T;
-  return (await res.json()) as T;
-}
-
-async function httpBlob(path: string, init?: RequestInit): Promise<Blob> {
-  const res = await fetch(`${API_BASE}${path}`, init);
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status} ${res.statusText}${txt ? `: ${txt}` : ""}`);
-  }
-  return await res.blob();
-}
-
-function triggerDownload(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
 }
 
 // ---- Service functions ----

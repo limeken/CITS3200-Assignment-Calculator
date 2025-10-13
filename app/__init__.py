@@ -6,6 +6,7 @@ from .routes.export import export_bp, init_metrics, register_metrics_hooks
 from .routes.plan import bp as plan_bp
 from .routes.health import bp as health_bp
 from .routes.types import bp_types
+from .routes.semesters import bp_semesters  # ✨ Import semesters blueprint
 from .routes.admin import admin_bp  # ✨ NEW: import admin blueprint
 
 def create_app():
@@ -30,6 +31,7 @@ def create_app():
     app.register_blueprint(plan_bp, url_prefix="/plan")
     app.register_blueprint(export_bp)
     app.register_blueprint(bp_types)
+    app.register_blueprint(bp_semesters)  # ✨ Register semesters blueprint
     app.register_blueprint(admin_bp)  # ✨ NEW: register admin blueprint
 
     # Add no-store headers to all responses
