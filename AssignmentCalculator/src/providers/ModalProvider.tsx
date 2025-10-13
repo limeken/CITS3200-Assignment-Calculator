@@ -69,7 +69,7 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                                     leaveFrom="opacity-100 scale-100"
                                     leaveTo="opacity-0 scale-95"
                                 >
-                                    <DialogPanel className="w-full max-w-lg rounded-lg bg-white p-4 shadow-xl">
+                                    <DialogPanel className="w-full max-w-xl rounded-3xl border border-white/60 bg-white/90 p-0 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur">
                                         {node}
                                     </DialogPanel>
                                 </TransitionChild>

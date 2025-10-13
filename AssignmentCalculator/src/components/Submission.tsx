@@ -8,7 +8,8 @@ import clsx from "clsx";
 import { CheckIcon, ChevronUpDownIcon, DocumentArrowDownIcon } from "@heroicons/react/20/solid";
 
 import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions} from "@headlessui/react";
-import {ArrowDownTrayIcon, PencilSquareIcon, PlusIcon} from "@heroicons/react/24/solid";
+import {PencilSquareIcon} from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, PlusIcon } from "@heroicons/react/24/outline";
 import {useModal} from "../providers/ModalProvider.tsx";
 import {useNotification} from "../providers/NotificationProvider.tsx";
 import { useAssignmentTypeLibrary } from "../providers/assignmentTypeHooks.ts";
@@ -28,13 +29,23 @@ interface SubmissionProps {
 interface NameFieldProps { setAssignmentName: (arg: string) => void; assignmentName: string };
 const NameField: React.FC<NameFieldProps> = ({setAssignmentName, assignmentName,}) => {
     return (
-        <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
-            <Label className="block text-sm font-medium font-semibold">Assignment name</Label>
+        <Field className="px-4 text-gray-900 rounded-xl w-full">
+            <Label className="block text-md font-medium font-semibold">Assignment Name:</Label>
             <Input
                 type="text"
                 value={assignmentName}
                 onChange={(e) => setAssignmentName(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="
+                            mt-1 block w-full
+                            rounded-md border border-gray-300 bg-white
+                            px-3 py-2 text-sm text-gray-900
+                            transition-all duration-200 ease-in-out
+                            appearance-none
+                            focus:outline-none focus-visible:outline-none
+                            data-[focus]:ring-2 data-[focus]:ring-blue-500
+                            data-[focus]:border-blue-500 data-[focus]:shadow-md
+                            focus:bg-white autofill:bg-white
+                        "
                 placeholder="e.g. Literature Review"
             />
         </Field>
@@ -45,15 +56,25 @@ const NameField: React.FC<NameFieldProps> = ({setAssignmentName, assignmentName,
 interface UnitFieldProps { setUnitCode: (arg: string) => void; unitCode: string };
 const UnitField: React.FC<UnitFieldProps> = ({setUnitCode,unitCode}) => {
     return (
-        <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
-            <Label className="block text-sm font-medium font-semibold">
-                Unit code
+        <Field className="text-gray-900 px-4 w-full">
+            <Label className="block text-md font-medium font-semibold">
+                Unit Code:
             </Label>
             <Input
                 type="text"
                 value={unitCode}
                 onChange={(e) => {setUnitCode(e.target.value)}}
-                className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="
+                            mt-1 block w-full
+                            rounded-md border border-gray-300 bg-white
+                            px-3 py-2 text-sm text-gray-900
+                            transition-all duration-200 ease-in-out
+                            appearance-none
+                            focus:outline-none focus-visible:outline-none
+                            data-[focus]:ring-2 data-[focus]:ring-blue-500
+                            data-[focus]:border-blue-500 data-[focus]:shadow-md
+                            focus:bg-white autofill:bg-white
+                        "
                 placeholder="e.g. CITS3200"
             />
         </Field>
@@ -90,27 +111,54 @@ export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) 
     }
 
     const buttonStyle = "text-white bg-uwaBlue border-uwaBlue border-2 w-full h-full mt-3 rounded-xl font-semibold px-4 py-3 flex flex-row gap-2 items-center justify-start transition-all duration-170 ease-out hover:bg-white hover:text-uwaBlue";
+    
+    const floatingButtonStyle = "fixed bottom-6 w-14 h-14 rounded-full bg-uwaBlue text-white shadow-lg flex items-center justify-center transition-all duration-170 ease-out hover:scale-110 hover:shadow-xl z-50";
+    
     return (
-        <section className="flex flex-row justify-center items-center gap-5 w-1/2 mx-auto">
-            {/* New Assignment Button */}
-            <button
-                onClick={() => openSubmission()}
-                className={clsx(buttonStyle, "xl:col-span-2")}
-            >
-                <PlusIcon className="h-5 w-5"/>
-                Create New Assignment
-            </button>
+        <>
+            {/* Desktop Layout - Horizontal buttons at top */}
+            <section className="hidden lg:flex flex-row justify-center items-center gap-5 w-1/2 mx-auto">
+                {/* New Assignment Button */}
+                <button
+                    onClick={() => openSubmission()}
+                    className={clsx(buttonStyle, "xl:col-span-2")}
+                >
+                    <PlusIcon className="h-5 w-5" strokeWidth={2.5}/>
+                    Create New Assignment
+                </button>
 
-            {/* Import Button */}
-            <button
-                onClick={() => openImport()}
-                className={clsx(buttonStyle)}
-            >
-                <ArrowDownTrayIcon className="h-5 w-5"/>
-                Import
-            </button>
-        </section>
-    )
+                {/* Import Button */}
+                <button
+                    onClick={() => openImport()}
+                    className={clsx(buttonStyle)}
+                >
+                    <ArrowDownTrayIcon className="h-5 w-5" strokeWidth={2}/>
+                    Import
+                </button>
+            </section>
+
+            {/* Mobile Layout - Circular floating buttons at bottom corners */}
+            <div className="lg:hidden">
+                {/* Create New Assignment - Bottom Left */}
+                <button
+                    onClick={() => openSubmission()}
+                    className={clsx(floatingButtonStyle, "left-6")}
+                    aria-label="Create New Assignment"
+                >
+                    <PlusIcon className="h-6 w-6" strokeWidth={2.5}/>
+                </button>
+                
+                {/* Import - Bottom Right */}
+                <button
+                    onClick={() => openImport()}
+                    className={clsx(floatingButtonStyle, "right-6")}
+                    aria-label="Import"
+                >
+                    <ArrowDownTrayIcon className="h-6 w-6" strokeWidth={2}/>
+                </button>
+            </div>
+        </>
+    );
 }
 // FUNCTIONALITY BUTTONS
 // Used to add completely new assignments
@@ -121,8 +169,11 @@ const CreationButton: React.FC<{pending:boolean, canSubmit:boolean, onCreate:()=
                 onClick={onCreate}
                 disabled={!canSubmit || pending}
                 className={clsx(
-                "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
-                !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+                "w-full flex justify-center rounded-md px-6 py-4 text-base font-semibold text-white shadow-lg sm:ml-3 sm:w-auto",
+                "transition-all duration-150 ease-out",
+                !canSubmit || pending 
+                    ? "bg-gray-400 cursor-not-allowed" 
+                    : "bg-blue-600 hover:bg-blue-500 hover:scale-95 hover:brightness-110 cursor-pointer"
                 )}
                 >
                 {pending ? "Creating..." : "Create"}
@@ -138,8 +189,11 @@ const UpdateButton: React.FC<{canSubmit:boolean, pending:boolean, onUpdate:()=>v
                 onClick={onUpdate}
                 disabled={!canSubmit || pending}
                 className={clsx(
-                "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
-                !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+                "w-full flex justify-center rounded-md px-6 py-4 text-base font-semibold text-white shadow-lg sm:ml-3 sm:w-auto",
+                "transition-all duration-150 ease-out",
+                !canSubmit || pending 
+                    ? "bg-gray-400 cursor-not-allowed" 
+                    : "bg-blue-600 hover:bg-blue-500 hover:scale-95 hover:brightness-110 cursor-pointer"
                 )}
                 >
                 {pending ? "Updating..." : "Update"}
@@ -154,7 +208,8 @@ const DeleteButton: React.FC<{pending:boolean, onDelete:()=>void}> = ({pending, 
                 type="button"
                 onClick={onDelete}
                 className={clsx(
-                "bg-red-400 w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
+                "bg-red-400 w-full flex justify-center rounded-md px-6 py-4 text-base font-semibold text-white shadow-lg sm:ml-3 sm:w-auto",
+                "transition-all duration-150 ease-out cursor-pointer hover:bg-red-500 hover:scale-95 hover:brightness-110"
                 )}
                 >
                 {pending ? "Deleting..." : "Delete"}
@@ -243,14 +298,15 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
         }
         const onChange = (it: Assignment) => setSelected(it);
         return (
-            <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
-                <Label className="block text-sm font-semibold text-gray-900 mb-2">Assessment type</Label>
+            <Field className="text-gray-900 px-4 w-full">
+                <Label className="block text-md font-semibold text-gray-900 mb-2">Assessment Type:</Label>
                 <div className="flex w-full flex-row items-center align-center">
                     <Listbox value={selected} onChange={onChange}>
                         <div className="relative mt-1 ml-2 w-full">
                             <ListboxButton
                                 id="assessment-type"
-                                className="grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500"
+                                className={`grid w-full cursor-default grid-cols-1 rounded-md bg-white px-3 py-2 text-left text-gray-900 ring-1 ring-gray-300 
+                                    transition-all duration-200 ease-in-out data-[open]:ring-2 data-[open]:ring-blue-500 data-[open]:shadow-md`}
                             >
                                 <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
                                   <selected.icon className="size-5 shrink-0 text-blue-600" />
@@ -285,14 +341,25 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     const AssessmentDateInput: React.FC<{ error: boolean[] }> = ({ error }) => {
         const err_start = useError(error[0]);
         const err_end = useError(error[1]);
-        const base = "mt-1 w-full rounded-xl px-3 py-2 duration-500 ease-out";
+        const base = `
+                        mt-1 w-full rounded-md 
+                        border border-gray-300 bg-white
+                        text-left text-gray-900 text-sm
+                        px-3 py-2.5 
+                        ring-1 ring-transparent
+                        focus:outline-none focus-visible:outline-none
+                        data-[focus]:ring-2 data-[focus]:ring-blue-500 data-[focus]:shadow-md
+                        data-[focus]:border-blue-500
+                        appearance-none
+                        transition-all duration-200 ease-in-out
+                    `;
         const alert = "bg-red-200 animate-pulse";
         return (
-            <div className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
-                <h2 className="text-lg font-semibold mb-3">Dates</h2>
+            <div className="text-gray-900 px-4 w-full">
+                <h2 className="text-md font-semibold mb-3">Dates:</h2>
                 <div className="grid sm:grid-cols-2 gap-3">
                     <Field>
-                        <Label className="text-sm font-medium" htmlFor="start">Start date</Label>
+                        <Label className="font-semibold text-sm font-medium" htmlFor="start">Start date:</Label>
                         <Input
                             id="start"
                             type="date"
@@ -302,7 +369,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
                         />
                     </Field>
                     <Field>
-                        <Label className="text-sm font-medium" htmlFor="end">Due date</Label>
+                        <Label className="font-semibold text-sm font-medium" htmlFor="end">Due date:</Label>
                         <Input
                             id="end"
                             type="date"
@@ -373,17 +440,20 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     }
 
     return (
-        <div className="bg-white p-2 flex justify-center items-center">
-            <div className="size-full p-4 rounded-xl flex flex-col gap-2 justify-center items-center border-3 border-slate-300 relative">
+        <div className="p-2 flex justify-center items-center">
+            <div className="size-full p-6 rounded-xl flex flex-col gap-2 justify-center items-center border-2 border-slate-300 relative">
                 <h1 className="flex flex-row gap-2 justify-center items-center font-bold text-lg text-gray-900 w-full mb-2"> 
                     <PencilSquareIcon className="w-6 h-6"/>
                     <span>{isNew?"Create New Assignment:":"Edit Assignment:"}</span>
                 </h1>
                 <form className="my-3 text-left w-full flex flex-col gap-2 items-center justify-center">
-                    <section className="gap-4 flex flex-col items-center justify-center w-4/5">
+                    <section className="bg-white rounded-xl shadow-soft flex flex-col gap-6 w-4/5 p-5">
                         <AssessmentTypeInput />
+                        <hr className="border-slate-200 w-full"/>
                         <AssessmentDateInput error={[errors[1], errors[2]]} />
+                        <hr className="border-slate-200 w-full"/>
                         <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
+                        <hr className="border-slate-200 w-full"/>
                         <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
                     </section>
                     {/* Render different buttons for creation & edit pages */}
