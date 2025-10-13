@@ -1,25 +1,18 @@
 // calendar element, all by me
-import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
+import {useCallback, useState} from "react";
 import {type AssignmentCalendar, pickRandomColor } from "./CalendarTypes.ts";
 import TextCalendar from "./TextCalendar.tsx";
 import VisualCalendar from "./VisualCalendar.tsx";
 import CalendarOptions from "./CalendarOptions.tsx";
 import PriorityQueue from "./PriorityQueue.tsx";
+import { SubmissionButton } from "../Submission.tsx";
 
-// TODO: this is fine
-export type CalendarRef = {
-    // this is called when a new assignment finishes loading
-    addAssignment: (a: AssignmentCalendar) => void;
-};
-
-// Passes down the utilities of update & delete, used within the priority queue
-type CalendarProps = Record<string, never>;
 
 /*  this initialisation is a bit confusing, so let me explain
 *   we want to access our calendar element from the top-level App component (meaning we need a ref)
 *   normally React ref's only work on DOM elements (div's, class components, etc...)
 *   so we wrap our component in a forwardRef */
-const Calendar = forwardRef<CalendarRef, CalendarProps>((_props, ref) => {
+const Calendar: React.FC = () => {
     
     const [assignments, setAssignments] = useState<Record<string, AssignmentCalendar[]>>({});
     const [newestAssignment, setNewestAssignment] = useState<AssignmentCalendar|null>(null);
@@ -96,17 +89,16 @@ const Calendar = forwardRef<CalendarRef, CalendarProps>((_props, ref) => {
         addAssignment(newAssignment, oldAssignment.color);
     }, [addAssignment, removeAssignment]);
 
-    /* since we need an object API node, we expose this handle to addAssignment and it's API */
-    useImperativeHandle(ref, () => ({ addAssignment }), [addAssignment]);
-
     return (
         <div className="flex flex-col gap-4 items-center">
+            {/* Button which triggers the assignment submission modal */}
+            <SubmissionButton onSubmit={addAssignment} assignments={assignments}/>
             <CalendarOptions isCalendarFormat={isVisual} changeFormat={setIsVisual}/>
-            <PriorityQueue newest={newestAssignment} onUpdate={updateAssignment} onDelete={deleteAssignment}/>
+            <PriorityQueue newest={newestAssignment} onUpdate={updateAssignment} onDelete={deleteAssignment} assignments={assignments}/>
             <VisualCalendar show={isVisual} assignments={assignments} />
             <TextCalendar show={!isVisual} assignments={assignments}/>
         </div>
     );
-});
+};
 
 export default Calendar;

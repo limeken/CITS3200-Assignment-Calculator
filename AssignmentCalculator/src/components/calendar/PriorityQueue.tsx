@@ -14,10 +14,11 @@ const HIGH = (5) * 24 * 60 * 60 * 1000;
 
 const PriorityQueue: React.FC<{
     newest: AssignmentCalendar | null,
+    assignments:Record<string, AssignmentCalendar[]>,
     onUpdate: (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => void,
     onDelete: (assignment: AssignmentCalendar) => void
 }> =
-    ({newest, onUpdate, onDelete}) => {
+    ({newest, assignments, onUpdate, onDelete}) => {
         // Keeps track of the currently sorted list of assignments
         const [sortedAssignments, setSortedAssignments] = useState<AssignmentCalendar[]>([]);
 
@@ -35,7 +36,7 @@ const PriorityQueue: React.FC<{
                 <Submission
                     submission={selected}
                     isNew={false}
-                    errors={[false, false, false]}
+                    assignments={assignments}
                     onUpdate={async (o, n) => {
                         {/* This wipes assignment memory from priority queue */
                         }
