@@ -1,0 +1,18 @@
+{
+  "id": "thing",
+  "title": "thing assignment",
+  "milestones": [
+    {
+      "name": "something",
+      "effort_percent": 10
+    },
+    {
+      "name": "something else",
+      "effort_percent": 10
+    },
+    {
+      "name": "last thing",
+      "effort_percent": 10
+    }
+  ]
+}

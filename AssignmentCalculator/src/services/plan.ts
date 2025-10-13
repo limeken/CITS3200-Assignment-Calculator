@@ -20,7 +20,7 @@ export interface Milestone {
   hours?: number;
 }
 
-export interface Assignment extends AssignmentInput {
+export interface PlanAssignment extends AssignmentInput {
   milestones?: Milestone[];
 }
 
@@ -30,7 +30,7 @@ export interface Plan {
   start_date?: ISODate | null;
   created_at?: string;
   updated_at?: string;
-  assignments: Assignment[];
+  assignments: PlanAssignment[];
 }
 
 export interface CreatePlanBody {

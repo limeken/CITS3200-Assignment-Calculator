@@ -233,7 +233,7 @@ const DeleteButton: React.FC<{pending:boolean, onDelete:()=>void}> = ({pending, 
  * The modal is provided by the global ModalProvider host.
  * Keep markup minimal.
  */
-const Submission: React.FC<SubmissionProps> = ({submission, assignments, isNew, onSubmit, onClose, onUpdate, onDelete}) => {
+const Submission: React.FC<SubmissionProps> = ({submission, assignments: existingAssignments, isNew, onSubmit, onClose, onUpdate, onDelete}) => {
     // Identifiers for error messages
     const DATE = 0;
     const CODENAME = 1;
@@ -254,7 +254,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments, isNew, 
     // UNPACK ASSIGNMENT CONTEXT - UPDATE
     // If the assignment is being edited, unpack its old variables into states
     const { data: library, isLoading: loadingTypes } = useAssignmentTypeLibrary();
-    const assignments = useMemo<Assignment[]>(() => library?.assignments ?? [], [library]);
+    const assignmentTypes = useMemo<Assignment[]>(() => library?.assignments ?? [], [library]);
     const [selected, setSelected] = useState<Assignment | null>(null);
 
     useEffect(() => {
@@ -265,18 +265,18 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments, isNew, 
     }, [isNew, submission]);
 
     useEffect(() => {
-        if (!assignments.length) {
+        if (!assignmentTypes.length) {
             setSelected(null);
             return;
         }
         const current = submission.assignmentType ?? "";
         const currentId = current.toLowerCase();
         const match =
-            assignments.find((assignment) => assignment.id === currentId) ||
-            assignments.find((assignment) => assignment.name.toLowerCase() === currentId) ||
-            assignments.find((assignment) => assignment.name === current);
-        setSelected(match ?? assignments[0]);
-    }, [assignments, submission.assignmentType]);
+            assignmentTypes.find((assignment) => assignment.id === currentId) ||
+            assignmentTypes.find((assignment) => assignment.name.toLowerCase() === currentId) ||
+            assignmentTypes.find((assignment) => assignment.name === current);
+        setSelected(match ?? assignmentTypes[0]);
+    }, [assignmentTypes, submission.assignmentType]);
 
     // Helper used to update individual field errors
     const addErrorMessage = (message:string|null, index:number) => {setErrors((prev)=>{
@@ -324,7 +324,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments, isNew, 
         // ASSIGNMENT VALIDATION
         // Different validation for editing and adding
         if(isNew){
-            if(unitCode in assignments && assignments[unitCode].find(assignment => assignment.name === assignmentName)){
+            if(unitCode in existingAssignments && existingAssignments[unitCode].find(assignment => assignment.name === assignmentName)){
                 addErrorMessage("Unit & Assignment must be unique.", CODENAME);
             }
             else{
@@ -336,7 +336,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments, isNew, 
         else{
             // Bypass unique if we are editing the assignment currently
             const isSame = submission.unitCode === unitCode && submission.name === assignmentName;
-            if(!isSame && (unitCode in assignments && assignments[unitCode].find(assignment => assignment.name === assignmentName))){
+            if(!isSame && (unitCode in existingAssignments && existingAssignments[unitCode].find(assignment => assignment.name === assignmentName))){
                 addErrorMessage("Unit & Assignment must be unique.", CODENAME);
             }
             else{
@@ -406,7 +406,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments, isNew, 
                                 <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400" />
                             </ListboxButton>
                             <ListboxOptions className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
-                                {assignments.map((it) => (
+                                {assignmentTypes.map((it) => (
                                     <ListboxOption
                                         key={it.id}
                                         value={it}
@@ -475,7 +475,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments, isNew, 
     // Called on submission to pack state variables into the newly created assignment before being sent off
     function buildSubmission(): AssignmentCalendar {
         if (!startDate || !endDate) throw new Error("invalid dates");
-        const current = selected ?? assignments[0];
+        const current = selected ?? assignmentTypes[0];
         if (!current) throw new Error("No assignment types available");
         return {
             ...submission,

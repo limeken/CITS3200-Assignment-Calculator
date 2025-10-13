@@ -1,0 +1,12 @@
+{
+  "id": "goongis",
+  "title": "goongis world",
+  "icon": "BeakerIcon",
+  "milestones": [
+    {
+      "name": "go to goongis world",
+      "effort_percent": 100,
+      "description": "you just have to be there"
+    }
+  ]
+}

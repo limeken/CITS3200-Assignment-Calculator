@@ -1,25 +1,12 @@
 // calendar element, all by me
-import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
-import {type AssignmentCalendar, pickRandomColor } from "./CalendarTypes.ts"
+import {useCallback, useState} from "react";
+import {type AssignmentCalendar, pickRandomColor, normalizeColor } from "./CalendarTypes.ts"
 import TextCalendar from "./TextCalendar.tsx";
 import VisualCalendar from "./VisualCalendar.tsx";
 import CalendarOptions from "./CalendarOptions.tsx";
 import PriorityQueue from "./PriorityQueue.tsx";
 import { SubmissionButton } from "../Submission.tsx";
 
-// TODO: this is fine
-export type CalendarRef = {
-    // this is called when a new assignment finishes loading
-    addAssignment: (a: AssignmentCalendar) => void;
-};
-
-// Passes down the utilities of update & delete, used within the priority queue
-type CalendarProps = {};
-
-/*  this initialisation is a bit confusing, so let me explain
-*   we want to access our calendar element from the top-level App component (meaning we need a ref)
-*   normally React ref's only work on DOM elements (div's, class components, etc...)
-*   so we wrap our component in a forwardRef */
 const Calendar: React.FC = () => {
     
     const [assignments, setAssignments] = useState<Record<string, AssignmentCalendar[]>>({});
@@ -42,7 +29,7 @@ const Calendar: React.FC = () => {
                 return { ...prev, [unitCode]: [...existing, prepared] };
             }
 
-            const nextColor = color ?? pickRandomColor();
+            const nextColor = normalizeColor(color) ?? pickRandomColor();
             prepared = { ...assignment, color: nextColor };
             return { ...prev, [unitCode]: [prepared] };
         });
@@ -87,12 +74,12 @@ const Calendar: React.FC = () => {
     }, []);
 
     // DELETE: Wipes the stored assignment specified
-    const deleteAssignment = useCallback((assignment: AssignmentCalendar) => {
+    const deleteAssignment = useCallback(async (assignment: AssignmentCalendar) => {
         removeAssignment(assignment);
     }, [removeAssignment]);
 
     // UPDATE: Wipes memory of old assignment & adds the new assignment
-    const updateAssignment = useCallback((oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => {
+    const updateAssignment = useCallback(async (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => {
         removeAssignment(oldAssignment);
         addAssignment(newAssignment, oldAssignment.color);
     }, [addAssignment, removeAssignment]);

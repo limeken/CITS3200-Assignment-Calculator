@@ -27,15 +27,27 @@ type AssignmentLibrary = {
 };
 
 async function fetchAssignmentLibrary(): Promise<AssignmentLibrary> {
-  const cacheModule = await import('../generated/cache.ts');
-  const fallback = {
-    source: 'cache' as const,
-    generatedAt: cacheModule.generatedAt,
-    details: cacheModule.assignmentTypes as AssignmentTypeDetail[],
-    assignments: (cacheModule.assignmentTypes as AssignmentTypeDetail[]).map((detail) =>
-      buildAssignmentFromDetail(detail),
-    ),
-  };
+  let fallback: AssignmentLibrary;
+
+  try {
+    const cacheModule = await import('../generated/cache.ts');
+    fallback = {
+      source: 'cache' as const,
+      generatedAt: cacheModule.generatedAt,
+      details: cacheModule.assignmentTypes as AssignmentTypeDetail[],
+      assignments: (cacheModule.assignmentTypes as AssignmentTypeDetail[]).map((detail) =>
+        buildAssignmentFromDetail(detail),
+      ),
+    };
+  } catch (err) {
+    console.error('[assignment-types] Cache file not found, using empty fallback', err);
+    fallback = {
+      source: 'cache',
+      generatedAt: new Date().toISOString(),
+      details: [],
+      assignments: [],
+    };
+  }
 
   try {
     const metadata = await getAssignmentTypesMetadata();

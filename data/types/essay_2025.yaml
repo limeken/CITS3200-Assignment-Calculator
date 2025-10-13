@@ -1,0 +1,23 @@
+{
+  "id": "essay_2025",
+  "title": "Essay",
+  "icon": "DocumentTextIcon",
+  "milestones": [
+    {
+      "name": "write",
+      "effort_percent": 25
+    },
+    {
+      "name": "smite",
+      "effort_percent": 25
+    },
+    {
+      "name": "fright",
+      "effort_percent": 25
+    },
+    {
+      "name": "delight",
+      "effort_percent": 25
+    }
+  ]
+}
