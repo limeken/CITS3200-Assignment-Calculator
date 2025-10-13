@@ -1,0 +1,121 @@
+2025-10-13 maxwell 22f7afa refactor: merge backend from main and cleanup unused frontend files
+2025-10-13 maxwell 6a26c2e Merge remote-tracking branch 'origin/main' into responsive
+2025-10-13 maxwell 21d857b Merge remote-tracking branch 'origin/InputValidation' into responsive
+2025-10-13 superglubglub 80fd53d Merge pull request #10 from superglubglub/back-end-pdf
+2025-10-13 maxwell 5dc7eef fixed some linting errors and routing stuff
+2025-10-13 maxwell 982fa28 fixed some linting errors
+2025-10-13 maxwell 5252482 Merge branch 'main' into back-end-pdf
+2025-10-13 maxwell 220e19a Merge branch 'main' into responsive
+2025-10-13 maxwell b50648f full backend hookup with caching, needs some files to be purged.
+2025-10-13 limeken 657d90b Padding and Width Changes to Error Messages
+2025-10-13 MagMicro 2ef37b7 Added input validation with approriate error messages
+2025-10-13 limeken 4179c6b Updating Hover and Click Aesthetic.
+2025-10-13 Lucas Veloso ce8603a update assignment API
+2025-10-13 Lucas Veloso 9a2b05c API assignment
+2025-10-13 MagMicro b266739 various visual changes
+2025-10-12 maxwell af46059 fixed some mobile stuff
+2025-10-12 maxwell a799710 changed uwa brand color and added styling file
+2025-10-12 maxwell aedebee changed uwa brand color and added styling file
+2025-10-12 limeken a291e46 Heading font change
+2025-10-11 maxwell c5683fd Merge remote-tracking branch 'origin/main' into responsive
+2025-10-11 maxwell 6df9953 merged with main for pr
+2025-10-11 limeken 3eeb2ab Horizontal Calendar - Day/Unitcode cell alignment
+2025-10-10 limeken ed7b01b Merge pull request #11 from superglubglub/responsive-two
+2025-10-10 limeken fe9b728 Merge branch 'main' into responsive-two
+2025-10-10 limeken 815705c New responsive changes
+2025-10-10 Lucas Veloso 20270f3 improved layout and fixed PDF header alignment
+2025-10-10 Lucas Veloso 47197a3 better PDF export
+2025-10-08 maxwell 5a21c9d Merge remote-tracking branch 'origin/main' into responsive
+2025-10-08 maxwell 19e58ef Merge remote-tracking branch 'origin/updated-backend-2'
+2025-10-08 maxwell 9db1f3f Merge remote-tracking branch 'origin/updated-backend' into updated-backend-2
+2025-10-08 maxwell 8a6dcb6 Merge remote-tracking branch 'origin/VisualRework'
+2025-10-07 maxwell cbf20c8 fixed everything ever
+2025-10-07 MagMicro e534e9d minor changes
+2025-10-07 maxwell 8e606f6 fixed linting errors
+2025-10-07 maxwell ea2813a fixed some styling stuff and merged with main for coolneess
+2025-10-07 MagMicro f33d486 Make various visual improvements
+2025-10-07 maxwell 34a8026 Merge remote-tracking branch 'origin/main' into responsive
+2025-10-07 superglubglub 2f7c318 Merge pull request #8
+2025-10-07 maxwell ab25e77 Merge remote-tracking branch 'origin/main' into updated-backend
+2025-10-07 superglubglub 65d6c26 Merge pull request #9 from limeken/PriorityQueue
+2025-10-07 maxwell b228e4c localised notif logic to calling elements for PR
+2025-10-07 maxwell 56911cd Merge remote-tracking branch 'origin/main' into PriorityQueue
+2025-10-07 MagMicro 08a7111 Reworked the styling of textual
+2025-10-07 MagMicro f942384 Added default rows to calendar
+2025-10-06 Lucas Veloso 7c95f72 Updated backend routes, added ics generator, and bug fixes
+2025-10-06 maxwell 7d01ead serialisation of assessments
+2025-10-06 MagMicro 6fdd761 Slight modifications to no assignment page. Button functionality can be considered out of scope now
+2025-10-06 Lucas Veloso afbdad8 Back-end connection and export
+2025-10-05 MagMicro aa68528 reworked update & add so that their functionality is now separated. Updated broadcast system to notify what action was done. Added the delete functionality, so assignments can now be properly deleted.
+2025-10-05 MagMicro a8eb00d Added the functionality to edit assignments with a button, added lots of back end functionalities in the process, such as the ability to find and delete assignments. Currently 'stable' but needs to be thouroughly tested still.
+2025-10-04 MagMicro 51d23e5 Filled in the fields for each due date notice, added styling and a basic animation to them
+2025-10-04 Jacob Bennett 3310237 Created basic functionality for the display showing assignments due soon, with a scrollable bar, due date estimate (slightly off) and a colour coded system. Each new assignment is put into sorted order through the use of insertion sort.
+2025-10-03 MagMicro 0f14bf4 Made a default view for textual for when there are no assignments available.
+2025-10-03 MagMicro 9a76ec1 Make the scroll bars contained within their steps in the textual view, make heading bigger and added horizontal divider
+2025-10-02 Jacob Bennett 87c4fce Made the dotpoint drop downs for each assignment step, with a state system that only keeps the selected step open. Changed some formating of elements and made the unit code buttons the same colour as their allocated colour. Need to still add additional resources and an option for filtering by due date
+2025-10-01 maxwell 3c8e158 Merge remote-tracking branch 'origin/responsive' into responsive
+2025-10-01 limeken 9b9fcd8 Responsive changes to title and instructions button
+2025-10-01 limeken 2466069 Responsive Updates and Slight Aesthetic improvements
+2025-10-01 maxwell fdf9e87 Merge branch 'textual'
+2025-10-01 superglubglub cdd44cf Merge pull request #6 from limeken/pdf-export-rebased
+2025-10-01 maxwell 8535740 Merge branch 'main' into pdf-export-rebased
+2025-10-01 superglubglub a577acc Merge pull request #5 from limeken/pdf-export
+2025-10-01 maxwell e708c3b + merged again
+2025-10-01 maxwell fd6a43d Merge remote-tracking branch 'origin/main' into pdf-export
+2025-10-01 maxwell af2c462 Merge branch 'main' into pdf-export
+2025-10-01 superglubglub cd5959d Merge pull request #3 from limeken/backend-api-sprint3
+2025-10-01 maxwell c5cea75 + merge main into branch for PR
+2025-10-01 maxwell c07009e Merge branch 'refs/heads/main' into backend-api-sprint3
+2025-10-01 limeken 4641379 Responsive changes to title and instructions button
+2025-10-01 limeken d236b8b Responsive Updates and Slight Aesthetic improvements
+2025-10-01 Jacob Bennett 2999ea7 Added basic structure for textual format, with unit buttons that then display their respective assignment buttons, which then display the steps associated with the specific assignment chosen. Each unit has a little checkmark to show selected, similar needs to be added to the assignments. Steps for each assignment dont show what their dotpoints are yet. Shoddy solution for assignment type added, previously not updated on modal submission.
+2025-09-29 maxwell 13a1ca2 + options component + new semester interface + changed some modal stuff
+2025-09-29 maxwell db29c5c Merge remote-tracking branch 'origin/backend-api-sprint3' into dataprovider
+2025-09-29 maxwell b5d2fdd + moved modal placement + added dummy dataprovider prop
+2025-09-26 maxwell 8715d51 + modals now mount to a root-level managing element and internalise all their own logic + localised most calendar logic + some styling changes to calnedar
+2025-09-24 MagMicro 665a601 chnaged how assignments are stored: now stored as a dictionary, with their unit codes as their key, colours are kept uniform amongst units. The headers for each unit grow proportionally to how many assignments they contain. Modified the calendar headers to better conform to the UWA styling.
+2025-09-23 MagMicro 8e87a7a deleted a redundant file
+2025-09-23 MagMicro 1b21895 Moved the textual format component inside of the calendar, so that the component isnt remounted every time.
+2025-09-23 Lucas Veloso 0ac1ad8 feat(export): PDF export MVP (ReportLab) + generator + routes
+2025-09-23 Lucas Veloso bc73f40 feat(export): PDF export MVP (ReportLab) with assignments table + milestones
+2025-09-23 Lucas Veloso ab5e338 chore: ignore pycache and artifacts; remove accidentally tracked files
+2025-09-23 maxwell a3ff3a5 + changed the transitions to occur in a wrapper element + some styling changes to calendar
+2025-09-23 maxwell 56a07a4 fixed the notification banner
+2025-09-22 Lucas Veloso 73687a4 feat(export): PDF export MVP (assignments table + milestones)
+2025-09-22 MagMicro 98cd7d3 Added a transition component to the submission modal
+2025-09-22 MagMicro c4f55c3 Merged input fields into the submission modal. Split the assignment button into its own component. Eradicated ALOT of code from main, as default is no longer used (creates default objects, different from one another without state). No need for state functions anymore. Made the way the modal works completely different, passes in an empty instance of assignmentCalendar that is only updated when submission is sent. This object then gets rendered.
+2025-09-21 Lucas Veloso 2944cac WIP: backend API + ICS export
+2025-09-21 Jacob Bennett a20266c Merge pull request #4 from limeken/textual
+2025-09-21 Jacob Bennett 63f80f5 Merge branch 'main' into textual
+2025-09-21 Lucas Veloso dcf10a4 feat(export): add ICS export with optional reminders; docs + test cmds
+2025-09-21 maxwell ebc9d12 + moved resources into assignmetnevetns
+2025-09-21 maxwell a0ddace + fixed the assignment modal to take input data and reflect the current type state
+2025-09-20 Lucas Veloso 8c11c27 feat(api): add plan/assignment CRUD + milestone generation; wire simple API-only testing
+2025-09-18 MagMicro 5b6b6a9 Hooked the state representing the different visualisation formats from a toggle component, to two new components representing the calender and textual formats. Added a placeholder animation for both of them for now. Textual format is currently empty, and calendar format has a state persistence issue where rows will disappear for ever once the format is changed to textual.
+2025-09-18 MagMicro 20e643f Added working toggle bar that switches between calendar and textual formats, added animation of bar sliding between options
+2025-09-18 MagMicro 4da3b42 Condensed both university banner and application header into one, made them fixed to the page, added padding on body at top of page to make room, moved the new ntoification component into the university banner
+2025-09-18 MagMicro 95ad038 Created a component for confirming the outcome of adding an assignment, through a drop down banner that has alternative messages for success and failure.
+2025-09-18 MagMicro f51b3d3 Removed x button, corrected position of notification dot, chnaged its size, made additional resources button bigger for readability, added comments to the modal code
+2025-09-16 maxwell bdd4ef2 + then he came for the linting errors, and suddenly I had nothing left to bother me...
+2025-09-16 maxwell 5908c84 + hooked modals which were unhooked + hoisted components which were unhoisted + removed some keyboard spam
+2025-09-16 superglubglub c5d952d Merge pull request #2 from limeken/calendar-component
+2025-09-16 maxwell 102ef32 Merge branch 'main' into calendar-component
+2025-09-16 superglubglub 5bdd3d0 Merge pull request #1 from limeken/popup
+2025-09-16 maxwell 66adaa4 + moved the dummy values of the popup into the popup component
+2025-09-16 maxwell c69fae7 + fixed some dummy types and beautified an input field
+2025-09-16 MagMicro ba603b5 Added a pulsing dot to the additional information panel, and changed some of the logic regarding when the panel is displayed.
+2025-09-16 MagMicro dfb5747 Added a working side menu for displaying external resources with a functioning toggle button. Reworked the appearance of the main pop-up, and added some more hover animations to make the page feel less static for now.
+2025-09-15 maxwell ae7de9e + added headlessui for modal + added unit name, random coloring handled in a pretty over-the-top way
+2025-09-15 maxwell 5622750 + added headlessui for modal + added unit name, random coloring handled in a pretty over-the-top way
+2025-09-15 MagMicro e38e02e Added comments to the Assignment PopUp function for readability, removed type double ups between component and main.
+2025-09-11 MagMicro 046766f Got the entire popup working with the provided dummy object, fucntional x button now to close the popup, dot points are displayed properly with an overflow too, hard coded variables like dots are now dependent on the assignment object passed.
+2025-09-11 MagMicro 030e7a4 Added foundation for pop-up, added working dots, added navigation buttonsand defined a dummy object for our only currently supported assessment
+2025-09-10 maxwell 745ec36 + debug logging and validation structure + reworked input fields logic + reexposed calendar object methods to App
+2025-09-08 maxwell fbf4bd3 + rerouted some components and moved some buttons
+2025-09-03 maxwell 12cb38a + rewrite of the calendar component and helpers, and fake calendar ics for testing - "generate plan" is broken
+2025-09-01 Jacob Bennett 07f56db Turned the input fields into their own separated component, with required interfaces and types. Added comments throughout different components.
+2025-08-28 MagMicro 3f703dc Began turning final document into invidual components
+2025-08-28 superglubglub faea0ca added some test data, and first draft of the calendar component
+2025-08-27 superglubglub caffc79 initial commit for react port, with updated README
+2025-08-26 limeken b96ba85 Initial push, Frontend development.
+2025-08-26 limeken 9c3861c Initial commit
