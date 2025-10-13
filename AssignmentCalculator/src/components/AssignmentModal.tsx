@@ -36,11 +36,14 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
     // Renders the dots representing pages, makes the dot for the current page indetifiable
     function CreatePageDots({ dots }: { dots: number }) {
         return (
-            <div className="pointer-events-none absolute bottom-3 left-1/2 flex h-5 w-1/2 -translate-x-1/2 transform justify-center gap-2">
+            <div className="pointer-events-none absolute bottom-3 left-1/2 flex h-5 w-1/2 -translate-x-1/2 transform justify-center gap-2 items-center">
                 {Array.from({ length: dots }).map((_, index) => (
                     <div
                         key={index}
-                        className={index === pagenumber ? 'size-4 rounded-full bg-black' : 'size-3 rounded-full bg-black'}
+                        className={index === pagenumber 
+                            ? 'size-4 rounded-full bg-black' 
+                            : 'size-4 rounded-full bg-black opacity-40'
+                        }
                     />
                 ))}
             </div>
@@ -136,7 +139,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
     return (
             <div className="p-2 relative h-[80vh] rounded-xl bg-slate-200">
                 <div className="h-full w-full p-6 rounded-xl flex flex-col justify-center items-center border-2 border-slate-300 relative">
-                    <h1 className="font-bold text-lg">{assignment.name}</h1>
+                    <h1 className="font-bold text-3xl">{assignment.name}</h1>
                     <div className="relative flex flex-1 w-full flex-col justify-stretch items-stretch p-3 text-gray-900 sm:h-[85%] sm:flex-row sm:items-start">
                         <DisplayBody />
                         <CreatePageDots dots={steps.length} />

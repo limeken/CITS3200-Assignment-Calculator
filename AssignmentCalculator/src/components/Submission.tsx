@@ -169,8 +169,11 @@ const CreationButton: React.FC<{pending:boolean, canSubmit:boolean, onCreate:()=
                 onClick={onCreate}
                 disabled={!canSubmit || pending}
                 className={clsx(
-                "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
-                !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+                "w-full flex justify-center rounded-md px-6 py-4 text-base font-semibold text-white shadow-lg sm:ml-3 sm:w-auto",
+                "transition-all duration-150 ease-out",
+                !canSubmit || pending 
+                    ? "bg-gray-400 cursor-not-allowed" 
+                    : "bg-blue-600 hover:bg-blue-500 hover:scale-95 hover:brightness-110 cursor-pointer"
                 )}
                 >
                 {pending ? "Creating..." : "Create"}
@@ -186,8 +189,11 @@ const UpdateButton: React.FC<{canSubmit:boolean, pending:boolean, onUpdate:()=>v
                 onClick={onUpdate}
                 disabled={!canSubmit || pending}
                 className={clsx(
-                "w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
-                !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+                "w-full flex justify-center rounded-md px-6 py-4 text-base font-semibold text-white shadow-lg sm:ml-3 sm:w-auto",
+                "transition-all duration-150 ease-out",
+                !canSubmit || pending 
+                    ? "bg-gray-400 cursor-not-allowed" 
+                    : "bg-blue-600 hover:bg-blue-500 hover:scale-95 hover:brightness-110 cursor-pointer"
                 )}
                 >
                 {pending ? "Updating..." : "Update"}
@@ -202,7 +208,8 @@ const DeleteButton: React.FC<{pending:boolean, onDelete:()=>void}> = ({pending, 
                 type="button"
                 onClick={onDelete}
                 className={clsx(
-                "bg-red-400 w-full flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto",
+                "bg-red-400 w-full flex justify-center rounded-md px-6 py-4 text-base font-semibold text-white shadow-lg sm:ml-3 sm:w-auto",
+                "transition-all duration-150 ease-out cursor-pointer hover:bg-red-500 hover:scale-95 hover:brightness-110"
                 )}
                 >
                 {pending ? "Deleting..." : "Delete"}

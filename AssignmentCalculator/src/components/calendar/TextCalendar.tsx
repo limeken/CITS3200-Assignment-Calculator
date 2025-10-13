@@ -20,7 +20,7 @@ const AssignmentStepsComponent: React.FC<{assignment:AssignmentCalendar|null}> =
         return (
             <div className={`flex items-center justify-center bg-slate-200 rounded-xl shadow-soft p-4 w-4/5`}>
                 <div className="size-full p-4 rounded-xl flex flex-col items-center border-3 border-slate-300 relative">
-                    <h1 className="font-bold text-xl mb-4">{assignment.unitCode} - {assignment.name}</h1>
+                    <h1 className="font-bold text-3xl mb-4">{assignment.unitCode} - {assignment.name}</h1>
                     <div className = "flex flex-col gap-2 items-center w-3/4 py-4">
                     {/* This creates a descending sequence of step elements to show*/}
                     {assignmentType!.events.map((step, index)=>
@@ -29,8 +29,8 @@ const AssignmentStepsComponent: React.FC<{assignment:AssignmentCalendar|null}> =
                             {/* Panel that is shown for a given step when selected */}
                             <div className="flex flex-col gap-4 rounded-xl">
                                 <button 
-                                className="bg-uwaBlue text-white text-lg rounded-xl shadow-lg w-full h-14 flex items-center justify-left pl-4 gap-2 relative"
-                                onClick={()=>openStep===index?setOpenStep(null):setOpenStep(index)}
+                                    className="bg-uwaBlue text-white text-lg rounded-xl shadow-lg w-full h-14 flex items-center justify-left pl-4 gap-2 relative transition-all duration-150 ease-out cursor-pointer hover:scale-95 hover:brightness-110"
+                                    onClick={()=>openStep===index?setOpenStep(null):setOpenStep(index)}
                                 >
                                     <span className="font-semibold">Step {index+1} : {step.name}</span>
                                     {index===openStep?<ChevronUpIcon className="w-6 h-6 absolute right-5" strokeWidth={2}/>:<ChevronDownIcon className="w-6 h-6 absolute right-5" strokeWidth={2}/>}
@@ -97,21 +97,24 @@ const TextCalendar: React.FC<{show:boolean; assignments:Record<string, Assignmen
                     <TabList className="flex flex-col overflow-y-auto gap-4 h-60">
                         {Object.keys(assignments).map((code)=> 
                             <Tab
-                            key={code}
-                            className={({ selected }) => `
-                                w-full h-12 rounded-lg text-white px-4 flex flex-shrink-0 items-center justify-between
-                                bg-${assignments[code][0].color}-200
-                                ${selected ? 'border-2 border-white' : 'border border-transparent'}
-                            `}
+                                key={code}
+                                className={({ selected }) => `
+                                    w-full h-12 rounded-lg text-white px-4 flex flex-shrink-0 items-center justify-between
+                                    bg-${assignments[code][0].color}-400
+                                    transition-all duration-150 ease-out
+                                    cursor-pointer
+                                    hover:scale-95 hover:brightness-110
+                                    ${selected ? 'border-2 border-white' : 'border border-transparent'}
+                                `}
                             >
-                            {({ selected }) => (
-                                <>
-                                <span className="font-bold">{code}</span>
-                                <ChevronRightIcon
-                                    className={`w-6 h-6 text-white transition-all duration-200 ${selected ? 'opacity-100' : 'opacity-0'}`}
-                                />
-                                </>
-                            )}
+                                {({ selected }) => (
+                                    <>
+                                        <span className="font-bold">{code}</span>
+                                        <ChevronRightIcon
+                                            className={`w-6 h-6 text-white transition-all duration-200 ${selected ? 'opacity-100' : 'opacity-0'}`}
+                                        />
+                                    </>
+                                )}
                             </Tab>
                         )}
                     </TabList>
@@ -141,7 +144,7 @@ const TextCalendar: React.FC<{show:boolean; assignments:Record<string, Assignmen
                                     >
                                     <span>{assignment.name}</span>
                                     <div className={`${assignment===currentAssignment?"block":"hidden"}`}>
-                                        <CheckIcon className="w-6 h-6 ml-2 text-green-200"/>
+                                        <CheckIcon className="w-6 h-6 ml-2 text-uwaBlue" strokeWidth={3}/>
                                     </div>
                                 </button>
                                 )}

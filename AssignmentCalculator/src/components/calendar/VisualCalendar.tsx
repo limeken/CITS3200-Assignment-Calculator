@@ -16,13 +16,13 @@ const BG100: Record<CalendarColor, string> = {
 };
 
 // TODO: this is a terrible way to do this
-const BG200: Record<CalendarColor, string> = {
-    red: "bg-red-200", orange: "bg-orange-200", amber: "bg-amber-200",
-    yellow: "bg-yellow-200", lime: "bg-lime-200", green: "bg-green-200",
-    emerald: "bg-emerald-200", teal: "bg-teal-200", cyan: "bg-cyan-200",
-    sky: "bg-sky-200", blue: "bg-blue-200", indigo: "bg-indigo-200",
-    violet: "bg-violet-200", purple: "bg-purple-200", fuchsia: "bg-fuchsia-200",
-    pink: "bg-pink-200", rose: "bg-rose-200",
+const BG300: Record<CalendarColor, string> = {
+    red: "bg-red-300", orange: "bg-orange-300", amber: "bg-amber-300",
+    yellow: "bg-yellow-300", lime: "bg-lime-300", green: "bg-green-300",
+    emerald: "bg-emerald-300", teal: "bg-teal-300", cyan: "bg-cyan-300",
+    sky: "bg-sky-300", blue: "bg-blue-300", indigo: "bg-indigo-300",
+    violet: "bg-violet-300", purple: "bg-purple-300", fuchsia: "bg-fuchsia-300",
+    pink: "bg-pink-300", rose: "bg-rose-300",
 };
 
 // TODO: im sure you get the idea by now
@@ -48,8 +48,10 @@ const AssignmentDate: React.FC<AssignmentDateProps> = ({ uid, color, event }) =>
         <div
             key={uid}
             className={clsx(
-                `${event ? BG200[color] : BG100[color]}`,
-                `aspect-square w-16 rounded-md ${BG100[color]} shadow-md ${SHADOWS[color]} transition-transform duration-150 ease-out hover:scale-95`
+                `${event ? BG300[color] : BG100[color]}`,
+                `aspect-square w-16 rounded-md shadow-md transition-all duration-150 ease-out`,
+                `hover:scale-95 cursor-pointer`,
+                event ? 'hover:ring-2 hover:ring-uwaBlue hover:brightness-110' : 'hover:brightness-105'
             )}
         />
     );
@@ -149,7 +151,7 @@ const RowLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, height
     }
 
     return (
-        <div className={`w-36 shrink-0 mr-2 ${BG200[assignment.color]} rounded-md group`} style={{ height: `${boxsize + gap}rem` }} onClick={handleClick}>
+        <div className={`w-36 shrink-0 mr-2 ${BG300[assignment.color]} rounded-md group`} style={{ height: `${boxsize + gap}rem` }} onClick={handleClick}>
             <div className={clsx(
                 "w-full h-full flex items-center rounded-md border-2 font-semibold text-white gap-2",
                 "transition-all duration-300 ease-out justify-center group-hover:justify-between"
@@ -175,7 +177,7 @@ const ColumnLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, wid
 
     return (
         <div 
-            className={`h-36 shrink-0 mb-2 ${BG200[assignment.color]} rounded-md group`} 
+            className={`h-36 shrink-0 mb-2 ${BG300[assignment.color]} rounded-md group`} 
             style={{ width: `${totalWidth}rem` }} 
             onClick={handleClick}
         >
