@@ -1,0 +1,33 @@
+{
+  "id": "reflective_writing",
+  "title": "Reflective Writing",
+  "icon": "BookOpenIcon",
+  "description": "Personal reflection that connects experience with theory and future action.",
+  "milestones": [
+    {
+      "name": "Reflect",
+      "effort_percent": 20,
+      "description": "Capture the key experience, emotions, and lessons while they are fresh."
+    },
+    {
+      "name": "Write",
+      "effort_percent": 25,
+      "description": "Draft the reflection using a recognised structure such as Gibbs or DIEP."
+    },
+    {
+      "name": "Reflect on that writing",
+      "effort_percent": 20,
+      "description": "Step back to evaluate how well the draft links experience to concepts."
+    },
+    {
+      "name": "Write on that reflecting",
+      "effort_percent": 20,
+      "description": "Revise the response to deepen analysis and emphasise future actions."
+    },
+    {
+      "name": "Submit",
+      "effort_percent": 15,
+      "description": "Complete final edits for clarity, tone, and referencing before lodging."
+    }
+  ]
+}

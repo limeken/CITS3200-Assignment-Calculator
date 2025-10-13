@@ -1,0 +1,43 @@
+{
+  "id": "lab_report",
+  "title": "Lab Report",
+  "icon": "BeakerIcon",
+  "description": "Experimental report capturing background, methodology, results, and analysis.",
+  "milestones": [
+    {
+      "name": "Understand the task",
+      "effort_percent": 5,
+      "description": "Review the marking rubric, required sections, and submission logistics."
+    },
+    {
+      "name": "Review background and plan your introduction",
+      "effort_percent": 10,
+      "description": "Summarise theoretical context and plan how to frame the research question."
+    },
+    {
+      "name": "Draft your method",
+      "effort_percent": 15,
+      "description": "Document materials, procedures, and controls with enough detail for replication."
+    },
+    {
+      "name": "Analyse data and draft your results",
+      "effort_percent": 20,
+      "description": "Process raw data, create figures or tables, and describe key findings objectively."
+    },
+    {
+      "name": "Draft discussion – results – background loop",
+      "effort_percent": 20,
+      "description": "Interpret findings, link to background literature, and explain implications."
+    },
+    {
+      "name": "Final polish and integration",
+      "effort_percent": 20,
+      "description": "Ensure narrative flow across sections, refine visuals, and check referencing style."
+    },
+    {
+      "name": "Submit",
+      "effort_percent": 10,
+      "description": "Complete final proofread and confirm files upload correctly."
+    }
+  ]
+}
