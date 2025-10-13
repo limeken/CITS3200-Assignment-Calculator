@@ -98,6 +98,10 @@ def save_type(doc: Dict[str, Any]) -> Dict[str, Any]:
     path.write_text(json.dumps(incoming, indent=2, ensure_ascii=False), encoding="utf-8")
     _cache["mtime"] = 0.0
     _ensure_fresh()
+
+    # Update metadata timestamp so frontend knows data has changed
+    record_generated_at()
+
     return _cache["by_id"][tid]
 
 
@@ -116,16 +120,23 @@ def delete_type(tid: str) -> bool:
     if ok:
         _cache["mtime"] = 0.0
         _ensure_fresh()
+
+        # Update metadata timestamp so frontend knows data has changed
+        record_generated_at()
+
     return ok
 
 
 def get_metadata() -> Dict[str, Any]:
     if not METADATA_PATH.exists():
-        return {}
+        # Auto-create metadata file with current timestamp on first access
+        # This ensures frontend always has a valid timestamp to compare
+        return record_generated_at()
     try:
         return json.loads(METADATA_PATH.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
-        return {}
+        # Recreate if corrupt
+        return record_generated_at()
 
 
 def record_generated_at(timestamp: Optional[str] = None) -> Dict[str, Any]:

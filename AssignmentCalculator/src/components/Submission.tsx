@@ -8,7 +8,7 @@ import clsx from "clsx";
 import { CheckIcon, ChevronUpDownIcon, DocumentArrowDownIcon } from "@heroicons/react/20/solid";
 
 import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions} from "@headlessui/react";
-import {PencilSquareIcon} from "@heroicons/react/24/solid";
+import {ExclamationTriangleIcon, PencilSquareIcon} from "@heroicons/react/24/solid";
 import { ArrowDownTrayIcon, PlusIcon } from "@heroicons/react/24/outline";
 import {useModal} from "../providers/ModalProvider.tsx";
 import {useNotification} from "../providers/NotificationProvider.tsx";
@@ -21,11 +21,24 @@ interface SubmissionProps {
     onUpdate?:  (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => Promise<void>;
     onDelete?:  (assignment: AssignmentCalendar) => Promise<void>;
     onClose: () => void;
-    errors: Array<boolean>;
+    assignments: Record<string, AssignmentCalendar[]>;
 }
 
+const ErrorField: React.FC<{message:string, visible:boolean}> = ({message, visible}) => {
+    return (
+        <div
+        className={`
+            text-white rounded-lg flex flex-row gap-2 items-center justify-left px-4 py-1.5
+            transition-opacity duration-300 border-1 border-red-400 my-2
+            ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}
+        `}
+        >
+            <ExclamationTriangleIcon className="w-5 h-5 text-red-400"/>
+            <span className="text-red-400 font-semibold text-sm">{message}</span>
+        </div>
+    )
+}
 // Input Field for the name of an assignment
-
 interface NameFieldProps { setAssignmentName: (arg: string) => void; assignmentName: string };
 const NameField: React.FC<NameFieldProps> = ({setAssignmentName, assignmentName,}) => {
     return (
@@ -82,15 +95,15 @@ const UnitField: React.FC<UnitFieldProps> = ({setUnitCode,unitCode}) => {
 }
 
 // Component used to create a new assignment object
-interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => void}
-export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit }) => {
+interface SubmissionButtonProps { onSubmit: (s: AssignmentCalendar) => void, assignments:Record<string, AssignmentCalendar[]>}
+export const SubmissionButton: React.FC<SubmissionButtonProps> = ({ onSubmit, assignments}) => {
     const {open, close} = useModal();
     const openSubmission = () => {
         open((id) => (
             <Submission 
                 submission={ createAssignmentCalendar()} 
                 isNew={true}
-                errors={[false, false, false] }
+                assignments={assignments}
                 onSubmit={async (s) => {
                     onSubmit(s);
                     close(id);
@@ -220,7 +233,17 @@ const DeleteButton: React.FC<{pending:boolean, onDelete:()=>void}> = ({pending, 
  * The modal is provided by the global ModalProvider host.
  * Keep markup minimal.
  */
-const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onClose, onUpdate, onDelete, errors}) => {
+const Submission: React.FC<SubmissionProps> = ({submission, assignments: existingAssignments, isNew, onSubmit, onClose, onUpdate, onDelete}) => {
+    // Identifiers for error messages
+    const DATE = 0;
+    const CODENAME = 1;
+
+    // Used to keep track of input errors
+    const [errors, setErrors] = useState<(string | null)[]>([null,null]);
+
+    // Get the current date
+    const currentDate = useMemo(() => new Date(), []);
+
     const [startDate, setStartDate] = useState<Date | null>(submission.start ?? null);
     const [endDate, setEndDate] = useState<Date | null>(submission.end ?? null);
     const [assignmentName, setAssignmentName] = useState(submission.name ?? "");
@@ -231,7 +254,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     // UNPACK ASSIGNMENT CONTEXT - UPDATE
     // If the assignment is being edited, unpack its old variables into states
     const { data: library, isLoading: loadingTypes } = useAssignmentTypeLibrary();
-    const assignments = useMemo<Assignment[]>(() => library?.assignments ?? [], [library]);
+    const assignmentTypes = useMemo<Assignment[]>(() => library?.assignments ?? [], [library]);
     const [selected, setSelected] = useState<Assignment | null>(null);
 
     useEffect(() => {
@@ -242,21 +265,89 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     }, [isNew, submission]);
 
     useEffect(() => {
-        if (!assignments.length) {
+        if (!assignmentTypes.length) {
             setSelected(null);
             return;
         }
         const current = submission.assignmentType ?? "";
         const currentId = current.toLowerCase();
         const match =
-            assignments.find((assignment) => assignment.id === currentId) ||
-            assignments.find((assignment) => assignment.name.toLowerCase() === currentId) ||
-            assignments.find((assignment) => assignment.name === current);
-        setSelected(match ?? assignments[0]);
-    }, [assignments, submission.assignmentType]);
+            assignmentTypes.find((assignment) => assignment.id === currentId) ||
+            assignmentTypes.find((assignment) => assignment.name.toLowerCase() === currentId) ||
+            assignmentTypes.find((assignment) => assignment.name === current);
+        setSelected(match ?? assignmentTypes[0]);
+    }, [assignmentTypes, submission.assignmentType]);
 
-    const datesValid = !!startDate && !!endDate && startDate <= endDate;
-    const canSubmit = assignmentName.trim().length > 0 && unitCode.trim().length > 0 && datesValid;
+    // Helper used to update individual field errors
+    const addErrorMessage = (message:string|null, index:number) => {setErrors((prev)=>{
+                    const errors = [...prev]
+                    errors[index] = message
+                    return errors})
+                }
+    
+    // Zeros time comparisons to allow day-based comparison (without hours)
+    function stripTime(date: Date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+
+    // DATA VALIDATION:
+    const [canSubmit, setSubmit] = useState<boolean>(false);
+    // Need to check if fields are valid
+    useEffect(() => {
+        if (
+            startDate === (submission.start ?? null) &&
+            endDate === (submission.end ?? null) &&
+            unitCode === (submission.unitCode ?? "") &&
+            assignmentName === (submission.name ?? "")
+        ) return;
+        
+        // Current date, without time
+        const current = stripTime(currentDate);
+
+        let datesValid = false;
+        let uniqueID = false;
+
+        // DATE VALIDATION
+        if(!!startDate && !!endDate){
+            // Input dates, without time
+            const start = stripTime(startDate);
+            const end = stripTime(endDate);
+            if(start < current || end < current){addErrorMessage("Dates must be upcoming.", DATE);}
+            else if(end < start){addErrorMessage("Invalid Date Ordering.", DATE)}
+            else{
+                addErrorMessage(null,DATE)
+                datesValid = true}
+        }
+
+        // ASSIGNMENT VALIDATION
+        // Different validation for editing and adding
+        if(isNew){
+            if(unitCode in existingAssignments && existingAssignments[unitCode].find(assignment => assignment.name === assignmentName)){
+                addErrorMessage("Unit & Assignment must be unique.", CODENAME);
+            }
+            else{
+                addErrorMessage(null,CODENAME)
+                uniqueID = true
+            }
+        }
+        // Can have the same assignment & name IFF its the current one being edited
+        else{
+            // Bypass unique if we are editing the assignment currently
+            const isSame = submission.unitCode === unitCode && submission.name === assignmentName;
+            if(!isSame && (unitCode in existingAssignments && existingAssignments[unitCode].find(assignment => assignment.name === assignmentName))){
+                addErrorMessage("Unit & Assignment must be unique.", CODENAME);
+            }
+            else{
+                addErrorMessage(null,CODENAME)
+                uniqueID = true
+            }
+        }
+
+        setSubmit(datesValid && uniqueID)
+        },[startDate,endDate,unitCode,assignmentName]);
+    // const canSubmit = assignmentName.trim().length > 0 && unitCode.trim().length > 0 && datesValid;
 
     function handleStartDate(date: string) {
         const next = parseISO(date);
@@ -315,7 +406,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
                                 <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400" />
                             </ListboxButton>
                             <ListboxOptions className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
-                                {assignments.map((it) => (
+                                {assignmentTypes.map((it) => (
                                     <ListboxOption
                                         key={it.id}
                                         value={it}
@@ -338,9 +429,8 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
         );
     };
 
-    const AssessmentDateInput: React.FC<{ error: boolean[] }> = ({ error }) => {
-        const err_start = useError(error[0]);
-        const err_end = useError(error[1]);
+    const AssessmentDateInput: React.FC<{ error: boolean }> = ({ error }) => {
+        const currentError = useError(error);
         const base = `
                         mt-1 w-full rounded-md 
                         border border-gray-300 bg-white
@@ -355,27 +445,26 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
                     `;
         const alert = "bg-red-200 animate-pulse";
         return (
-            <div className="text-gray-900 px-4 w-full">
-                <h2 className="text-md font-semibold mb-3">Dates:</h2>
+            <div className={`text-gray-900 px-4 w-full`}>
                 <div className="grid sm:grid-cols-2 gap-3">
                     <Field>
-                        <Label className="font-semibold text-sm font-medium" htmlFor="start">Start date:</Label>
+                        <Label className="font-semibold text-md font-medium" htmlFor="start">Start date:</Label>
                         <Input
                             id="start"
                             type="date"
                             value={startDate ? format(startDate, "yyyy-MM-dd") : ""}
                             onChange={e => handleStartDate(e.target.value)}
-                            className={clsx(base, err_start ? alert : "bg-white")}
+                            className={clsx(base, currentError ? alert : "bg-white")}
                         />
                     </Field>
                     <Field>
-                        <Label className="font-semibold text-sm font-medium" htmlFor="end">Due date:</Label>
+                        <Label className="font-semibold text-md font-medium" htmlFor="end">Due date:</Label>
                         <Input
                             id="end"
                             type="date"
                             value={endDate ? format(endDate, "yyyy-MM-dd") : ""}
                             onChange={e => handleEndDate(e.target.value)}
-                            className={clsx(base, err_end ? alert : "bg-white")}
+                            className={clsx(base, currentError ? alert : "bg-white")}
                         />
                     </Field>
                 </div>
@@ -386,7 +475,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     // Called on submission to pack state variables into the newly created assignment before being sent off
     function buildSubmission(): AssignmentCalendar {
         if (!startDate || !endDate) throw new Error("invalid dates");
-        const current = selected ?? assignments[0];
+        const current = selected ?? assignmentTypes[0];
         if (!current) throw new Error("No assignment types available");
         return {
             ...submission,
@@ -450,11 +539,18 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
                     <section className="bg-white rounded-xl shadow-soft flex flex-col gap-6 w-4/5 p-5">
                         <AssessmentTypeInput />
                         <hr className="border-slate-200 w-full"/>
-                        <AssessmentDateInput error={[errors[1], errors[2]]} />
+                        <div>
+                            <AssessmentDateInput error={errors[DATE] !== null} />
+                            <div className="px-4">
+                                <ErrorField message={errors[DATE] ?? ""} visible={!!errors[DATE]} />
+                            </div>
+                        </div>
                         <hr className="border-slate-200 w-full"/>
                         <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
-                        <hr className="border-slate-200 w-full"/>
                         <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
+                        <div className="px-4 -mt-6">
+                            <ErrorField message={errors[CODENAME] ?? ""} visible={!!errors[CODENAME]} />
+                        </div>          
                     </section>
                     {/* Render different buttons for creation & edit pages */}
                     <div className="flex flex-row justify-center items-center gap-4">

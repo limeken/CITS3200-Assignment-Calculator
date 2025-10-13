@@ -27,15 +27,27 @@ type AssignmentLibrary = {
 };
 
 async function fetchAssignmentLibrary(): Promise<AssignmentLibrary> {
-  const cacheModule = await import('../generated/cache.ts');
-  const fallback = {
-    source: 'cache' as const,
-    generatedAt: cacheModule.generatedAt,
-    details: cacheModule.assignmentTypes as AssignmentTypeDetail[],
-    assignments: (cacheModule.assignmentTypes as AssignmentTypeDetail[]).map((detail) =>
-      buildAssignmentFromDetail(detail),
-    ),
-  };
+  let fallback: AssignmentLibrary;
+
+  try {
+    const cacheModule = await import('../generated/cache.ts');
+    fallback = {
+      source: 'cache' as const,
+      generatedAt: cacheModule.generatedAt,
+      details: cacheModule.assignmentTypes as AssignmentTypeDetail[],
+      assignments: (cacheModule.assignmentTypes as AssignmentTypeDetail[]).map((detail) =>
+        buildAssignmentFromDetail(detail),
+      ),
+    };
+  } catch (err) {
+    console.error('[assignment-types] Cache file not found, using empty fallback', err);
+    fallback = {
+      source: 'cache',
+      generatedAt: new Date().toISOString(),
+      details: [],
+      assignments: [],
+    };
+  }
 
   try {
     const metadata = await getAssignmentTypesMetadata();
@@ -65,7 +77,7 @@ export function useAssignmentTypeLibrary() {
   return useQuery<AssignmentLibrary>({
     queryKey: LIBRARY_KEY,
     queryFn: fetchAssignmentLibrary,
-    staleTime: 5 * 60_000,
+    staleTime: 30_000, // 30 seconds - faster updates after admin changes
   });
 }
 
@@ -73,7 +85,7 @@ export function useAssignmentTypes() {
   return useQuery<AssignmentTypeSummary[]>({
     queryKey: LIST_KEY,
     queryFn: getAssignmentTypes,
-    staleTime: 5 * 60_000,
+    staleTime: 30_000, // 30 seconds - faster updates after admin changes
   });
 }
 
@@ -82,7 +94,7 @@ export function useAssignmentType(id: string | undefined) {
     queryKey: id ? DETAIL_KEY(id) : LIST_KEY,
     queryFn: () => getAssignmentType(id!),
     enabled: Boolean(id),
-    staleTime: 5 * 60_000,
+    staleTime: 30_000, // 30 seconds - faster updates after admin changes
   });
 }
 

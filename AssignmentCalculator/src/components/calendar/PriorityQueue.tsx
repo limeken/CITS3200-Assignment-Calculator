@@ -11,8 +11,8 @@ import Submission from "../Submission";
 const MED = (14)* 24 * 60 * 60 * 1000;
 const HIGH = (5)* 24 * 60 * 60 * 1000;
 
-const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => void, onDelete: (assignment:AssignmentCalendar) => void}> = 
-({newest, onUpdate, onDelete}) => {
+const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => void, onDelete: (assignment:AssignmentCalendar) => void, assignments: Record<string, AssignmentCalendar[]>}> =
+({newest, onUpdate, onDelete, assignments}) => {
     // Keeps track of the currently sorted list of assignments
     const [sortedAssignments,setSortedAssignments] = useState<AssignmentCalendar[]>([]);
 
@@ -33,10 +33,10 @@ const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAss
     }, [library]);
     const openResubmission = (selected:AssignmentCalendar) => {
         open((id) => (
-            <Submission 
-                submission={selected} 
+            <Submission
+                submission={selected}
                 isNew={false}
-                errors={[false, false, false] }
+                assignments={assignments}
                 onUpdate={async (o,n) => {
                     {/* This wipes assignment memory from priority queue */}
                     deleteAssignment(selected);

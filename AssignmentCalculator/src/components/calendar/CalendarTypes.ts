@@ -122,7 +122,7 @@ export function mapEvents(a: Assignment, start: Date, end: Date): AssignmentEven
 
 export const createAssignmentCalendar = (): AssignmentCalendar => ({
     name: "",
-    color: "",
+    color: pickRandomColor(),
     start: new Date(),
     end: new Date(),
     events: [],
@@ -142,9 +142,8 @@ export async function importCalendar(file: File): Promise<AssignmentCalendar> {
 
     const colorValue =
         vcal.getFirstPropertyValue("x-wr-color") ??
-        vcal.getFirstPropertyValue("x-apple-calendar-color") ??
-        "blue";
-    const color = typeof colorValue === "string" ? colorValue : "blue";
+        vcal.getFirstPropertyValue("x-apple-calendar-color");
+    const color = normalizeColor(typeof colorValue === "string" ? colorValue : null);
 
     const typeValue = vcal.getFirstPropertyValue("x-wr-assignmenttype") ?? "Imported";
     const assignmentType = typeof typeValue === "string" ? typeValue : "Imported";
@@ -298,8 +297,16 @@ export function validateCalendar(cal: AssignmentCalendar): Array<boolean> {
 export const sem1 = new SemesterDates(new Date("2025-02-24"), new Date("2025-05-23"));
 export const sem2 = new SemesterDates(new Date("2025-07-21"), new Date("2025-10-17"));
 
-export const pickRandomColor = (): typeof calendarColors[number] =>
+export const calendarColors = ["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose"] as const;
+export type CalendarColor = typeof calendarColors[number];
+
+export const isValidColor = (color: string): color is CalendarColor =>
+    calendarColors.includes(color as CalendarColor);
+
+export const pickRandomColor = (): CalendarColor =>
     calendarColors[Math.floor(Math.random() * calendarColors.length)];
 
-export const calendarColors = ["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose"]
-export type CalendarColor = typeof calendarColors[number];
+export const normalizeColor = (color: string | null | undefined): CalendarColor => {
+    if (color && isValidColor(color)) return color;
+    return pickRandomColor();
+};

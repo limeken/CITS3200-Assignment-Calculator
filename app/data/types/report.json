@@ -1,0 +1,23 @@
+{
+  "id": "report",
+  "title": "report",
+  "icon": "DocumentTextIcon",
+  "milestones": [
+    {
+      "name": "Make report",
+      "effort_percent": 25
+    },
+    {
+      "name": "Delete report",
+      "effort_percent": 25
+    },
+    {
+      "name": "Update report",
+      "effort_percent": 25
+    },
+    {
+      "name": "Finalise report",
+      "effort_percent": 25
+    }
+  ]
+}
