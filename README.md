@@ -11,3 +11,7 @@ The frontend is built off of the vite template `react-ts`.
 > `$ npm install `
 3. Run the server in development mode
 > `$ npm run dev`
+
+## Assignment Type Cache
+Run `npm run build-cache` from `AssignmentCalculator/` (or `python3 scripts/build_assignment_cache.py` from the repo root) whenever you change files in `app/data/types/`. This regenerates the frontend cache module, updates `app/data/types/_metadata.json`, and keeps the backend freshness endpoint (`GET /types/metadata`) in sync.
+

@@ -1,6 +1,7 @@
 id: quiz
 title: Quiz
+icon: AcademicCapIcon
 milestones:
-  - { name: "Study 1", offset_days: -7 }
-  - { name: "Study 2", offset_days: -3 }
-  - { name: "Review", offset_days: -1 }
+  - { name: "Study 1", effort_percent: 40 }
+  - { name: "Study 2", effort_percent: 35 }
+  - { name: "Review", effort_percent: 25 }

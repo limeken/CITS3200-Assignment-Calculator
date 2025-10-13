@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template_string
+from flask import Blueprint, render_template_string, redirect, url_for
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -51,7 +51,7 @@ HTML_TEMPLATE = """
   <main class="pt-48 pb-16 mx-auto w-full max-w-6xl px-4 sm:px-6">
     <div class="flex justify-between mb-6">
       <input id="search" placeholder="Search types..." class="border border-gray-300 rounded-md p-2 w-1/3 focus:outline-none focus:ring-2 focus:ring-[#27348B]">
-      <button id="btn-add" class="btn btn-blue">➕ Add New Type</button>
+      <button id="btn-add" class="btn btn-blue">➕ Add New Assignment Type</button>
     </div>
 
     <div id="types-container" class="grid gap-4"></div>
@@ -68,20 +68,23 @@ HTML_TEMPLATE = """
         <label class="block mb-2 font-medium">Title</label>
         <input id="type-title" required placeholder="e.g. Report" class="mb-3 border-gray-300 rounded-md">
 
+        <label class="block mb-2 font-medium">Icon</label>
+        <select id="type-icon" class="mb-4 border border-gray-300 rounded-md p-2 w-full">
+          <option value="DocumentTextIcon">Document (default)</option>
+          <option value="AcademicCapIcon">Academic Cap</option>
+          <option value="PresentationChartLineIcon">Presentation</option>
+          <option value="BeakerIcon">Beaker</option>
+          <option value="BookOpenIcon">Book</option>
+          <option value="UserGroupIcon">Group</option>
+        </select>
+        <p class="text-xs text-gray-500 mb-4">Icons come from Heroicons 24/solid. A page icon is used by default.</p>
+
         <label class="block mb-2 font-medium">Milestones</label>
         <table id="milestone-table">
-          <thead><tr><th>Name</th><th>Offset (days)</th><th></th></tr></thead>
+          <thead><tr><th>Name</th><th>Effort (%)</th><th></th></tr></thead>
           <tbody id="milestone-body"></tbody>
         </table>
         <button type="button" id="btn-add-milestone" class="btn btn-gray mt-2">➕ Add Milestone</button>
-
-        <!-- Custom due date for preview -->
-        <div class="mt-5">
-          <label class="block font-medium mb-1">Preview due date:</label>
-          <input type="date" id="preview-date" class="border border-gray-300 rounded-md p-2 w-full mb-2" />
-        </div>
-
-        <div id="preview" class="mt-4 p-3 border border-gray-300 rounded-md bg-gray-50 text-sm text-gray-700 hidden"></div>
 
         <div class="mt-6 flex justify-end gap-2">
           <button type="button" id="btn-cancel" class="btn btn-gray">Cancel</button>
@@ -96,8 +99,15 @@ HTML_TEMPLATE = """
   const modal = document.getElementById("modal");
   const form = document.getElementById("type-form");
   const body = document.getElementById("milestone-body");
-  const preview = document.getElementById("preview");
-  const previewDate = document.getElementById("preview-date");
+  const iconSelect = document.getElementById("type-icon");
+  const ICON_VALUES = [
+    "DocumentTextIcon",
+    "AcademicCapIcon",
+    "PresentationChartLineIcon",
+    "BeakerIcon",
+    "BookOpenIcon",
+    "UserGroupIcon"
+  ];
   let editId = null;
 
   async function fetchTypes() {
@@ -126,10 +136,10 @@ HTML_TEMPLATE = """
     editId = id;
     document.getElementById("type-id").value = data.id;
     document.getElementById("type-title").value = data.title || "";
+    iconSelect.value = ICON_VALUES.includes(data.icon) ? data.icon : "DocumentTextIcon";
     body.innerHTML = "";
     (data.milestones || []).forEach(addMilestoneRow);
     modal.classList.add("open");
-    updatePreview();
   }
 
   async function deleteType(id) {
@@ -138,15 +148,34 @@ HTML_TEMPLATE = """
     fetchTypes();
   }
 
-  function addMilestoneRow(m = {name:"", offset_days:-7}) {
+  function addMilestoneRow(m = {name:"", effort_percent:10, description:""}) {
+    const pairId = `ms-${Math.random().toString(36).slice(2)}`;
     const row = document.createElement("tr");
+    row.classList.add("milestone-row");
+    row.dataset.pairId = pairId;
+    row.dataset.role = "inputs";
     row.innerHTML = `
-      <td><input value="${m.name}" placeholder="Name" class="border border-gray-300 rounded-md p-1 w-full"></td>
-      <td><input type="number" value="${m.offset_days}" class="border border-gray-300 rounded-md p-1 w-24"></td>
-      <td><button class="btn btn-red text-xs" onclick="this.closest('tr').remove(); updatePreview();">✖</button></td>
+      <td><input value="${m.name || ""}" placeholder="Name" class="border border-gray-300 rounded-md p-1 w-full" data-field="name"></td>
+      <td><input type="number" value="${m.effort_percent ?? 10}" class="border border-gray-300 rounded-md p-1 w-24" data-field="effort" min="0" max="100"></td>
+      <td><button type="button" class="btn btn-red text-xs" data-action="remove">✖</button></td>
     `;
+
+    const descRow = document.createElement("tr");
+    descRow.dataset.pairId = pairId;
+    descRow.dataset.role = "description";
+    descRow.innerHTML = `
+      <td colspan="3">
+        <textarea data-field="description" rows="3" class="border border-gray-300 rounded-md p-2 w-full" placeholder="Describe this milestone in markdown...">${(m.description || "")}</textarea>
+        <p class="text-xs text-gray-500 mt-1">Markdown supported. Leave blank to skip extra guidance.</p>
+      </td>
+    `;
+
+    row.querySelector("[data-action='remove']").addEventListener("click", () => {
+      body.querySelectorAll(`tr[data-pair-id='${pairId}']`).forEach(el => el.remove());
+    });
+
     body.appendChild(row);
-    updatePreview();
+    body.appendChild(descRow);
   }
 
   document.getElementById("btn-add-milestone").onclick = () => addMilestoneRow();
@@ -155,14 +184,23 @@ HTML_TEMPLATE = """
     e.preventDefault();
     const id = document.getElementById("type-id").value.trim();
     const titleVal = document.getElementById("type-title").value.trim();
-    const milestones = Array.from(body.querySelectorAll("tr")).map(tr => {
-      const [name, off] = tr.querySelectorAll("input");
-      return { name: name.value.trim(), offset_days: parseInt(off.value||"-1") };
+    const milestones = Array.from(body.querySelectorAll("tr.milestone-row")).map(tr => {
+      const pairId = tr.dataset.pairId;
+      const name = tr.querySelector("input[data-field='name']");
+      const effort = tr.querySelector("input[data-field='effort']");
+      const descRow = pairId ? body.querySelector(`tr[data-pair-id='${pairId}'][data-role='description']`) : null;
+      const descriptionField = descRow?.querySelector("textarea[data-field='description']");
+      return {
+        name: (name?.value || "").trim(),
+        effort_percent: parseInt(effort?.value || "0", 10),
+        description: (descriptionField?.value || "").trim(),
+      };
     }).filter(m => m.name);
 
     if (!milestones.length) { alert("Add at least one milestone."); return; }
 
-    const bodyData = JSON.stringify({ id, title: titleVal, milestones });
+    const icon = iconSelect.value || "DocumentTextIcon";
+    const bodyData = JSON.stringify({ id, title: titleVal, icon, milestones });
     const method = editId ? "PUT" : "POST";
     const url = editId ? `/types/${id}` : "/types";
     await fetch(url, { method, headers: {"Content-Type":"application/json"}, body: bodyData });
@@ -177,34 +215,20 @@ HTML_TEMPLATE = """
     body.innerHTML = "";
     addMilestoneRow();
     modal.classList.add("open");
-    updatePreview();
+    iconSelect.value = "DocumentTextIcon";
   };
   document.getElementById("btn-cancel").onclick = () => modal.classList.remove("open");
-
-  // --- Live Preview ---
-  function updatePreview() {
-    const rows = Array.from(body.querySelectorAll("tr"));
-    if (!rows.length) { preview.classList.add("hidden"); return; }
-    const base = previewDate.value ? new Date(previewDate.value) : new Date();
-    const list = rows.map(tr => {
-      const [name, off] = tr.querySelectorAll("input");
-      const date = new Date(base);
-      date.setDate(base.getDate() + parseInt(off.value||0));
-      const fmt = date.toISOString().slice(0,10);
-      return `<li><b>${name.value}</b> — ${off.value} days → <span class='text-gray-500'>${fmt}</span></li>`;
-    }).join("");
-    preview.innerHTML = `<p class='font-semibold mb-1 text-[#27348B]'>📅 Preview (due ${base.toISOString().slice(0,10)})</p><ul class='list-disc pl-5'>${list}</ul>`;
-    preview.classList.remove("hidden");
-  }
-
-  body.addEventListener("input", updatePreview);
-  previewDate.addEventListener("input", updatePreview);
   fetchTypes();
   </script>
 </body>
 </html>
 """
 
-@admin_bp.route("/types")
-def admin_types():
+@admin_bp.route("/")
+def admin_index():
     return render_template_string(HTML_TEMPLATE)
+
+
+@admin_bp.route("/types")
+def admin_types_legacy():
+    return redirect(url_for("admin.admin_index"))

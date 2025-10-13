@@ -1,69 +1,27 @@
-# React + TypeScript + Vite
+# Assignment Calculator Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This React + Vite application powers the Assignment Calculator UI. The app fetches assignment type definitions from the Flask backend when available and falls back to a pre-built cache when the API is offline.
 
-Currently, two official plugins are available:
+## Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Useful Scripts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- `npm run dev` – start the Vite development server.
+- `npm run build` – type-check and produce a production bundle.
+- `npm run lint` – run ESLint over the source files.
+- `npm run build-cache` – regenerate the assignment type cache module from the backend data (see below).
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Assignment Type Cache
+
+The frontend expects a generated module at `src/generated/cache.ts`. Run `npm run build-cache` (which invokes `python3 ../scripts/build_assignment_cache.py`) whenever the backend assignment type files under `app/data/types/` change. The script:
+
+1. Reads the current assignment type documents via `type_store.list_types()`.
+2. Writes a canonical cache to `public/cache.ts` and a mirrored copy to `src/generated/cache.ts`.
+3. Records the generation timestamp in `app/data/types/_metadata.json` so the backend can expose freshness information at `/types/metadata`.
+
+At runtime the frontend attempts to fetch live `/types` data. If the request fails, it logs a warning and falls back to the generated cache module.

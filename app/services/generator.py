@@ -71,14 +71,30 @@ def _generate_milestones_for_assignment(a: Dict[str, Any], used: Dict[date, int]
     # ✨ Try dynamic type definition first
     tdoc = get_type(t)
     if tdoc and tdoc.get("milestones"):
+        raw_milestones = list(tdoc["milestones"])
+        effort_values = [max(0, int(m.get("effort_percent") or 0)) for m in raw_milestones]
+        total_effort = sum(effort_values)
+        span_days = max(2, (due - start).days)
         milestones = []
-        for m in tdoc["milestones"]:
+        cumulative = 0
+        for idx, m in enumerate(raw_milestones):
             name = m.get("name") or "Milestone"
-            off = int(m.get("offset_days") or -1)
-            d = due + timedelta(days=off)
-            if d >= due: d = due - timedelta(days=1)
-            if d <= start: d = start + timedelta(days=1)
-            nd = _resolve_collisions(used, d, start, due)
+            effort = effort_values[idx]
+            if total_effort > 0:
+                cumulative += effort
+                ratio = cumulative / total_effort
+            else:
+                ratio = (idx + 1) / max(len(raw_milestones), 1)
+            ratio = min(max(ratio, 0.0), 1.0)
+            offset = round((span_days - 1) * ratio)
+            tentative = start + timedelta(days=offset)
+            min_allowed = start + timedelta(days=1)
+            max_allowed = due - timedelta(days=1)
+            if tentative < min_allowed:
+                tentative = min_allowed
+            if tentative > max_allowed:
+                tentative = max_allowed
+            nd = _resolve_collisions(used, tentative, start, due)
             used[nd] = used.get(nd, 0) + 1
             milestones.append({"name": name, "date": nd.isoformat()})
         a["milestones"] = milestones

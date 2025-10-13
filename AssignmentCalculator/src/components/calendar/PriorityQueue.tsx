@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { AssignmentCalendar } from "./CalendarTypes";
 import { differenceInDays } from "date-fns";
 import { PencilSquareIcon } from "@heroicons/react/24/solid";
 import { useModal } from "../../providers/ModalProvider";
+import { useAssignmentTypeLibrary } from "../../providers/assignmentTypeHooks.ts";
 
 import Submission from "../Submission";
 // DATES: Use these to control warnings for Assignments Due Dates (Days in brackets)
@@ -20,6 +21,16 @@ const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAss
 
     // Reopen modified submission modal for editing
     const {open, close} = useModal();
+    const { data: library } = useAssignmentTypeLibrary();
+    const assignmentLabels = useMemo<Record<string, string>>(() => {
+        const map: Record<string, string> = {};
+        (library?.assignments ?? []).forEach((assignment) => {
+            map[assignment.id] = assignment.name;
+            map[assignment.name] = assignment.name;
+            map[assignment.name.toLowerCase()] = assignment.name;
+        });
+        return map;
+    }, [library]);
     const openResubmission = (selected:AssignmentCalendar) => {
         open((id) => (
             <Submission 
@@ -92,6 +103,8 @@ const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAss
                     <div className="flex flex-row gap-4 my-2">
                         {sortedAssignments.map((assignment)=>{
                             const { base, days} = pickPriority(assignment.end);
+                            const typeKey = assignment.assignmentType ?? "";
+                            const typeLabel = assignmentLabels[typeKey.toLowerCase()] ?? assignmentLabels[typeKey] ?? assignment.assignmentType;
                             return (
                                 <div className={`h-9/10 w-70 flex flex-col flex-shrink-0 rounded-lg bg-white overflow-hidden shadow-lg transition duration-300 ease-in-out hover:scale-105 relative`}>
                                     <h1 className={`text-lg font-bold w-full h-1/4 flex justify-center items-center relative ${base}`}>
@@ -102,7 +115,7 @@ const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAss
                                     </h1>
                                     <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Unit: </span>{assignment.unitCode}</p>
                                     <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Assignment: </span>{assignment.name}</p>
-                                    <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Type: </span>{assignment.assignmentType}</p>
+                                    <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Type: </span>{typeLabel}</p>
                                     <p className="p-2 text-sm"><span className="font-semibold">Due Date: </span>{assignment.end.toISOString().substring(0, 10).replaceAll("-","/")}</p>
                                 </div>
                                 )

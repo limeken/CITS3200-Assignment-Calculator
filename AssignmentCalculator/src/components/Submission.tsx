@@ -1,7 +1,6 @@
 import { parseISO, format } from "date-fns";
 
 import {type Assignment, type AssignmentCalendar, mapEvents, createAssignmentCalendar, importCalendar} from "./calendar/CalendarTypes.ts"
-import { assignmentTypes } from "./testdata.ts";
 
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import clsx from "clsx";
@@ -12,6 +11,7 @@ import {Input, Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptio
 import {ArrowDownTrayIcon, PencilSquareIcon, PlusIcon} from "@heroicons/react/24/solid";
 import {useModal} from "../providers/ModalProvider.tsx";
 import {useNotification} from "../providers/NotificationProvider.tsx";
+import { useAssignmentTypeLibrary } from "../providers/assignmentTypeHooks.ts";
 
 interface SubmissionProps {
     submission: AssignmentCalendar;
@@ -174,19 +174,31 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     const { notify } = useNotification();
 
     // UNPACK ASSIGNMENT CONTEXT - UPDATE
-    // If the asisgnment is being edited, unpack its old variables into states
-    const items = useMemo<Assignment[]>(() => Object.values(assignmentTypes), []);
-    const [selected, setSelected] = useState<Assignment>(
-        items.find(i => i.name === (submission.assignmentType ?? "")) ?? items[0]
-    );
+    // If the assignment is being edited, unpack its old variables into states
+    const { data: library, isLoading: loadingTypes } = useAssignmentTypeLibrary();
+    const assignments = useMemo<Assignment[]>(() => library?.assignments ?? [], [library]);
+    const [selected, setSelected] = useState<Assignment | null>(null);
 
     useEffect(() => {
         setStartDate(submission.start ?? null);
         setEndDate(submission.end ?? null);
         setAssignmentName(submission.name ?? "");
         setUnitCode(submission.unitCode ?? "");
-        setSelected(items.find(i => i.name === (submission.assignmentType ?? "")) ?? items[0]);
-    }, [isNew, submission, items]);
+    }, [isNew, submission]);
+
+    useEffect(() => {
+        if (!assignments.length) {
+            setSelected(null);
+            return;
+        }
+        const current = submission.assignmentType ?? "";
+        const currentId = current.toLowerCase();
+        const match =
+            assignments.find((assignment) => assignment.id === currentId) ||
+            assignments.find((assignment) => assignment.name.toLowerCase() === currentId) ||
+            assignments.find((assignment) => assignment.name === current);
+        setSelected(match ?? assignments[0]);
+    }, [assignments, submission.assignmentType]);
 
     const datesValid = !!startDate && !!endDate && startDate <= endDate;
     const canSubmit = assignmentName.trim().length > 0 && unitCode.trim().length > 0 && datesValid;
@@ -213,6 +225,22 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     }
 
     const AssessmentTypeInput: React.FC = () => {
+        if (loadingTypes) {
+            return (
+                <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
+                    <Label className="block text-sm font-semibold text-gray-900 mb-2">Assessment type</Label>
+                    <div className="text-sm text-gray-600">Loading assignment types…</div>
+                </Field>
+            );
+        }
+        if (!selected) {
+            return (
+                <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
+                    <Label className="block text-sm font-semibold text-gray-900 mb-2">Assessment type</Label>
+                    <div className="text-sm text-gray-600">No assignment types available.</div>
+                </Field>
+            );
+        }
         const onChange = (it: Assignment) => setSelected(it);
         return (
             <Field className="bg-slate-200 text-gray-900 rounded-xl shadow-soft p-4 w-full">
@@ -231,7 +259,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
                                 <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-400" />
                             </ListboxButton>
                             <ListboxOptions className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/5 shadow-lg sm:text-sm">
-                                {items.map(it => (
+                                {assignments.map((it) => (
                                     <ListboxOption
                                         key={it.id}
                                         value={it}
@@ -291,14 +319,16 @@ const Submission: React.FC<SubmissionProps> = ({submission, isNew, onSubmit, onC
     // Called on submission to pack state variables into the newly created assignment before being sent off
     function buildSubmission(): AssignmentCalendar {
         if (!startDate || !endDate) throw new Error("invalid dates");
+        const current = selected ?? assignments[0];
+        if (!current) throw new Error("No assignment types available");
         return {
             ...submission,
             start: startDate,
             end: endDate,
             name: assignmentName.trim(),
             unitCode: unitCode.trim(),
-            assignmentType:selected.name,
-            events: mapEvents(selected, startDate, endDate)
+            assignmentType: current.id,
+            events: mapEvents(current, startDate, endDate)
         };
     }
 

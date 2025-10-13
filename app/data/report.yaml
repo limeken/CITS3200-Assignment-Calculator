@@ -1,10 +1,11 @@
 id: report
 title: Report
+icon: DocumentTextIcon
 milestones:
-  - { name: "Research", offset_days: -21 }
-  - { name: "Outline",  offset_days: -14 }
-  - { name: "Draft",    offset_days: -10 }
-  - { name: "Revise",   offset_days: -5 }
-  - { name: "Finalise", offset_days: -2 }
+  - { name: "Research", effort_percent: 20 }
+  - { name: "Outline",  effort_percent: 20 }
+  - { name: "Draft",    effort_percent: 25 }
+  - { name: "Revise",   effort_percent: 20 }
+  - { name: "Finalise", effort_percent: 15 }
 defaults:
   planning_window_days: 28

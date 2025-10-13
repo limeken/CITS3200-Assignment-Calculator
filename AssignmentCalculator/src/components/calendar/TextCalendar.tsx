@@ -1,78 +1,92 @@
-import React, { useState, useEffect } from "react";
-import type { AssignmentCalendar } from "./CalendarTypes.ts";
+import React, { useState, useEffect, useMemo } from "react";
+import type { Assignment, AssignmentCalendar } from "./CalendarTypes.ts";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/solid";
 import {DocumentIcon, XMarkIcon, TagIcon } from '@heroicons/react/24/outline';
+import { useAssignmentTypeLibrary } from '../../providers/assignmentTypeHooks.ts';
 
-import { assignmentTypes } from "../testdata.ts";
 
 // This component displays the steps for valid assignments, in top-down order
-const AssignmentStepsComponent: React.FC<{assignment:AssignmentCalendar|null}> = ({assignment}) => {
+const AssignmentStepsComponent: React.FC<{ assignment: AssignmentCalendar | null; assignmentMap: Record<string, Assignment> }> = ({ assignment, assignmentMap }) => {
     // Keeps track of what step is currently open
-    const [openStep, setOpenStep] = useState<number|null>(0);
+    const [openStep, setOpenStep] = useState<number | null>(0);
 
     // Reset the step count every time a new assignment is shown
-    useEffect(() => {setOpenStep(0);}, [assignment]);
-    
-    // This maps the selected assignment with its assignment type
-    const assignmentType = assignment ? assignmentTypes[assignment.assignmentType] : null;
-    if(assignment != null){
-        return (
-            <div className={`flex items-center justify-center bg-slate-200 rounded-xl shadow-soft p-4 w-4/5`}>
-                <div className="size-full p-4 rounded-xl flex flex-col items-center border-3 border-slate-300 relative">
-                    <h1 className="font-bold text-xl mb-4">{assignment.unitCode} - {assignment.name}</h1>
-                    <div className = "flex flex-col gap-2 items-center w-3/4">
-                    {/* This creates a descending sequence of step elements to show*/}
-                    {assignmentType!.events.map((step, index)=>
+    useEffect(() => { setOpenStep(0); }, [assignment]);
+
+    const assignmentType = (() => {
+        if (!assignment) return null;
+        const key = assignment.assignmentType ?? '';
+        return assignmentMap[key.toLowerCase()] ?? assignmentMap[key] ?? null;
+    })();
+
+    if (!assignment || !assignmentType) {
+        return null;
+    }
+
+    return (
+        <div className={`flex items-center justify-center bg-slate-200 rounded-xl shadow-soft p-4 w-4/5`}>
+            <div className="size-full p-4 rounded-xl flex flex-col items-center border-3 border-slate-300 relative">
+                <h1 className="font-bold text-xl mb-4">{assignment.unitCode} - {assignment.name}</h1>
+                <div className="flex flex-col gap-2 items-center w-3/4">
+                    {assignmentType.events.map((step, index) => (
                         <div key={index} className="flex flex-col w-full">
-                            {/* Element that when clicked shows the dot points for a given step */}
-                            {/* Panel that is shown for a given step when selected */}
                             <div className="flex flex-col gap-4 rounded-xl">
-                                <button 
-                                className="bg-uwaBlue text-white text-lg rounded-xl shadow-lg w-full h-10 flex items-center justify-left pl-4 gap-2 relative"
-                                onClick={()=>openStep===index?setOpenStep(null):setOpenStep(index)}
+                                <button
+                                    className="bg-uwaBlue text-white text-lg rounded-xl shadow-lg w-full h-10 flex items-center justify-left pl-4 gap-2 relative"
+                                    onClick={() => (openStep === index ? setOpenStep(null) : setOpenStep(index))}
                                 >
-                                    <span className="font-semibold">Step {index+1}: {step.name}</span>
-                                    {index===openStep?<ChevronUpIcon className="w-5 h-5 absolute right-5"/>:<ChevronDownIcon className="w-5 h-5 absolute right-5"/>}
+                                    <span className="font-semibold">Step {index + 1}: {step.name}</span>
+                                    {index === openStep ? (
+                                        <ChevronUpIcon className="w-5 h-5 absolute right-5" />
+                                    ) : (
+                                        <ChevronDownIcon className="w-5 h-5 absolute right-5" />
+                                    )}
                                 </button>
-                                <div className={`flex flex-col gap-4 w-full transition-all duration-300 ease-in-out origin-top overflow-hidden
-                                    ${index === openStep ? "max-h-500" : "max-h-0"}`}>
+                                <div
+                                    className={`flex flex-col gap-4 w-full transition-all duration-300 ease-in-out origin-top overflow-hidden
+                                    ${index === openStep ? "max-h-500" : "max-h-0"}`}
+                                >
                                     <div className="p-5 bg-white rounded-xl">
                                         <ul className="flex list-disc flex-col gap-3 pl-4 text-md">
-                                            {/* Lists all the dot points within a given step's panel */}
-                                            {step.instructions && step.instructions.map((dotpoint,id)=>
+                                            {step.instructions && step.instructions.map((dotpoint, id) => (
                                                 <li key={id}>{dotpoint}</li>
-                                            )}
+                                            ))}
                                         </ul>
                                     </div>
-
-                                    {/* Only show additional resources when available */}
-                                    {step.resources && step.resources.length > 0?
-                                    <div className="p-5 bg-white rounded-xl">
-                                        <h1 className="font-bold">Additional Resources:</h1>
-                                        <ul className="mt-2 flex list-disc flex-col gap-3 pl-4 text-md">
-                                            {/* Lists all Additional Resources */}
-                                            {step.resources.map((resource,id)=>
-                                                <li key={id}>{resource}</li>
-                                            )}
-                                        </ul>
-                                    </div>
-                                    :null}
+                                    {step.resources && step.resources.length > 0 ? (
+                                        <div className="p-5 bg-white rounded-xl">
+                                            <h1 className="font-bold">Additional Resources:</h1>
+                                            <ul className="mt-2 flex list-disc flex-col gap-3 pl-4 text-md">
+                                                {step.resources.map((resource, id) => (
+                                                    <li key={id}>{resource}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ) : null}
                                 </div>
                             </div>
                         </div>
-                    )}
-                    </div>
+                    ))}
                 </div>
             </div>
-        )
-    }
-    // Error case when there exists no assignment to show
-    else{return null;}
-}
+        </div>
+    );
+};
+
 
 // Main component representing the textual unit format
 const TextCalendar: React.FC<{show:boolean; assignments:Record<string, AssignmentCalendar[]>}> = ({show, assignments}) => {
+    const{ data: library } = useAssignmentTypeLibrary();
+    const assignmentMap = useMemo<Record<string, Assignment>>(() => {
+        const map: Record<string, Assignment> = {};
+        (library?.assignments ?? []).forEach((assignment) => {
+            map[assignment.id] = assignment;
+            map[assignment.name] = assignment;
+            map[assignment.name.toLowerCase()] = assignment;
+        });
+        return map;
+    }, [library]);
     const[currentAssignment, setCurrentAssignment] = useState<AssignmentCalendar|null>(null);
 
     // Rendered only when assignments are available
@@ -131,7 +145,7 @@ const TextCalendar: React.FC<{show:boolean; assignments:Record<string, Assignmen
                         </TabPanels>
                     </div>
                 </TabGroup>
-                <AssignmentStepsComponent assignment={currentAssignment}/>
+                <AssignmentStepsComponent assignment={currentAssignment} assignmentMap={assignmentMap} />
             </section>
         )
     }
