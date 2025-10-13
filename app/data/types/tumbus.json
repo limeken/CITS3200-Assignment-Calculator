@@ -1,0 +1,12 @@
+{
+  "id": "tumbus",
+  "title": "TUMBUS",
+  "icon": "DocumentTextIcon",
+  "milestones": [
+    {
+      "name": "tumbus",
+      "effort_percent": 10,
+      "description": "this is trumbus"
+    }
+  ]
+}

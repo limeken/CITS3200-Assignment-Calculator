@@ -1,0 +1,12 @@
+{
+  "id": "tmp",
+  "title": "welp",
+  "icon": "AcademicCapIcon",
+  "milestones": [
+    {
+      "name": "temp milestone",
+      "effort_percent": 100,
+      "description": "idk"
+    }
+  ]
+}

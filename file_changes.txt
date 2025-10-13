@@ -1,0 +1,634 @@
+-- 22f7afa 2025-10-13 maxwell
+120	0	AssignmentCalculator/CLAUDE.md
+0	21	AssignmentCalculator/src/api.ts
+0	129	AssignmentCalculator/src/components/AssignmentCalendar.tsx
+0	26	AssignmentCalculator/src/components/FormatSwitch.tsx
+0	62	AssignmentCalculator/src/components/NewAssignmentButton.tsx
+0	51	AssignmentCalculator/src/components/NotificationBanner.tsx
+0	54	AssignmentCalculator/src/components/PlannerDemo.tsx
+12	12	AssignmentCalculator/src/components/Submission.tsx
+5	18	AssignmentCalculator/src/components/calendar/Calendar.tsx
+14	7	AssignmentCalculator/src/components/calendar/CalendarTypes.ts
+5	5	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+0	9	AssignmentCalculator/src/components/calendar/SemesterSelector.tsx
+21	9	AssignmentCalculator/src/providers/assignmentTypeHooks.ts
+0	27	AssignmentCalculator/src/providers/hooks.ts
+0	36	AssignmentCalculator/src/providers/semesterHooks.ts
+2	2	AssignmentCalculator/src/services/plan.ts
+0	14	AssignmentCalculator/src/services/semesters.ts
+0	14	AssignmentCalculator/src/types/semesters.ts
+-	-	app/__pycache__/__init__.cpython-313.pyc
+5	0	app/data/semesters/semester-1.yaml
+5	0	app/data/semesters/semester-2.yaml
+3	0	app/data/types/_metadata.json
+12	0	app/data/types/goongis.json
+23	0	app/data/types/report.json
+18	0	app/data/types/thing.json
+-	-	app/routes/__pycache__/health.cpython-313.pyc
+-	-	app/routes/__pycache__/plan.cpython-313.pyc
+23	0	data/types/essay_2025.yaml
+
+-- 6a26c2e 2025-10-13 maxwell
+-- 21d857b 2025-10-13 maxwell
+-- 80fd53d 2025-10-13 superglubglub
+-- 5dc7eef 2025-10-13 maxwell
+6	0	AssignmentCalculator/.gitignore
+271	0	AssignmentCalculator/public/cache.ts
+38	0	AssignmentCalculator/src/components/assignmentTypeIcons.ts
+271	0	AssignmentCalculator/src/generated/cache.ts
+122	0	AssignmentCalculator/src/providers/assignmentTypeHooks.ts
+36	0	AssignmentCalculator/src/providers/semesterHooks.ts
+30	0	AssignmentCalculator/src/services/assignmentTypes.ts
+14	0	AssignmentCalculator/src/services/semesters.ts
+28	0	AssignmentCalculator/src/types/assignmentTypes.ts
+14	0	AssignmentCalculator/src/types/semesters.ts
+29	0	AssignmentCalculator/src/utils/assignmentTypeIcons.ts
+39	0	AssignmentCalculator/src/utils/assignmentTypes.ts
+55	0	app/ROUTES.md
+48	0	app/data/types/essay.json
+48	0	app/data/types/group_project.json
+43	0	app/data/types/lab_report.json
+48	0	app/data/types/presentation.json
+33	0	app/data/types/reflective_writing.json
+70	0	app/routes/semesters.py
+15	0	app/services/__init__.py
+140	0	app/services/semester_store.py
+27	0	app/tests/conftest.py
+93	0	app/tests/test_types.py
+76	0	scripts/build_assignment_cache.py
+
+-- 982fa28 2025-10-13 maxwell
+0	4	AssignmentCalculator/src/components/AssignmentModal.tsx
+0	275	AssignmentCalculator/src/components/Calendar.tsx
+2	2	AssignmentCalculator/src/components/calendar/Calendar.tsx
+0	10	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+
+-- 5252482 2025-10-13 maxwell
+-- 220e19a 2025-10-13 maxwell
+-- b50648f 2025-10-13 maxwell
+18	60	AssignmentCalculator/README.md
+3	2	AssignmentCalculator/package.json
+41	11	AssignmentCalculator/src/components/Submission.tsx
+2	2	AssignmentCalculator/src/components/calendar/CalendarTypes.ts
+15	2	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+64	50	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+0	124	AssignmentCalculator/src/components/testdata.ts
+5	1	README.md
+6	5	app/data/essay.yaml
+4	3	app/data/quiz.yaml
+6	5	app/data/report.yaml
+69	45	app/routes/admin.py
+108	13	app/routes/types.py
+22	6	app/services/generator.py
+83	27	app/services/type_store.py
+
+-- 657d90b 2025-10-13 limeken
+13	7	AssignmentCalculator/src/components/Submission.tsx
+
+-- 2ef37b7 2025-10-13 MagMicro
+2	15	AssignmentCalculator/src/App.tsx
+110	20	AssignmentCalculator/src/components/Submission.tsx
+7	15	AssignmentCalculator/src/components/calendar/Calendar.tsx
+3	2	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+
+-- 4179c6b 2025-10-13 limeken
+6	3	AssignmentCalculator/src/components/AssignmentModal.tsx
+12	5	AssignmentCalculator/src/components/Submission.tsx
+21	18	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+13	11	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+
+-- ce8603a 2025-10-13 Lucas Veloso
+8	0	app/data/essay.yaml
+6	0	app/data/quiz.yaml
+
+-- 9a2b05c 2025-10-13 Lucas Veloso
+5	0	app/__init__.py
+-	-	app/__pycache__/__init__.cpython-313.pyc
+0	0	app/data/essay.yaml
+0	0	app/data/quiz.yaml
+10	0	app/data/report.yaml
+210	0	app/routes/admin.py
+46	0	app/routes/types.py
+29	15	app/services/generator.py
+81	0	app/services/type_store.py
+
+-- b266739 2025-10-13 MagMicro
+80	115	AssignmentCalculator/src/components/AssignmentModal.tsx
+59	23	AssignmentCalculator/src/components/Submission.tsx
+29	22	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+84	84	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+4	2	AssignmentCalculator/src/providers/NotificationProvider.tsx
+
+-- af46059 2025-10-12 maxwell
+2	2	AssignmentCalculator/src/components/FormatSwitch.tsx
+4	4	AssignmentCalculator/src/components/calendar/CalendarOptions.tsx
+
+-- a799710 2025-10-12 maxwell
+1	1	AssignmentCalculator/src/components/Instructions.tsx
+1	1	AssignmentCalculator/src/components/NewAssignmentButton.tsx
+1	1	AssignmentCalculator/src/components/calendar/CalendarOptions.tsx
+0	0	AssignmentCalculator/src/styles/{tailwindStyles.ts => styles.ts}
+
+-- aedebee 2025-10-12 maxwell
+-	-	AssignmentCalculator/public/{PlusJakartaSans-VariableFont_wght.ttf => PlusJakartaSans.ttf}
+36	14	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+12	2	AssignmentCalculator/src/index.css
+29	0	AssignmentCalculator/src/styles/tailwindStyles.ts
+
+-- a291e46 2025-10-12 limeken
+2	2	AssignmentCalculator/src/index.css
+
+-- c5683fd 2025-10-11 maxwell
+-- 6df9953 2025-10-11 maxwell
+-	-	AssignmentCalculator/public/PlusJakartaSans-VariableFont_wght.ttf
+
+-- 3eeb2ab 2025-10-11 limeken
+9	3	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+
+-- ed7b01b 2025-10-10 limeken
+-- fe9b728 2025-10-10 limeken
+-- 815705c 2025-10-10 limeken
+1	1	AssignmentCalculator/src/components/Instructions.tsx
+48	21	AssignmentCalculator/src/components/Submission.tsx
+188	66	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+
+-- 20270f3 2025-10-10 Lucas Veloso
+182	89	app/services/pdf.py
+
+-- 47197a3 2025-10-10 Lucas Veloso
+17	11	AssignmentCalculator/src/App.tsx
+69	0	AssignmentCalculator/src/components/DevExportTest.tsx
+7	5	app/__init__.py
+-	-	app/__pycache__/__init__.cpython-313.pyc
+-	-	app/routes/__pycache__/health.cpython-313.pyc
+-	-	app/routes/__pycache__/plan.cpython-313.pyc
+1	0	app/routes/export.py
+43	126	app/routes/plan.py
+55	27	app/services/generator.py
+144	55	app/services/pdf.py
+
+-- 5a21c9d 2025-10-08 maxwell
+-- 19e58ef 2025-10-08 maxwell
+-- 9db1f3f 2025-10-08 maxwell
+-- 8a6dcb6 2025-10-08 maxwell
+-- cbf20c8 2025-10-07 maxwell
+2	1	AssignmentCalculator/src/components/calendar/Calendar.tsx
+22	10	AssignmentCalculator/src/components/calendar/CalendarTypes.ts
+
+-- e534e9d 2025-10-07 MagMicro
+1	1	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+
+-- 8e606f6 2025-10-07 maxwell
+2	17	AssignmentCalculator/src/App.tsx
+13	15	AssignmentCalculator/src/components/Submission.tsx
+1	1	AssignmentCalculator/src/components/calendar/Calendar.tsx
+10	2	AssignmentCalculator/src/components/calendar/CalendarOptions.tsx
+37	23	AssignmentCalculator/src/components/calendar/CalendarTypes.ts
+5	2	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+8	9	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+3	2	AssignmentCalculator/src/hooks/usePlan.ts
+2	1	AssignmentCalculator/src/providers/ModalProvider.tsx
+1	0	AssignmentCalculator/src/providers/NotificationProvider.tsx
+
+-- ea2813a 2025-10-07 maxwell
+3	24	AssignmentCalculator/src/App.tsx
+19	54	AssignmentCalculator/src/components/AssignmentModal.tsx
+1	1	AssignmentCalculator/src/components/Instructions.tsx
+141	139	AssignmentCalculator/src/components/Submission.tsx
+1	1	AssignmentCalculator/src/components/calendar/Calendar.tsx
+1	4	AssignmentCalculator/src/components/calendar/CalendarOptions.tsx
+94	67	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+
+-- f33d486 2025-10-07 MagMicro
+6	3	AssignmentCalculator/src/components/Submission.tsx
+1	1	AssignmentCalculator/src/components/calendar/CalendarOptions.tsx
+23	19	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+68	43	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+2	1	AssignmentCalculator/src/components/testdata.ts
+
+-- 34a8026 2025-10-07 maxwell
+-- 2f7c318 2025-10-07 superglubglub
+-- ab25e77 2025-10-07 maxwell
+-- 65d6c26 2025-10-07 superglubglub
+-- b228e4c 2025-10-07 maxwell
+2	18	AssignmentCalculator/src/App.tsx
+8	2	AssignmentCalculator/src/components/Submission.tsx
+1	5	AssignmentCalculator/src/components/UniversityBanner.tsx
+63	43	AssignmentCalculator/src/components/calendar/Calendar.tsx
+1	0	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+14	10	AssignmentCalculator/src/main.tsx
+107	0	AssignmentCalculator/src/providers/NotificationProvider.tsx
+
+-- 56911cd 2025-10-07 maxwell
+-- 08a7111 2025-10-07 MagMicro
+22	20	AssignmentCalculator/src/components/Submission.tsx
+53	49	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+
+-- f942384 2025-10-07 MagMicro
+31	15	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+
+-- 7c95f72 2025-10-06 Lucas Veloso
+29	9	app/__init__.py
+-	-	app/__pycache__/__init__.cpython-313.pyc
+-	-	app/routes/__pycache__/health.cpython-313.pyc
+-	-	app/routes/__pycache__/plan.cpython-313.pyc
+50	20	app/routes/export.py
+100	20	app/routes/plan.py
+29	39	app/services/generator.py
+24	0	app/services/ics.py
+63	79	app/services/pdf.py
+10	0	app/tests/test_plan.py
+0	44	plan_c41caa34-1b99-41dc-8e62-a20c4ec75ea3.ics
+-	-	requirements.txt
+
+-- 7d01ead 2025-10-06 maxwell
+3464	395	AssignmentCalculator/package-lock.json
+23	97	AssignmentCalculator/src/App.tsx
+22	22	AssignmentCalculator/src/components/AssignmentModal.tsx
+21	12	AssignmentCalculator/src/components/Instructions.tsx
+3	2	AssignmentCalculator/src/components/NewAssignmentButton.tsx
+98	74	AssignmentCalculator/src/components/Submission.tsx
+25	12	AssignmentCalculator/src/components/SubmissionBanner.tsx
+14	12	AssignmentCalculator/src/components/UniversityBanner.tsx
+101	19	AssignmentCalculator/src/components/calendar/Calendar.tsx
+73	38	AssignmentCalculator/src/components/calendar/CalendarOptions.tsx
+51	47	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+133	62	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+23	9	AssignmentCalculator/src/index.css
+3	2	AssignmentCalculator/src/providers/ModalProvider.tsx
+
+-- 6fdd761 2025-10-06 MagMicro
+13	7	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+
+-- afbdad8 2025-10-06 Lucas Veloso
+3464	395	AssignmentCalculator/package-lock.json
+22	15	AssignmentCalculator/src/App.tsx
+54	0	AssignmentCalculator/src/components/PlannerDemo.tsx
+34	0	AssignmentCalculator/src/hooks/usePlan.ts
+7	2	AssignmentCalculator/src/index.css
+148	0	AssignmentCalculator/src/services/plan.ts
+1	1	AssignmentCalculator/vite.config.ts
+
+-- aa68528 2025-10-05 MagMicro
+19	8	AssignmentCalculator/src/App.tsx
+12	11	AssignmentCalculator/src/components/{SubmissionBanner.tsx => NotificationBanner.tsx}
+94	22	AssignmentCalculator/src/components/Submission.tsx
+4	4	AssignmentCalculator/src/components/UniversityBanner.tsx
+5	4	AssignmentCalculator/src/components/calendar/Calendar.tsx
+11	4	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+
+-- a8eb00d 2025-10-05 MagMicro
+5	4	AssignmentCalculator/src/App.tsx
+40	27	AssignmentCalculator/src/components/Submission.tsx
+48	21	AssignmentCalculator/src/components/calendar/Calendar.tsx
+47	16	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+
+-- 51d23e5 2025-10-04 MagMicro
+17	11	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+
+-- 3310237 2025-10-04 Jacob Bennett
+5	1	AssignmentCalculator/src/components/calendar/Calendar.tsx
+1	1	AssignmentCalculator/src/components/calendar/CalendarOptions.tsx
+66	0	AssignmentCalculator/src/components/calendar/PriorityQueue.tsx
+1	1	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+
+-- 0f14bf4 2025-10-03 MagMicro
+2	2	AssignmentCalculator/src/components/calendar/Calendar.tsx
+15	4	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+
+-- 9a76ec1 2025-10-03 MagMicro
+12	9	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+
+-- 87c4fce 2025-10-02 Jacob Bennett
+80	49	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+
+-- 3c8e158 2025-10-01 maxwell
+-- 9b9fcd8 2025-10-01 limeken
+2	2	AssignmentCalculator/src/App.tsx
+3	3	AssignmentCalculator/src/components/UniversityBanner.tsx
+
+-- 2466069 2025-10-01 limeken
+97	21	AssignmentCalculator/src/App.tsx
+275	0	AssignmentCalculator/src/components/Calendar.tsx
+26	0	AssignmentCalculator/src/components/FormatSwitch.tsx
+61	0	AssignmentCalculator/src/components/NewAssignmentButton.tsx
+1	1	AssignmentCalculator/src/components/UniversityBanner.tsx
+
+-- fdf9e87 2025-10-01 maxwell
+-- cdd44cf 2025-10-01 superglubglub
+-- 8535740 2025-10-01 maxwell
+-- a577acc 2025-10-01 superglubglub
+-- e708c3b 2025-10-01 maxwell
+1	1	AssignmentCalculator/src/main.tsx
+
+-- fd6a43d 2025-10-01 maxwell
+-- af2c462 2025-10-01 maxwell
+-- cd5959d 2025-10-01 superglubglub
+-- c5cea75 2025-10-01 maxwell
+289	2989	AssignmentCalculator/package-lock.json
+
+-- c07009e 2025-10-01 maxwell
+-- 4641379 2025-10-01 limeken
+2	2	AssignmentCalculator/src/App.tsx
+3	3	AssignmentCalculator/src/components/UniversityBanner.tsx
+
+-- d236b8b 2025-10-01 limeken
+24	8	AssignmentCalculator/src/App.tsx
+126	26	AssignmentCalculator/src/components/Calendar.tsx
+1	1	AssignmentCalculator/src/components/FormatSwitch.tsx
+45	19	AssignmentCalculator/src/components/NewAssignmentButton.tsx
+1	1	AssignmentCalculator/src/components/UniversityBanner.tsx
+
+-- 2999ea7 2025-10-01 Jacob Bennett
+4	5	AssignmentCalculator/package-lock.json
+1	1	AssignmentCalculator/package.json
+5	4	AssignmentCalculator/src/components/Submission.tsx
+68	6	AssignmentCalculator/src/components/calendar/TextCalendar.tsx
+1	1	AssignmentCalculator/src/components/testdata.ts
+
+-- 13a1ca2 2025-09-29 maxwell
+4	5	AssignmentCalculator/src/components/Submission.tsx
+77	22	AssignmentCalculator/src/components/calendar/CalendarOptions.tsx
+28	0	AssignmentCalculator/src/components/calendar/CalendarTypes.ts
+
+-- db29c5c 2025-09-29 maxwell
+-- b5d2fdd 2025-09-29 maxwell
+27	0	AssignmentCalculator/package-lock.json
+1	0	AssignmentCalculator/package.json
+21	0	AssignmentCalculator/src/api.ts
+1	1	AssignmentCalculator/src/components/Instructions.tsx
+22	17	AssignmentCalculator/src/components/Submission.tsx
+4	13	AssignmentCalculator/src/components/calendar/Calendar.tsx
+70	0	AssignmentCalculator/src/components/calendar/CalendarOptions.tsx
+115	72	AssignmentCalculator/src/components/calendar/CalendarTypes.ts
+0	26	AssignmentCalculator/src/components/calendar/FormatSwitch.tsx
+9	0	AssignmentCalculator/src/components/calendar/SemesterSelector.tsx
+11	4	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+11	4	AssignmentCalculator/src/main.tsx
+1	1	AssignmentCalculator/src/{components => providers}/ModalProvider.tsx
+12	0	AssignmentCalculator/src/providers/client.ts
+27	0	AssignmentCalculator/src/providers/hooks.ts
+
+-- 8715d51 2025-09-26 maxwell
+22	82	AssignmentCalculator/src/App.tsx
+1	1	AssignmentCalculator/src/components/AssignmentModal.tsx
+0	175	AssignmentCalculator/src/components/Calendar.tsx
+59	0	AssignmentCalculator/src/components/Instructions.tsx
+0	65	AssignmentCalculator/src/components/InstructionsModal.tsx
+82	0	AssignmentCalculator/src/components/ModalProvider.tsx
+0	35	AssignmentCalculator/src/components/NewAssignmentButton.tsx
+329	0	AssignmentCalculator/src/components/Submission.tsx
+0	293	AssignmentCalculator/src/components/SubmissionModal.tsx
+69	0	AssignmentCalculator/src/components/calendar/Calendar.tsx
+35	5	AssignmentCalculator/src/components/{ => calendar}/CalendarTypes.ts
+0	0	AssignmentCalculator/src/components/{ => calendar}/FormatSwitch.tsx
+3	3	AssignmentCalculator/src/components/{TextualFormat.tsx => calendar/TextCalendar.tsx}
+173	0	AssignmentCalculator/src/components/calendar/VisualCalendar.tsx
+1	1	AssignmentCalculator/src/components/testdata.ts
+12	1	AssignmentCalculator/src/main.tsx
+
+-- 665a601 2025-09-24 MagMicro
+1	1	AssignmentCalculator/src/App.tsx
+39	19	AssignmentCalculator/src/components/Calendar.tsx
+9	3	AssignmentCalculator/src/components/TextualFormat.tsx
+1	1	AssignmentCalculator/src/index.css
+
+-- 8e87a7a 2025-09-23 MagMicro
+0	34	AssignmentCalculator/src/components/VisualFormat.tsx
+
+-- 1b21895 2025-09-23 MagMicro
+3	14	AssignmentCalculator/src/App.tsx
+12	5	AssignmentCalculator/src/components/Calendar.tsx
+0	27	AssignmentCalculator/src/components/CalendarFormat.tsx
+0	20	AssignmentCalculator/src/components/FormatTransition.tsx
+2	4	AssignmentCalculator/src/components/TextualFormat.tsx
+34	0	AssignmentCalculator/src/components/VisualFormat.tsx
+
+-- 0ac1ad8 2025-09-23 Lucas Veloso
+-	-	app/__pycache__/__init__.cpython-313.pyc
+-	-	app/routes/__pycache__/plan.cpython-313.pyc
+
+-- bc73f40 2025-09-23 Lucas Veloso
+43	20	app/routes/plan.py
+80	9	app/services/generator.py
+1	0	run.py
+
+-- ab5e338 2025-09-23 Lucas Veloso
+11	0	.gitignore
+
+-- a3ff3a5 2025-09-23 maxwell
+9	2	AssignmentCalculator/src/App.tsx
+34	32	AssignmentCalculator/src/components/Calendar.tsx
+20	0	AssignmentCalculator/src/components/FormatTransition.tsx
+5	18	AssignmentCalculator/src/components/TextualFormat.tsx
+
+-- 56a07a4 2025-09-23 maxwell
+2	1	AssignmentCalculator/src/App.tsx
+8	2	AssignmentCalculator/src/components/SubmissionBanner.tsx
+
+-- 73687a4 2025-09-22 Lucas Veloso
+10	0	app/__init__.py
+32	0	app/routes/export.py
+85	0	app/services/pdf.py
+-	-	requirements.txt
+
+-- 98cd7d3 2025-09-22 MagMicro
+58	37	AssignmentCalculator/src/components/SubmissionModal.tsx
+
+-- c4f55c3 2025-09-22 MagMicro
+27	77	AssignmentCalculator/src/App.tsx
+35	0	AssignmentCalculator/src/components/NewAssignmentButton.tsx
+0	232	AssignmentCalculator/src/components/StudyPlanInputFields.tsx
+232	85	AssignmentCalculator/src/components/SubmissionModal.tsx
+
+-- 2944cac 2025-09-21 Lucas Veloso
+23	0	app/__init__.py
+-	-	app/__pycache__/__init__.cpython-313.pyc
+-	-	app/routes/__pycache__/health.cpython-313.pyc
+-	-	app/routes/__pycache__/plan.cpython-313.pyc
+7	0	app/routes/health.py
+58	0	app/routes/plan.py
+12	0	app/services/generator.py
+1	1	package-lock.json
+44	0	plan_c41caa34-1b99-41dc-8e62-a20c4ec75ea3.ics
+6	0	run.py
+
+-- a20266c 2025-09-21 Jacob Bennett
+-- 63f80f5 2025-09-21 Jacob Bennett
+-- dcf10a4 2025-09-21 Lucas Veloso
+117	0	app.py
+
+-- ebc9d12 2025-09-21 maxwell
+1	1	AssignmentCalculator/src/components/CalendarTypes.ts
+
+-- a0ddace 2025-09-21 maxwell
+2987	287	AssignmentCalculator/package-lock.json
+1	0	AssignmentCalculator/package.json
+15	44	AssignmentCalculator/src/App.tsx
+24	76	AssignmentCalculator/src/components/AssignmentModal.tsx
+5	5	AssignmentCalculator/src/components/Calendar.tsx
+36	8	AssignmentCalculator/src/components/CalendarTypes.ts
+12	6	AssignmentCalculator/src/components/StudyPlanInputFields.tsx
+118	62	AssignmentCalculator/src/components/testdata.ts
+
+-- 8c11c27 2025-09-20 Lucas Veloso
+272	156	AssignmentCalculator/src/App.tsx
+18	15	AssignmentCalculator/src/components/SubmissionModal.tsx
+12	4	AssignmentCalculator/vite.config.ts
+249	0	app.py
+-	-	requirements.txt
+
+-- 5b6b6a9 2025-09-18 MagMicro
+16	7	AssignmentCalculator/src/App.tsx
+27	0	AssignmentCalculator/src/components/CalendarFormat.tsx
+3	3	AssignmentCalculator/src/components/FormatSwitch.tsx
+3	3	AssignmentCalculator/src/components/SubmissionBanner.tsx
+24	0	AssignmentCalculator/src/components/TextualFormat.tsx
+
+-- 20e643f 2025-09-18 MagMicro
+5	1	AssignmentCalculator/src/App.tsx
+26	0	AssignmentCalculator/src/components/FormatSwitch.tsx
+
+-- 4da3b42 2025-09-18 MagMicro
+1	7	AssignmentCalculator/src/App.tsx
+0	12	AssignmentCalculator/src/components/ApplicationHeading.tsx
+3	3	AssignmentCalculator/src/components/SubmissionBanner.tsx
+15	3	AssignmentCalculator/src/components/UniversityBanner.tsx
+1	1	AssignmentCalculator/src/index.css
+
+-- 95ad038 2025-09-18 MagMicro
+5	3	AssignmentCalculator/src/App.tsx
+1	1	AssignmentCalculator/src/components/ApplicationHeading.tsx
+32	0	AssignmentCalculator/src/components/SubmissionBanner.tsx
+
+-- f51b3d3 2025-09-18 MagMicro
+23	16	AssignmentCalculator/src/components/AssignmentModal.tsx
+
+-- bdd4ef2 2025-09-16 maxwell
+38	0	AssignmentCalculator/package-lock.json
+1	0	AssignmentCalculator/package.json
+17	3	AssignmentCalculator/src/App.tsx
+3	4	AssignmentCalculator/src/components/Calendar.tsx
+14	13	AssignmentCalculator/src/components/CalendarTypes.ts
+9	6	AssignmentCalculator/src/components/StudyPlanInputFields.tsx
+1	1	AssignmentCalculator/src/components/UniversityBanner.tsx
+
+-- 5908c84 2025-09-16 maxwell
+39	24	AssignmentCalculator/src/App.tsx
+264	0	AssignmentCalculator/src/components/AssignmentModal.tsx
+0	196	AssignmentCalculator/src/components/AssignmentPopUp.tsx
+1	1	AssignmentCalculator/src/components/Calendar.tsx
+65	0	AssignmentCalculator/src/components/InstructionsModal.tsx
+0	68	AssignmentCalculator/src/components/InstructionsPage.tsx
+51	30	AssignmentCalculator/src/components/StudyPlanInputFields.tsx
+
+-- c5d952d 2025-09-16 superglubglub
+-- 102ef32 2025-09-16 maxwell
+-- 5bdd3d0 2025-09-16 superglubglub
+-- 66adaa4 2025-09-16 maxwell
+1	79	AssignmentCalculator/src/App.tsx
+84	5	AssignmentCalculator/src/components/AssignmentPopUp.tsx
+
+-- c69fae7 2025-09-16 maxwell
+27	11	AssignmentCalculator/src/App.tsx
+54	24	AssignmentCalculator/src/components/StudyPlanInputFields.tsx
+
+-- ba603b5 2025-09-16 MagMicro
+22	10	AssignmentCalculator/src/components/AssignmentPopUp.tsx
+
+-- dfb5747 2025-09-16 MagMicro
+2	2	AssignmentCalculator/src/App.tsx
+38	16	AssignmentCalculator/src/components/AssignmentPopUp.tsx
+
+-- ae7de9e 2025-09-15 maxwell
+8	5	AssignmentCalculator/src/App.tsx
+3	0	AssignmentCalculator/src/components/CalendarTypes.ts
+
+-- 5622750 2025-09-15 maxwell
+228	0	AssignmentCalculator/package-lock.json
+1	0	AssignmentCalculator/package.json
+43	27	AssignmentCalculator/src/App.tsx
+93	50	AssignmentCalculator/src/components/Calendar.tsx
+6	2	AssignmentCalculator/src/components/CalendarTypes.ts
+125	0	AssignmentCalculator/src/components/SubmissionModal.tsx
+
+-- e38e02e 2025-09-15 MagMicro
+2	2	AssignmentCalculator/src/App.tsx
+30	19	AssignmentCalculator/src/components/AssignmentPopUp.tsx
+
+-- 046766f 2025-09-11 MagMicro
+80	3	AssignmentCalculator/src/App.tsx
+16	78	AssignmentCalculator/src/components/AssignmentPopUp.tsx
+
+-- 030e7a4 2025-09-11 MagMicro
+2	0	AssignmentCalculator/src/App.tsx
+134	0	AssignmentCalculator/src/components/AssignmentPopUp.tsx
+1	1	AssignmentCalculator/src/index.css
+
+-- 745ec36 2025-09-10 maxwell
+64	83	AssignmentCalculator/src/App.tsx
+9	10	AssignmentCalculator/src/components/Calendar.tsx
+9	4	AssignmentCalculator/src/components/CalendarTypes.ts
+89	44	AssignmentCalculator/src/components/StudyPlanInputFields.tsx
+
+-- fbf4bd3 2025-09-08 maxwell
+14	25	AssignmentCalculator/src/App.tsx
+18	11	AssignmentCalculator/src/components/Calendar.tsx
+28	7	AssignmentCalculator/src/components/StudyPlanInputFields.tsx
+
+-- 12cb38a 2025-09-03 maxwell
+28	0	AssignmentCalculator/package-lock.json
+3	0	AssignmentCalculator/package.json
+36	0	AssignmentCalculator/public/fake_calendar.ics
+21	2	AssignmentCalculator/src/App.tsx
+4	2	AssignmentCalculator/src/components/AssignmentCalendar.tsx
+98	0	AssignmentCalculator/src/components/Calendar.tsx
+137	0	AssignmentCalculator/src/components/CalendarTypes.ts
+1	1	AssignmentCalculator/src/components/StudyPlanInputFields.tsx
+
+-- 07f56db 2025-09-01 Jacob Bennett
+30	88	AssignmentCalculator/src/App.tsx
+106	0	AssignmentCalculator/src/components/StudyPlanInputFields.tsx
+6	0	package-lock.json
+
+-- 3f703dc 2025-08-28 MagMicro
+61	141	AssignmentCalculator/src/App.tsx
+12	0	AssignmentCalculator/src/components/ApplicationHeading.tsx
+68	0	AssignmentCalculator/src/components/InstructionsPage.tsx
+18	0	AssignmentCalculator/src/components/UniversityBanner.tsx
+
+-- faea0ca 2025-08-28 superglubglub
+10	0	AssignmentCalculator/package-lock.json
+1	0	AssignmentCalculator/package.json
+12	25	AssignmentCalculator/src/App.tsx
+127	0	AssignmentCalculator/src/components/AssignmentCalendar.tsx
+67	0	AssignmentCalculator/src/components/testdata.ts
+1	1	AssignmentCalculator/src/index.css
+
+-- caffc79 2025-08-27 superglubglub
+26	0	.gitignore
+69	0	AssignmentCalculator/README.md
+23	0	AssignmentCalculator/eslint.config.js
+13	0	AssignmentCalculator/index.html
+3967	0	AssignmentCalculator/package-lock.json
+31	0	AssignmentCalculator/package.json
+-	-	AssignmentCalculator/public/favicon.ico
+-	-	AssignmentCalculator/public/favicon.png
+1	0	AssignmentCalculator/src/App.css
+288	0	AssignmentCalculator/src/App.tsx
+33	0	AssignmentCalculator/src/index.css
+10	0	AssignmentCalculator/src/main.tsx
+1	0	AssignmentCalculator/src/vite-env.d.ts
+29	0	AssignmentCalculator/tsconfig.app.json
+7	0	AssignmentCalculator/tsconfig.json
+27	0	AssignmentCalculator/tsconfig.node.json
+11	0	AssignmentCalculator/vite.config.ts
+11	0	README.md
+
+-- b96ba85 2025-08-26 limeken
+160	0	app.py
+1	0	requirements.txt
+
+-- 9c3861c 2025-08-26 limeken
+2	0	.gitattributes
+2	0	README.md
