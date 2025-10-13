@@ -28,13 +28,13 @@ const ErrorField: React.FC<{message:string, visible:boolean}> = ({message, visib
     return (
         <div
         className={`
-            text-white w-full rounded-lg flex flex-row gap-2 items-center justify-left p-2
-            transition-opacity duration-300 border-1 border-red-400
+            text-white rounded-lg flex flex-row gap-2 items-center justify-left px-4 py-1.5
+            transition-opacity duration-300 border-1 border-red-400 my-2
             ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}
         `}
         >
-            <ExclamationTriangleIcon className="w-6 h-6 text-red-400"/>
-            <span className="text-red-400 font-semibold">{message}</span>
+            <ExclamationTriangleIcon className="w-5 h-5 text-red-400"/>
+            <span className="text-red-400 font-semibold text-sm">{message}</span>
         </div>
     )
 }
@@ -502,12 +502,18 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments, isNew, 
                     <section className="bg-white rounded-xl shadow-soft flex flex-col gap-6 w-4/5 p-5">
                         <AssessmentTypeInput />
                         <hr className="border-slate-200 w-full"/>
-                        <AssessmentDateInput error={errors[DATE] !== null} />
-                        <ErrorField message={errors[DATE] ?? ""} visible={!!errors[DATE]} />
+                        <div>
+                            <AssessmentDateInput error={errors[DATE] !== null} />
+                            <div className="px-4">
+                                <ErrorField message={errors[DATE] ?? ""} visible={!!errors[DATE]} />
+                            </div>
+                        </div>
                         <hr className="border-slate-200 w-full"/>
                         <NameField setAssignmentName={setAssignmentName} assignmentName={assignmentName} />
                         <UnitField setUnitCode={setUnitCode} unitCode={unitCode} />
-                        <ErrorField message={errors[CODENAME] ?? ""} visible={!!errors[CODENAME]} />          
+                        <div className="px-4 -mt-6">
+                            <ErrorField message={errors[CODENAME] ?? ""} visible={!!errors[CODENAME]} />
+                        </div>          
                     </section>
                     {/* Render different buttons for creation & edit pages */}
                     <div className="flex flex-row justify-center items-center gap-4">
