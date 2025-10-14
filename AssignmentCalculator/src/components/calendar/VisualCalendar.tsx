@@ -1,62 +1,91 @@
 import React, {useEffect, useState} from "react";
-import {type AssignmentCalendar, type AssignmentEvent, type CalendarColor, type Semester, downloadIcs, exportAssignmentCalendar} from "./CalendarTypes.ts";
+import {type AssignmentCalendar, type AssignmentEvent, type CalendarColor, type Semester, downloadIcs, exportAssignmentCalendar, normalizeColor} from "./CalendarTypes.ts";
 import clsx from "clsx";
 import {Popover, PopoverButton, PopoverPanel} from "@headlessui/react";
-import {ArrowDownOnSquareIcon} from "@heroicons/react/24/outline";
+import {ArrowDownOnSquareIcon, DocumentArrowDownIcon} from "@heroicons/react/24/outline";
+import { format } from "date-fns";
+import { useNotification } from "../../providers/NotificationProvider.tsx";
+import { exportAssignmentPdf } from "../../services/assignmentExport";
+import { COLOR_ACCENT, COLOR_BG100, COLOR_BG300 } from "./colorStyles";
 
 const DAYS_MS = 24 * 60 * 60 * 1000;
 
-const BG100: Record<CalendarColor, string> = {
-    red: "bg-red-100", orange: "bg-orange-100", amber: "bg-amber-100",
-    yellow: "bg-yellow-100", lime: "bg-lime-100", green: "bg-green-100",
-    emerald: "bg-emerald-100", teal: "bg-teal-100", cyan: "bg-cyan-100",
-    sky: "bg-sky-100", blue: "bg-blue-100", indigo: "bg-indigo-100",
-    violet: "bg-violet-100", purple: "bg-purple-100", fuchsia: "bg-fuchsia-100",
-    pink: "bg-pink-100", rose: "bg-rose-100",
-};
 
-// TODO: this is a terrible way to do this
-const BG300: Record<CalendarColor, string> = {
-    red: "bg-red-300", orange: "bg-orange-300", amber: "bg-amber-300",
-    yellow: "bg-yellow-300", lime: "bg-lime-300", green: "bg-green-300",
-    emerald: "bg-emerald-300", teal: "bg-teal-300", cyan: "bg-cyan-300",
-    sky: "bg-sky-300", blue: "bg-blue-300", indigo: "bg-indigo-300",
-    violet: "bg-violet-300", purple: "bg-purple-300", fuchsia: "bg-fuchsia-300",
-    pink: "bg-pink-300", rose: "bg-rose-300",
-};
+const HoverIconButton: React.FC<{
+    icon: React.ReactNode;
+    label: string;
+    onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}> = ({ icon, label, onClick }) => (
+    <div className="relative pointer-events-auto">
+        <button
+            type="button"
+            onClick={onClick}
+            className="peer flex items-center justify-center rounded-full bg-white/90 p-2 text-slate-700 shadow-md transition hover:bg-white focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-uwaBlue"
+            aria-label={label}
+        >
+            {icon}
+        </button>
+        <div className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-lg transition duration-150 ease-out peer-hover:translate-y-1 peer-hover:opacity-100 peer-focus-visible:translate-y-1 peer-focus-visible:opacity-100">
+            {label}
+        </div>
+    </div>
+);
 
 interface AssignmentDateProps {
-    uid: number;
     color: CalendarColor;
-    event?: AssignmentEvent;
+    date: Date;
+    event?: AssignmentEvent | null;
 }
 
 /* Now we're able to pass the event to the actual box itself */
 /* Non-event boxes don't have anything to read from */
-const AssignmentDate: React.FC<AssignmentDateProps> = ({ uid, color, event }) => {
+const AssignmentDate: React.FC<AssignmentDateProps> = ({ color, date, event }) => {
+    const hasEvent = Boolean(event);
+    const formattedDate = format(date, "EEE d MMM");
+    const descriptionLines = hasEvent && event?.description
+        ? event.description.split(/[;\n]/).map(line => line.trim()).filter(Boolean)
+        : [];
+
     const square = (
         <div
-            key={uid}
             className={clsx(
-                `${event ? BG300[color] : BG100[color]}`,
-                `aspect-square w-16 rounded-md shadow-md transition-all duration-150 ease-out`,
-                `hover:scale-95 cursor-pointer`,
-                event ? 'hover:ring-2 hover:ring-uwaBlue hover:brightness-110' : 'hover:brightness-105'
+                `${hasEvent ? COLOR_BG300[color] : COLOR_BG100[color]}`,
+                "group/date relative aspect-square w-16 rounded-md shadow-md transition-all duration-150 ease-out",
+                hasEvent
+                    ? "cursor-pointer hover:scale-95 hover:ring-2 hover:ring-uwaBlue hover:brightness-110"
+                    : "hover:scale-95 hover:brightness-105"
             )}
         />
     );
 
-    if (!event) return square;
-
-    // TODO: Fix popup spacing
     return (
         <Popover className="relative">
             <PopoverButton as="div">
                 {square}
             </PopoverButton>
-            <PopoverPanel anchor={"top"} transition
-                className="flex rounded-md bg-white p-2 shadow-lg transition duration-200 ease-out data-closed:scale-95 data-closed:opacity-0">
-                <p data-hover className="text-sm text-gray-900">{event.summary}</p>
+            <PopoverPanel
+                anchor={"top"}
+                transition
+                className="z-40 flex pb-2 transition duration-150 ease-out data-[closed]:translate-y-1 data-[closed]:scale-95 data-[closed]:opacity-0"
+            >
+                <div className="w-56 rounded-xl border border-slate-200 bg-white/95 p-3 text-left shadow-xl shadow-slate-300/60 backdrop-blur-sm">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{formattedDate}</p>
+                    <h4 className="mt-1 text-sm font-semibold text-slate-900">
+                        {hasEvent ? event?.summary ?? "Milestone" : ""}
+                    </h4>
+                    {hasEvent && descriptionLines.length > 0 && (
+                        <ul className="mt-2 space-y-1 text-xs text-slate-600">
+                            {descriptionLines.map((line, idx) => (
+                                <li key={idx} className="leading-snug">{line}</li>
+                            ))}
+                        </ul>
+                    )}
+                    {hasEvent && event?.start && event?.end && (
+                        <p className="mt-3 text-[11px] font-medium text-slate-400">
+                            {format(event.start, "MMM d")} – {format(event.end, "MMM d")}
+                        </p>
+                    )}
+                </div>
             </PopoverPanel>
         </Popover>
     );
@@ -90,7 +119,7 @@ const AssignmentRow: React.FC<{ assignment: AssignmentCalendar; semester: Semest
             {Array.from({length: dayCount}, (_, i) => {
                 const d = dateAtIndex(i);
                 const ev = eventForDate(d);
-                return <AssignmentDate key={i} uid={i} color={assignment.color} event={ev!}/>;
+                return <AssignmentDate key={i} color={assignment.color} date={d} event={ev ?? null}/>;
             })}
         </div>
     );
@@ -123,7 +152,7 @@ const AssignmentColumn: React.FC<{ assignment: AssignmentCalendar; semester: Sem
             {Array.from({length: dayCount}, (_, i) => {
                 const d = dateAtIndex(i);
                 const ev = eventForDate(d);
-                return <AssignmentDate key={i} uid={i} color={assignment.color} event={ev!}/>;
+                return <AssignmentDate key={i} color={assignment.color} date={d} event={ev ?? null}/>;
             })}
         </div>
     );
@@ -133,21 +162,45 @@ const RowLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, height
     // Equivalent rem sizes for tailwind sizing, used to make sure heading boxes grow correctly
     const gap = (height-1) * 0.75;
     const boxsize = height * 4;
+    const { notify } = useNotification();
+    const unitColor = normalizeColor(assignment.color) as CalendarColor;
 
-    //handle calendar download
-    function handleClick() {
+    function handleDownloadIcs(event: React.MouseEvent<HTMLButtonElement>) {
+        event.stopPropagation();
         const ics = exportAssignmentCalendar(assignment);
         downloadIcs(assignment.name && `${assignment.unitCode}-${assignment.name}` || "New Assignment", ics);
     }
 
+    async function handleDownloadPdf(event: React.MouseEvent<HTMLButtonElement>) {
+        event.stopPropagation();
+        try {
+            await exportAssignmentPdf(assignment);
+        } catch (err) {
+            console.error("Failed to download assignment PDF", err);
+            notify("Failed to download assignment PDF. Please try again.", { success: false });
+        }
+    }
+
     return (
-        <div className={`w-36 shrink-0 mr-2 ${BG300[assignment.color]} rounded-md group`} style={{ height: `${boxsize + gap}rem` }} onClick={handleClick}>
+        <div className={`relative w-36 shrink-0 mr-2 ${COLOR_BG300[unitColor]} rounded-md group`} style={{ height: `${boxsize + gap}rem` }}>
+            <span className={clsx("absolute inset-y-2 left-1 w-1 rounded-full bg-white/70", COLOR_ACCENT[unitColor])} />
             <div className={clsx(
-                "w-full h-full flex items-center rounded-md border-2 font-semibold text-white gap-2",
-                "transition-all duration-300 ease-out justify-center group-hover:justify-between"
+                "relative w-full h-full flex items-center rounded-md border-2 font-semibold text-white",
+                "transition-all duration-300 ease-out justify-center"
             )}>
-                <span className={"absolute transition-all duration-300 ease-out scale-100 group-hover:opacity-0 group-hover:scale-95"}>{code ?? ""}</span>
-                <ArrowDownOnSquareIcon className={"h-8 transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100"}/>
+                <span className={"transition-all duration-300 ease-out scale-100 group-hover:opacity-0 group-hover:scale-95"}>{code ?? ""}</span>
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-3 opacity-0 transition-all duration-200 ease-out group-hover:pointer-events-auto group-hover:opacity-100">
+                    <HoverIconButton
+                        icon={<ArrowDownOnSquareIcon className="h-5 w-5" />}
+                        label="Download as Calendar"
+                        onClick={handleDownloadIcs}
+                    />
+                    <HoverIconButton
+                        icon={<DocumentArrowDownIcon className="h-5 w-5" />}
+                        label="Download as PDF"
+                        onClick={handleDownloadPdf}
+                    />
+                </div>
             </div>
         </div>
     );
@@ -159,24 +212,48 @@ const ColumnLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, wid
     // Gap between assignment columns within the same unit is gap-3 (0.75rem)
     // Previous bug was caused by forgetting to account for gaps between boxes, just a bugfix.
     const totalWidth = width * 4 + (width - 1) * 0.75;
+    const { notify } = useNotification();
+    const unitColor = normalizeColor(assignment.color) as CalendarColor;
 
-    function handleClick() {
+    function handleDownloadIcs(event: React.MouseEvent<HTMLButtonElement>) {
+        event.stopPropagation();
         const ics = exportAssignmentCalendar(assignment);
         downloadIcs(assignment.name && `${assignment.unitCode}-${assignment.name}` || "New Assignment", ics);
     }
 
+    async function handleDownloadPdf(event: React.MouseEvent<HTMLButtonElement>) {
+        event.stopPropagation();
+        try {
+            await exportAssignmentPdf(assignment);
+        } catch (err) {
+            console.error("Failed to download assignment PDF", err);
+            notify("Failed to download assignment PDF. Please try again.", { success: false });
+        }
+    }
+
     return (
         <div 
-            className={`h-36 shrink-0 mb-2 ${BG300[assignment.color]} rounded-md group`} 
+            className={`relative h-36 shrink-0 mb-2 ${COLOR_BG300[unitColor]} rounded-md group`} 
             style={{ width: `${totalWidth}rem` }} 
-            onClick={handleClick}
         >
+            <span className={clsx("absolute inset-x-2 top-1 h-1 rounded-full bg-white/70", COLOR_ACCENT[unitColor])} />
             <div className={clsx(
-                "w-full h-full flex items-center justify-center rounded-md border-2 font-semibold text-white gap-2",
+                "relative w-full h-full flex items-center justify-center rounded-md border-2 font-semibold text-white",
                 "transition-all duration-300 ease-out"
             )}>
                 <span className={"transition-all duration-300 ease-out scale-100 group-hover:opacity-0 group-hover:scale-95"}>{code ?? ""}</span>
-                <ArrowDownOnSquareIcon className={"h-8 absolute transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100"}/>
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-3 opacity-0 transition-all duration-200 ease-out group-hover:pointer-events-auto group-hover:opacity-100">
+                    <HoverIconButton
+                        icon={<ArrowDownOnSquareIcon className="h-5 w-5" />}
+                        label="Download as Calendar"
+                        onClick={handleDownloadIcs}
+                    />
+                    <HoverIconButton
+                        icon={<DocumentArrowDownIcon className="h-5 w-5" />}
+                        label="Download as PDF"
+                        onClick={handleDownloadPdf}
+                    />
+                </div>
             </div>
         </div>
     );
@@ -235,8 +312,9 @@ const CalendarColumns: React.FC<{assignments:Record<string,AssignmentCalendar[]>
 };
 
 const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, AssignmentCalendar[]>; semester: Semester}> = ({ show, assignments, semester }) => {
-    const dayCount = Math.max(semester.length, 1);
-    const numWeeks = Math.ceil(dayCount / 7);
+    const rawDays = Math.max(semester.length, 1);
+    const numWeeks = Math.max(1, Math.ceil(rawDays / 7));
+    const dayCount = numWeeks * 7;
     const [isEmpty, setIsEmpty] = useState(false);
 
     useEffect(() => {

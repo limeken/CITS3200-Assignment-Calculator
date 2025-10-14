@@ -38,8 +38,23 @@ const ErrorField: React.FC<{message:string, visible:boolean}> = ({message, visib
         </div>
     )
 }
+
+const WarningField: React.FC<{message:string, visible:boolean}> = ({message, visible}) => {
+    return (
+        <div
+            className={`
+                text-amber-600 rounded-lg flex flex-row gap-2 items-center justify-left px-4 py-1.5
+                transition-opacity duration-300 border-1 border-amber-400 my-2 bg-amber-50/70
+                ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}
+            `}
+        >
+            <ExclamationTriangleIcon className="w-5 h-5 text-amber-400"/>
+            <span className="text-sm">{message}</span>
+        </div>
+    )
+}
 // Input Field for the name of an assignment
-interface NameFieldProps { setAssignmentName: (arg: string) => void; assignmentName: string };
+interface NameFieldProps { setAssignmentName: (arg: string) => void; assignmentName: string }
 const NameField: React.FC<NameFieldProps> = ({setAssignmentName, assignmentName,}) => {
     return (
         <Field className="px-4 text-gray-900 rounded-xl w-full">
@@ -66,7 +81,7 @@ const NameField: React.FC<NameFieldProps> = ({setAssignmentName, assignmentName,
 };
 
 // Input Field for the unit code of an assignment
-interface UnitFieldProps { setUnitCode: (arg: string) => void; unitCode: string };
+interface UnitFieldProps { setUnitCode: (arg: string) => void; unitCode: string }
 const UnitField: React.FC<UnitFieldProps> = ({setUnitCode,unitCode}) => {
     return (
         <Field className="text-gray-900 px-4 w-full">
@@ -240,6 +255,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments: existin
 
     // Used to keep track of input errors
     const [errors, setErrors] = useState<(string | null)[]>([null,null]);
+    const [dateWarning, setDateWarning] = useState<string | null>(null);
 
     // Get the current date
     const currentDate = useMemo(() => new Date(), []);
@@ -262,6 +278,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments: existin
         setEndDate(submission.end ?? null);
         setAssignmentName(submission.name ?? "");
         setUnitCode(submission.unitCode ?? "");
+        setDateWarning(null);
     }, [isNew, submission]);
 
     useEffect(() => {
@@ -311,14 +328,30 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments: existin
 
         // DATE VALIDATION
         if(!!startDate && !!endDate){
-            // Input dates, without time
             const start = stripTime(startDate);
             const end = stripTime(endDate);
-            if(start < current || end < current){addErrorMessage("Dates must be upcoming.", DATE);}
-            else if(end < start){addErrorMessage("Invalid Date Ordering.", DATE)}
+
+            if(end < start){
+                addErrorMessage("Invalid Date Ordering.", DATE);
+                setDateWarning(null);
+            }
+            else if(end < current){
+                addErrorMessage("Due date must be in the future.", DATE);
+                setDateWarning(null);
+            }
             else{
-                addErrorMessage(null,DATE)
-                datesValid = true}
+                addErrorMessage(null,DATE);
+                datesValid = true;
+                if(start < current){
+                    setDateWarning("Start date is in the past. Tasks will begin immediately.");
+                }
+                else{
+                    setDateWarning(null);
+                }
+            }
+        } else {
+            setDateWarning(null);
+            addErrorMessage(null, DATE);
         }
 
         // ASSIGNMENT VALIDATION
@@ -346,7 +379,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments: existin
         }
 
         setSubmit(datesValid && uniqueID)
-        },[startDate,endDate,unitCode,assignmentName]);
+        },[startDate, endDate, unitCode, assignmentName, submission.start, submission.end, submission.unitCode, submission.name, currentDate, isNew, existingAssignments]);
     // const canSubmit = assignmentName.trim().length > 0 && unitCode.trim().length > 0 && datesValid;
 
     function handleStartDate(date: string) {
@@ -543,6 +576,7 @@ const Submission: React.FC<SubmissionProps> = ({submission, assignments: existin
                             <AssessmentDateInput error={errors[DATE] !== null} />
                             <div className="px-4">
                                 <ErrorField message={errors[DATE] ?? ""} visible={!!errors[DATE]} />
+                                <WarningField message={dateWarning ?? ""} visible={!errors[DATE] && !!dateWarning} />
                             </div>
                         </div>
                         <hr className="border-slate-200 w-full"/>

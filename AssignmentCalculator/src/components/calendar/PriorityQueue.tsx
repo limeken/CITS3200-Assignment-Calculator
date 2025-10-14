@@ -1,27 +1,48 @@
-import { useState, useEffect, useMemo } from "react";
-import type { AssignmentCalendar } from "./CalendarTypes";
-import { differenceInDays } from "date-fns";
-import { PencilSquareIcon } from "@heroicons/react/24/solid";
+import { useMemo } from "react";
+import clsx from "clsx";
+import { differenceInCalendarDays, format } from "date-fns";
+import { PencilSquareIcon, CalendarDaysIcon } from "@heroicons/react/24/solid";
+import type { AssignmentCalendar, CalendarColor } from "./CalendarTypes";
 import { useModal } from "../../providers/ModalProvider";
 import { useAssignmentTypeLibrary } from "../../providers/assignmentTypeHooks.ts";
-
+import { COLOR_ACCENT, COLOR_SOFT, COLOR_TEXT, COLOR_RING } from "./colorStyles";
 import Submission from "../Submission";
-// DATES: Use these to control warnings for Assignments Due Dates (Days in brackets)
-// Notes: MED "Yellow" (cautious) and HIGH "RED" (due very soon)
-const MED = (14)* 24 * 60 * 60 * 1000;
-const HIGH = (5)* 24 * 60 * 60 * 1000;
 
-const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => void, onDelete: (assignment:AssignmentCalendar) => void, assignments: Record<string, AssignmentCalendar[]>}> =
-({newest, onUpdate, onDelete, assignments}) => {
-    // Keeps track of the currently sorted list of assignments
-    const [sortedAssignments,setSortedAssignments] = useState<AssignmentCalendar[]>([]);
+type PriorityQueueProps = {
+    newest: AssignmentCalendar | null;
+    onUpdate: (oldAssignment: AssignmentCalendar, newAssignment: AssignmentCalendar) => void;
+    onDelete: (assignment: AssignmentCalendar) => void;
+    assignments: Record<string, AssignmentCalendar[]>;
+};
 
-    // Used to delete stale assignments once main assignment list is updated
-    const deleteAssignment = (assignment:AssignmentCalendar) => { setSortedAssignments((prev) =>{return [...prev].filter(a => a !== assignment);})}
+const getDueBadge = (dueDate: Date) => {
+    const days = differenceInCalendarDays(dueDate, new Date());
+    if (days < 0) {
+        const abs = Math.abs(days);
+        return {
+            label: `Overdue by ${abs} day${abs === 1 ? "" : "s"}`,
+            className: "bg-rose-100 text-rose-700",
+        };
+    }
+    if (days === 0) {
+        return { label: "Due today", className: "bg-red-100 text-red-700" };
+    }
+    if (days === 1) {
+        return { label: "Due tomorrow", className: "bg-orange-100 text-orange-700" };
+    }
+    if (days <= 5) {
+        return { label: `Due in ${days} days`, className: "bg-amber-100 text-amber-700" };
+    }
+    if (days <= 14) {
+        return { label: `Due in ${days} days`, className: "bg-yellow-100 text-yellow-700" };
+    }
+    return { label: `Due in ${days} days`, className: "bg-emerald-100 text-emerald-700" };
+};
 
-    // Reopen modified submission modal for editing
-    const {open, close} = useModal();
+const PriorityQueue: React.FC<PriorityQueueProps> = ({ newest, onUpdate, onDelete, assignments }) => {
+    const { open, close } = useModal();
     const { data: library } = useAssignmentTypeLibrary();
+
     const assignmentLabels = useMemo<Record<string, string>>(() => {
         const map: Record<string, string> = {};
         (library?.assignments ?? []).forEach((assignment) => {
@@ -31,101 +52,116 @@ const PriorityQueue: React.FC<{newest:AssignmentCalendar|null, onUpdate: (oldAss
         });
         return map;
     }, [library]);
-    const openResubmission = (selected:AssignmentCalendar) => {
+
+    const sortedAssignments = useMemo(() => {
+        return Object.values(assignments)
+            .flat()
+            .slice()
+            .sort((a, b) => a.end.getTime() - b.end.getTime());
+    }, [assignments]);
+
+    const openResubmission = (selected: AssignmentCalendar) => {
         open((id) => (
             <Submission
                 submission={selected}
                 isNew={false}
                 assignments={assignments}
-                onUpdate={async (o,n) => {
-                    {/* This wipes assignment memory from priority queue */}
-                    deleteAssignment(selected);
-                    onUpdate(o,n);
+                onUpdate={async (oldAssignment, newAssignment) => {
+                    await onUpdate(oldAssignment, newAssignment);
                     close(id);
                 }}
-                onDelete={async (a) => {
-                    deleteAssignment(selected);
-                    onDelete(a);
+                onDelete={async (assignment) => {
+                    await onDelete(assignment);
                     close(id);
                 }}
                 onClose={() => close(id)}
             />
-        ))
+        ));
     };
 
-    // Insertion Sort Implementation to sort each new assignment
-    // TODO: dude why did we write our own insertion sort lol
-    const insertionSort = (list:AssignmentCalendar[], addition:AssignmentCalendar|null) => {
-        if(addition === null){return list;}
+    const hasAssignments = sortedAssignments.length > 0;
 
-        if(list.length === 0){
-            return [addition];
-        }
-
-        const final = [...list, addition]
-        
-        let index = final.length-1;
-        while(index > 0){
-            if(differenceInDays(final[index].end, Date.now()) < differenceInDays(final[index-1].end, Date.now())){
-                const current = final[index];
-                final[index] = final[index-1];
-                final[index-1] = current;
-                index--;
-                continue;
-            }
-            break
-        }
-        return final;
+    if (!hasAssignments) {
+        return null;
     }
 
-    // Adds the newest assignment in sorted order, when a new assignment is created
-    useEffect(() => {
-        if (!newest) return;
-        setSortedAssignments(prev => insertionSort(prev, newest));
-    }, [newest]);
+    return (
+        <section className="w-full max-w-6xl mx-auto transition-all duration-300">
+            <div className="surface-card border border-slate-200/70 bg-white/85 p-5 shadow-[0_26px_60px_-30px_rgba(15,23,42,0.35)]">
+                <header className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                        <CalendarDaysIcon className="h-4 w-4 text-slate-400" />
+                        Priority Queue
+                    </div>
+                    <span className="text-xs font-medium text-slate-400">
+                        {hasAssignments ? `${sortedAssignments.length} assignment${sortedAssignments.length === 1 ? "" : "s"}` : "No assignments"}
+                    </span>
+                </header>
 
-    // Picks colour based on distance from due date
-    const pickPriority = (end:Date) => {
-        const current = Date.now()
-        if(current > end.getTime() - MED && current < end.getTime() - HIGH){
-            return {base:"bg-yellow-200", days:differenceInDays(end, Date.now())};
-        }
-        else if(current > end.getTime() - HIGH){
-            return {base:"bg-red-200", days:differenceInDays(end, Date.now())};
-        }
-        else{return {base:"bg-green-200", days:differenceInDays(end, Date.now())}}
-    }
-
-    return(
-            <div className={`w-4/5 bg-slate-200 rounded-xl transition-all duration-300 ease-in-out overflow-hidden flex flex-col gap-2
-                ${sortedAssignments.length===0?"scale-x-0 opacity-0 overflow-hidden":"scale-x-100 p-4 opacity-100 overflow-x-auto"}`}>
-                    <hr className="border-slate-400"/>
-                    <div className="flex flex-row gap-4 my-2">
-                        {sortedAssignments.map((assignment)=>{
-                            const { base, days} = pickPriority(assignment.end);
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {sortedAssignments.map((assignment) => {
+                            const unitColor = assignment.color as CalendarColor;
                             const typeKey = assignment.assignmentType ?? "";
                             const typeLabel = assignmentLabels[typeKey.toLowerCase()] ?? assignmentLabels[typeKey] ?? assignment.assignmentType;
+                            const dueInfo = getDueBadge(assignment.end);
+                            const isLatest = assignment === newest;
+
                             return (
-                                <div className={`h-9/10 w-70 flex flex-col flex-shrink-0 rounded-lg bg-white overflow-hidden shadow-lg transition duration-300 ease-in-out hover:scale-105 relative`}>
-                                    <h1 className={`text-lg font-bold w-full h-1/4 flex justify-center items-center relative ${base}`}>
-                                        <span>{`Due in: ${days} Days`}</span>
-                                        <PencilSquareIcon className="w-5 h-5 text-white absolute right-5 top-1/2 -translate-y-1/2 hover:text-blue-300 transition-transform duration-300 hover:scale-120"
-                                        onClick={()=>openResubmission(assignment)}
-                                        />
-                                    </h1>
-                                    <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Unit: </span>{assignment.unitCode}</p>
-                                    <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Assignment: </span>{assignment.name}</p>
-                                    <p className="p-2 border-b border-slate-200 text-sm"><span className="font-semibold">Type: </span>{typeLabel}</p>
-                                    <p className="p-2 text-sm"><span className="font-semibold">Due Date: </span>{assignment.end.toISOString().substring(0, 10).replaceAll("-","/")}</p>
-                                </div>
-                                )
-                                }
-                            )
-                        }
-                    </div>
-                    <hr className="border-slate-400"/>
+                                <article
+                                    key={`${assignment.unitCode ?? "unit"}-${assignment.name}-${assignment.end.getTime()}`}
+                                    className={clsx(
+                                        "relative flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-[0_20px_55px_-32px_rgba(15,23,42,0.35)] transition-transform duration-200",
+                                        isLatest && "ring-2 ring-indigo-200",
+                                        "hover:-translate-y-1 hover:shadow-[0_26px_65px_-30px_rgba(79,70,229,0.35)]"
+                                    )}
+                                >
+                                    <span className={clsx("absolute inset-y-0 left-0 w-1 rounded-l-2xl", COLOR_ACCENT[unitColor])} />
+
+                                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                        <span>{format(assignment.end, "EEE d MMM")}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => openResubmission(assignment)}
+                                            className="inline-flex items-center rounded-full bg-slate-100/80 p-1 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
+                                            aria-label="Edit assignment"
+                                        >
+                                            <PencilSquareIcon className="h-4 w-4" />
+                                        </button>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-base font-semibold text-slate-900">{assignment.name}</h3>
+                                        <p className="mt-1 text-sm text-slate-500">{typeLabel}</p>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span
+                                            className={clsx(
+                                                "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold",
+                                                COLOR_SOFT[unitColor],
+                                                COLOR_TEXT[unitColor]
+                                            )}
+                                        >
+                                            {assignment.unitCode ?? "Unit"}
+                                        </span>
+                                        <span className={clsx("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold", dueInfo.className)}>
+                                            {dueInfo.label}
+                                        </span>
+                                    </div>
+
+                                    <div className={clsx("rounded-xl border border-slate-200/60 bg-slate-50 px-3 py-2 text-xs text-slate-500 ring-1", COLOR_RING[unitColor])}>
+                                        <div className="flex justify-between">
+                                            <span>Start {assignment.start ? format(assignment.start, "d MMM") : "—"}</span>
+                                            <span>Due {format(assignment.end, "d MMM yyyy")}</span>
+                                        </div>
+                                    </div>
+                                </article>
+                            );
+                    })}
+                </div>
             </div>
-        )
-}
+        </section>
+    );
+};
 
 export default PriorityQueue;
