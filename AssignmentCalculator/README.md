@@ -11,6 +11,36 @@ npm run dev
 
 The dev server proxies API requests from `/api/*` to `http://127.0.0.1:5001` (see `vite.config.ts`), so run the Flask backend alongside the frontend during local development.
 
+## Linux Installation Quickstart
+
+The project is tested regularly on Ubuntu 22.04+, but the same steps apply to most modern Debian/Ubuntu-based distributions.
+
+1. **Install system dependencies** (Node.js 20 LTS via NodeSource and Python, required for cache generation):
+   ```bash
+   sudo apt update
+   sudo apt install -y curl git python3 python3-venv build-essential
+   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+   sudo apt install -y nodejs
+   ```
+   (Alternatively use `nvm` or your distro’s package manager to install Node ≥18.)
+2. **Clone the repository and install packages**:
+   ```bash
+   git clone https://github.com/<your-org>/CITS3200-Assignment-Calculator.git
+   cd CITS3200-Assignment-Calculator/AssignmentCalculator
+   npm ci
+   ```
+3. **Run the dev servers** (from separate terminals):
+   ```bash
+   # Frontend
+   npm run dev
+
+   # Backend (from repo root, optional virtualenv)
+   python3 -m venv .venv && source .venv/bin/activate
+   pip install -r requirements.txt
+   FLASK_APP=app flask run --port 5001
+   ```
+4. Visit `http://localhost:5173` and confirm the UI loads data from the backend. If the backend is offline the UI falls back to the generated cache.
+
 ## Useful Scripts
 
 - `npm run dev` – start the Vite development server.

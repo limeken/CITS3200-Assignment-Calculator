@@ -1,4 +1,4 @@
-import React, {useState, useMemo} from "react";
+import React, {useMemo, useState, useEffect} from "react";
 import {CalendarIcon, Cog6ToothIcon, DocumentTextIcon,} from "@heroicons/react/24/solid";
 import {
     Button,
@@ -11,80 +11,56 @@ import {
 } from "@headlessui/react";
 import {useModal} from "../../providers/ModalProvider.tsx";
 import {ChevronUpDownIcon} from "@heroicons/react/20/solid";
-import {createSemester, type Semester as CalendarSemester} from "./CalendarTypes.ts";
 import clsx from "clsx";
 import { pageSection, primaryPillButton } from "../../styles/styles.ts";
 import { useSemesters } from "../../providers/semesterHooks.ts";
-import type { Semester as BackendSemester } from "../../services/semesters.ts";
+import {
+    buildSemesterOptions,
+    findSemesterOption,
+    type SemesterOption,
+} from "./semesterOptions.ts";
 
-// Fallback data if backend is unavailable (for production resilience)
-const FALLBACK_SEMESTERS: {id: number, name: string, semester: CalendarSemester}[]  = [
-    {
-        id: 1, name: "Semester 1",
-        semester: createSemester(new Date("2025-02-24"), new Date("2025-05-23"))
-    },
-    {
-        id: 2, name: "Semester 2",
-        semester: createSemester(new Date("2025-07-21"), new Date("2025-10-17"))
-    },
-    {
-        id: 3, name: "Trimester 1",
-        semester: createSemester(new Date("2025-01-20"), new Date("2025-04-11"))
-    },
-    {
-        id: 4, name: "Trimester 2",
-        semester: createSemester(new Date("2025-04-28"), new Date("2025-07-18"))
-    },
-    {
-        id: 5, name: "Trimester 3",
-        semester: createSemester(new Date("2025-08-11"), new Date("2025-10-31"))
-    }
-]
-
-/**
- * Convert backend semester to CalendarSemester format
- */
-function backendToCalendarSemester(backend: BackendSemester): {id: string, name: string, semester: CalendarSemester} {
-    const semester = createSemester(
-        new Date(backend.start_date),
-        new Date(backend.end_date),
-        [] // No special dates from backend for now
-    );
-
-    // Override detail if backend provides one
-    if (backend.detail) {
-        semester.detail = backend.detail;
-    }
-
-    return {
-        id: backend.id,
-        name: backend.name,
-        semester
-    };
+interface CalendarOptionsModalProps {
+    onClose: () => void;
+    onSubmit: (option: SemesterOption) => void;
+    options: SemesterOption[];
+    selected: SemesterOption | null;
+    isLoading: boolean;
+    hasError: boolean;
+    usingFallback: boolean;
 }
 
-interface CalendarOptionsModalProps { onClose: () => void;}
-const CalendarOptionsModal: React.FC<CalendarOptionsModalProps> = ({ onClose }) => {
-    // Fetch semesters from backend with fallback to hardcoded data
-    const { data: backendSemesters, isLoading, error } = useSemesters();
+const CalendarOptionsModal: React.FC<CalendarOptionsModalProps> = ({
+    onClose,
+    onSubmit,
+    options,
+    selected,
+    isLoading,
+    hasError,
+    usingFallback,
+}) => {
+    const [localSelection, setLocalSelection] = useState<SemesterOption | null>(selected ?? (options[0] ?? null));
 
-    // Convert backend data to local format, or use fallback
-    const semesterOptions = useMemo(() => {
-        if (backendSemesters && backendSemesters.length > 0) {
-            return backendSemesters.map(backendToCalendarSemester);
+    useEffect(() => {
+        const next = selected ?? (options[0] ?? null);
+        setLocalSelection(next);
+    }, [selected, options]);
+
+    const handleSubmit = () => {
+        if (localSelection) {
+            onSubmit(localSelection);
+        } else {
+            onClose();
         }
-        // Fallback to hardcoded data if backend unavailable
-        return FALLBACK_SEMESTERS;
-    }, [backendSemesters]);
-
-    const [selectedId, setSelectedId] = useState<string | number>(semesterOptions[0]?.id);
-    const selected = semesterOptions.find(s => s.id === selectedId) ?? semesterOptions[0];
+    };
 
     return (
         <div className="space-y-5 p-5 sm:p-6">
             <DialogTitle className="text-lg font-semibold text-slate-900">
                 Calendar settings
-                {error && <span className="ml-2 text-xs text-orange-500">(using offline data)</span>}
+                {(hasError || (usingFallback && !isLoading)) && (
+                    <span className="ml-2 text-xs text-orange-500">(using offline data)</span>
+                )}
             </DialogTitle>
             <Field className="w-full rounded-2xl border border-slate-200/70 bg-white/90 p-4 shadow-[0_24px_50px_-28px_rgba(15,23,42,0.32)]">
                 <Label className="mb-2 block text-sm font-semibold text-slate-700">Active semester</Label>
@@ -92,19 +68,19 @@ const CalendarOptionsModal: React.FC<CalendarOptionsModalProps> = ({ onClose }) 
                     <div className="text-sm text-slate-500">Loading semesters...</div>
                 ) : (
                     <div className="flex w-full flex-row items-center">
-                        <Listbox value={selected} onChange={(s) => setSelectedId(s.id)}>
+                        <Listbox value={localSelection} onChange={setLocalSelection}>
                             <div className="relative mt-1 w-full">
                                 <ListboxButton
                                     className="grid w-full cursor-default grid-cols-1 rounded-xl border border-slate-200/70 bg-white px-4 py-2.5 text-left text-slate-900 shadow-sm transition hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uwaBlue/60"
                                 >
                                     <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6 text-sm font-medium">
-                                        {selected?.name || 'Select a semester'}
-                                        <span className="text-xs font-normal text-slate-500">{selected?.semester.detail ?? ""}</span>
+                                        {localSelection?.name || 'Select a semester'}
+                                        <span className="text-xs font-normal text-slate-500">{localSelection?.semester.detail ?? ""}</span>
                                     </span>
                                     <ChevronUpDownIcon aria-hidden="true" className="col-start-1 row-start-1 size-5 self-center justify-self-end text-slate-400" />
                                 </ListboxButton>
                                 <ListboxOptions className="absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-2xl border border-slate-200/80 bg-white py-2 text-base shadow-[0_26px_60px_-32px_rgba(15,23,42,0.45)] sm:text-sm">
-                                    {semesterOptions.map(s => (
+                                    {options.map(s => (
                                         <ListboxOption
                                             key={s.id}
                                             value={s}
@@ -125,11 +101,12 @@ const CalendarOptionsModal: React.FC<CalendarOptionsModalProps> = ({ onClose }) 
             <div className="flex w-full justify-end">
                 <button
                     type="button"
-                    onClick={onClose}
+                    onClick={handleSubmit}
                     className={clsx(
                         primaryPillButton,
                         "w-full px-5 py-2.5 text-sm shadow-[0_22px_45px_-25px_rgba(79,70,229,0.65)] hover:-translate-y-0.5 hover:shadow-[0_30px_60px_-28px_rgba(67,56,202,0.75)] sm:w-auto"
                     )}
+                    disabled={!localSelection}
                 >
                     Done
                 </button>
@@ -138,15 +115,45 @@ const CalendarOptionsModal: React.FC<CalendarOptionsModalProps> = ({ onClose }) 
     )
 }
 
-interface CalendarOptionsProps {isCalendarFormat:boolean;changeFormat: React.Dispatch<React.SetStateAction<boolean>>;}
-const CalendarOptions: React.FC<CalendarOptionsProps> = ({isCalendarFormat, changeFormat}) => {
+interface CalendarOptionsProps {
+    isCalendarFormat: boolean;
+    changeFormat: React.Dispatch<React.SetStateAction<boolean>>;
+    activeSemester: SemesterOption;
+    onSemesterChange: (option: SemesterOption) => void;
+}
 
+const CalendarOptions: React.FC<CalendarOptionsProps> = ({
+    isCalendarFormat,
+    changeFormat,
+    activeSemester,
+    onSemesterChange,
+}) => {
+
+    const { data: backendSemesters, isLoading, error } = useSemesters();
     const {open, close} = useModal();
+
+    const semesterOptions = useMemo(
+        () => buildSemesterOptions(backendSemesters),
+        [backendSemesters],
+    );
+
+    const usingFallback = semesterOptions.every((option) => option.source === 'fallback');
+
+    const selectedOption = findSemesterOption(semesterOptions, activeSemester.id);
 
     const openOptions = () => {
         open((id) => (
             <CalendarOptionsModal
                 onClose={() => close(id)}
+                onSubmit={(option) => {
+                    onSemesterChange(option);
+                    close(id);
+                }}
+                options={semesterOptions}
+                selected={selectedOption ?? (semesterOptions[0] ?? null)}
+                isLoading={isLoading}
+                hasError={Boolean(error)}
+                usingFallback={usingFallback}
             />
         ))
     };
@@ -167,6 +174,10 @@ const CalendarOptions: React.FC<CalendarOptionsProps> = ({isCalendarFormat, chan
                         <Cog6ToothIcon className="h-6 w-6" />
                         <span className="hidden sm:inline">Calendar settings</span>
                     </Button>
+                    <p className="text-center text-xs font-medium text-slate-500 sm:text-left">
+                        <span className="text-slate-700">Semester:</span> {activeSemester.name}
+                        {activeSemester.semester.detail ? ` · ${activeSemester.semester.detail}` : ''}
+                    </p>
                 </div>
                 <div className="relative flex h-20 sm:h-16 lg:h-12 w-full flex-1 min-w-[16rem] overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-inner shadow-white/[0.35]">
                     <span className={switchIndicator} />

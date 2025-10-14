@@ -6,12 +6,16 @@ import VisualCalendar from "./VisualCalendar.tsx";
 import CalendarOptions from "./CalendarOptions.tsx";
 import PriorityQueue from "./PriorityQueue.tsx";
 import { SubmissionButton } from "../Submission.tsx";
+import { FALLBACK_SEMESTER_OPTIONS, type SemesterOption } from "./semesterOptions.ts";
 
 const Calendar: React.FC = () => {
-    
+    const fallbackSemester = FALLBACK_SEMESTER_OPTIONS[0]!;
+    const defaultSemester = FALLBACK_SEMESTER_OPTIONS[1] ?? fallbackSemester;
+
     const [assignments, setAssignments] = useState<Record<string, AssignmentCalendar[]>>({});
     const [newestAssignment, setNewestAssignment] = useState<AssignmentCalendar|null>(null);
     const [isVisual, setIsVisual] = useState<boolean>(true);
+    const [activeSemester, setActiveSemester] = useState<SemesterOption>(defaultSemester);
 
     // ASSIGNMENT MANIPULATION FUNCTIONS
     // ADD: Adds the specified assignment to the collection
@@ -88,9 +92,14 @@ const Calendar: React.FC = () => {
         <div className="flex flex-col gap-4 items-center">
             {/* Button which triggers the assignment submission modal */}
             <SubmissionButton onSubmit={addAssignment} assignments={assignments}/>
-            <CalendarOptions isCalendarFormat={isVisual} changeFormat={setIsVisual}/>
+            <CalendarOptions
+                isCalendarFormat={isVisual}
+                changeFormat={setIsVisual}
+                activeSemester={activeSemester}
+                onSemesterChange={setActiveSemester}
+            />
             <PriorityQueue newest={newestAssignment} onUpdate={updateAssignment} onDelete={deleteAssignment} assignments={assignments}/>
-            <VisualCalendar show={isVisual} assignments={assignments} />
+            <VisualCalendar show={isVisual} assignments={assignments} semester={activeSemester.semester} />
             <TextCalendar show={!isVisual} assignments={assignments}/>
         </div>
     );

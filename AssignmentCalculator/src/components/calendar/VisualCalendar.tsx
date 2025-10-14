@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {type AssignmentCalendar, type AssignmentEvent, type CalendarColor, downloadIcs, exportAssignmentCalendar, sem2} from "./CalendarTypes.ts";
+import {type AssignmentCalendar, type AssignmentEvent, type CalendarColor, type Semester, downloadIcs, exportAssignmentCalendar} from "./CalendarTypes.ts";
 import clsx from "clsx";
 import {Popover, PopoverButton, PopoverPanel} from "@headlessui/react";
 import {ArrowDownOnSquareIcon} from "@heroicons/react/24/outline";
@@ -64,9 +64,9 @@ const AssignmentDate: React.FC<AssignmentDateProps> = ({ uid, color, event }) =>
 
 /* The events row gets passed baby */
 // Horizontal layout component (existing)
-const AssignmentRow: React.FC<{ assignment: AssignmentCalendar}> = ({ assignment }) => {
+const AssignmentRow: React.FC<{ assignment: AssignmentCalendar; semester: Semester; dayCount: number }> = ({ assignment, semester, dayCount }) => {
     const dateAtIndex = (i: number): Date => {
-        return new Date(sem2.start.getTime() + i * DAYS_MS);
+        return new Date(semester.start.getTime() + i * DAYS_MS);
     };
 
     const eventForDate = (d: Date) => {
@@ -87,7 +87,7 @@ const AssignmentRow: React.FC<{ assignment: AssignmentCalendar}> = ({ assignment
     
     return (
         <div className="flex flex-row gap-2 min-w-max">
-            {Array.from({length: sem2.length}, (_, i) => {
+            {Array.from({length: dayCount}, (_, i) => {
                 const d = dateAtIndex(i);
                 const ev = eventForDate(d);
                 return <AssignmentDate key={i} uid={i} color={assignment.color} event={ev!}/>;
@@ -97,9 +97,9 @@ const AssignmentRow: React.FC<{ assignment: AssignmentCalendar}> = ({ assignment
 };
 
 // NEW: Vertical layout component (rotated 90° clockwise)
-const AssignmentColumn: React.FC<{ assignment: AssignmentCalendar}> = ({ assignment }) => {
+const AssignmentColumn: React.FC<{ assignment: AssignmentCalendar; semester: Semester; dayCount: number }> = ({ assignment, semester, dayCount }) => {
     const dateAtIndex = (i: number): Date => {
-        return new Date(sem2.start.getTime() + i * DAYS_MS);
+        return new Date(semester.start.getTime() + i * DAYS_MS);
     };
 
     const eventForDate = (d: Date) => {
@@ -120,7 +120,7 @@ const AssignmentColumn: React.FC<{ assignment: AssignmentCalendar}> = ({ assignm
     
     return (
         <div className="flex flex-col gap-2 min-h-max">
-            {Array.from({length: sem2.length}, (_, i) => {
+            {Array.from({length: dayCount}, (_, i) => {
                 const d = dateAtIndex(i);
                 const ev = eventForDate(d);
                 return <AssignmentDate key={i} uid={i} color={assignment.color} event={ev!}/>;
@@ -183,7 +183,7 @@ const ColumnLabel: React.FC<{ code?: string, assignment: AssignmentCalendar, wid
 };
 
 // Decides how many default rows and actual rows need to be displayed
-const CalendarRows: React.FC<{assignments:Record<string,AssignmentCalendar[]>}> = ({assignments}) => {
+const CalendarRows: React.FC<{assignments:Record<string,AssignmentCalendar[]>; semester: Semester; dayCount: number}> = ({assignments, semester, dayCount}) => {
     const rows = Object.keys(assignments).length;
     const temporaryRows = 4 - rows > 0 ? 4 - rows : 0;
     
@@ -191,12 +191,12 @@ const CalendarRows: React.FC<{assignments:Record<string,AssignmentCalendar[]>}> 
         <>
             {Object.keys(assignments).flatMap((code: string) => (
                 assignments[code].map((assignment, i) => (
-                    <AssignmentRow key={`${code}-${i}`} assignment={assignment} />
+                    <AssignmentRow key={`${code}-${i}`} assignment={assignment} semester={semester} dayCount={dayCount} />
                 ))
             ))}
             {Array.from({length: temporaryRows}).map((_, idx) => (
                 <div key={`empty-row-${idx}`} className="flex flex-row gap-2 min-w-max">
-                    {Array.from({length: sem2.length}, (_, i) => 
+                    {Array.from({length: dayCount}, (_, i) => 
                         <div
                             key={i}
                             className={clsx("bg-white aspect-square w-16 rounded-md shadow-md transition-transform duration-150 ease-out hover:scale-95")}
@@ -209,7 +209,7 @@ const CalendarRows: React.FC<{assignments:Record<string,AssignmentCalendar[]>}> 
 };
 
 // NEW: Calendar columns for vertical layout
-const CalendarColumns: React.FC<{assignments:Record<string,AssignmentCalendar[]>}> = ({assignments}) => {
+const CalendarColumns: React.FC<{assignments:Record<string,AssignmentCalendar[]>; semester: Semester; dayCount: number}> = ({assignments, semester, dayCount}) => {
     const cols = Object.keys(assignments).length;
     const temporaryCols = 4 - cols > 0 ? 4 - cols : 0;
     
@@ -217,12 +217,12 @@ const CalendarColumns: React.FC<{assignments:Record<string,AssignmentCalendar[]>
         <>
             {Object.keys(assignments).flatMap((code: string) => (
                 assignments[code].map((assignment, i) => (
-                    <AssignmentColumn key={`${code}-${i}`} assignment={assignment} />
+                    <AssignmentColumn key={`${code}-${i}`} assignment={assignment} semester={semester} dayCount={dayCount} />
                 ))
             ))}
             {Array.from({length: temporaryCols}).map((_, idx) => (
                 <div key={`empty-col-${idx}`} className="flex flex-col gap-2 min-h-max">
-                    {Array.from({length: sem2.length}, (_, i) => 
+                    {Array.from({length: dayCount}, (_, i) => 
                         <div
                             key={i}
                             className={clsx("bg-white aspect-square w-16 rounded-md shadow-md transition-transform duration-150 ease-out hover:scale-95")}
@@ -234,8 +234,9 @@ const CalendarColumns: React.FC<{assignments:Record<string,AssignmentCalendar[]>
     );
 };
 
-const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, AssignmentCalendar[]>}> = ({ show, assignments }) => {
-    const numWeeks = Math.ceil(sem2.length / 7);
+const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, AssignmentCalendar[]>; semester: Semester}> = ({ show, assignments, semester }) => {
+    const dayCount = Math.max(semester.length, 1);
+    const numWeeks = Math.ceil(dayCount / 7);
     const [isEmpty, setIsEmpty] = useState(false);
 
     useEffect(() => {
@@ -281,7 +282,7 @@ const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, Assig
                                 </div>
                             ))}
                         </div>
-                        <CalendarRows assignments={assignments}/>
+                        <CalendarRows assignments={assignments} semester={semester} dayCount={dayCount}/>
                     </div>
                 </div>
             </div>
@@ -309,7 +310,7 @@ const VisualCalendar: React.FC<{show: boolean, assignments: Record<string, Assig
                         <div className="flex flex-row space-x-3 relative">
                             {/* Assignment columns */}
                             <div className="flex flex-row space-x-3">
-                                <CalendarColumns assignments={assignments}/>
+                                <CalendarColumns assignments={assignments} semester={semester} dayCount={dayCount}/>
                             </div>
 
                             {/* Sticky right column: Week labels */}
